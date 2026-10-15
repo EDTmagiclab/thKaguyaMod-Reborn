@@ -86,12 +86,35 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         else if(shotId >= 16)
         {
             // 莱瓦汀（Laevateinn，shotId 16-23）：原版 renderLaevateinn 程序化 3D 剑形几何
-            renderLaevateinn(entity, color, poseStack, buffer, packedLight, partialTicks);
+            // 原版 dispatch：绕 Z 轴转 angleZ（纵劈时物品侧 setAngleZ(90F)，缺了横劈/纵劈渲染无差别）
+            //   + Z 向缩放 length/20.8
+            //   + 白心 pass（color=7, alpha=1.0, zPos=1.6）
+            //   + 彩色光晕 pass（再叠 scale 1.2³, alpha=0.6, zPos=1.0）
+            poseStack.mulPose(Axis.ZP.rotationDegrees(entity.getAngleZ()));
+            poseStack.pushPose();
+            poseStack.scale(1.0F, 1.0F, (float)(length / 20.8D));
+            VertexConsumer core = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
+            renderLaevateinn(core, poseStack, packedLight, 7, 1.6F, 255, entity.tickCount + partialTicks);
+            poseStack.scale(1.2F, 1.2F, 1.2F);
+            VertexConsumer glow = buffer.getBuffer(RenderType.entityTranslucent(TEX_LASER));
+            renderLaevateinn(glow, poseStack, packedLight, color, 1.0F, 153, entity.tickCount + partialTicks);
+            poseStack.popPose();
         }
         else if(shotId >= 8)
         {
             // 冈格尼尔之枪（Gungnir，shotId 8-15）：原版 renderSpearTheGungnir 程序化 3D 枪形几何
-            renderSpearTheGungnir(entity, color, poseStack, buffer, packedLight);
+            // 原版 dispatch：绕 Z 轴自旋 30°/tick + 缩放(0.3, 0.3, 0.5*length/10)
+            //   + 白心 pass（color=7, alpha=1.0, zPos=centerZ1-centerZ2=length*0.1）
+            //   + 彩色光晕 pass（再叠 scale 1.2³, alpha=0.6, zPos=-1.0）
+            poseStack.mulPose(Axis.ZP.rotationDegrees((entity.tickCount + partialTicks) * 30F));
+            poseStack.pushPose();
+            poseStack.scale(0.3F, 0.3F, (float)(0.5D * length / 10D));
+            VertexConsumer core = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
+            renderSpearTheGungnir(core, poseStack, packedLight, 7, (float)(length * 0.1D), 255);
+            poseStack.scale(1.2F, 1.2F, 1.2F);
+            VertexConsumer glow = buffer.getBuffer(RenderType.entityTranslucent(TEX_LASER));
+            renderSpearTheGungnir(glow, poseStack, packedLight, color, -1.0F, 153);
+            poseStack.popPose();
         }
         else
         {
@@ -346,10 +369,11 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
     // ============================================================
     // 冈格尼尔之枪（Gungnir）：原版 renderSpearTheGungnir
     // 29 顶点 + 24 quad（4 重镜像：原/+x/-y/-x-y 共 96 quad）
-    // 注：原版 length/width 参数未对顶点表缩放，顶点表坐标即世界单位
+    // 注：原版 length/width 参数未对顶点表缩放（缩放由 dispatch 侧 poseStack.scale 完成），
+    //     zPos 在顶点 z 上平移后再经受 scale（与原版 GL 矩阵语义一致）
     // ============================================================
-    private void renderSpearTheGungnir(EntityTHLaser entity, int color,
-                                        PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private void renderSpearTheGungnir(VertexConsumer consumer, PoseStack poseStack, int packedLight,
+                                        int color, float zPos, int alpha)
     {
         color %= 8;
         int r = COLOR_R[color];
@@ -399,11 +423,9 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
             { 5, 1,26,26}, { 3, 5,26,26}, { 5,29,27, 1}, { 3,28,29, 5}
         };
 
-        // 沿 +Z 偏移：原版 centerZ1-centerZ2 = 0.0（保持原版 Gungnir 顶点表在 z=-9.68..+15.67）
-        // 实体本身的 poseStack 已经是「激光发射端 +Z=0 起点」
-        float zPos = 0.0F;
+        // zPos 由调用侧传入（原版白心 pass = centerZ1-centerZ2，光晕 pass = -1.0），
+        // 顶点 z 先加 zPos 再经受 poseStack 的 scale（与原版 GL 矩阵语义一致）
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
@@ -429,16 +451,16 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
                 float y3 = (float)V[Q[i][3] - 1][1] * sy;
                 float z3 = (float)V[Q[i][3] - 1][2] + zPos;
 
-                consumer.vertex(matrix, x0, y0, z0).color(r, g, b, 255)
+                consumer.vertex(matrix, x0, y0, z0).color(r, g, b, alpha)
                         .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-                consumer.vertex(matrix, x1, y1, z1).color(r, g, b, 255)
+                consumer.vertex(matrix, x1, y1, z1).color(r, g, b, alpha)
                         .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-                consumer.vertex(matrix, x2, y2, z2).color(r, g, b, 255)
+                consumer.vertex(matrix, x2, y2, z2).color(r, g, b, alpha)
                         .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-                consumer.vertex(matrix, x3, y3, z3).color(r, g, b, 255)
+                consumer.vertex(matrix, x3, y3, z3).color(r, g, b, alpha)
                         .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
             }
@@ -448,18 +470,15 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
     // ============================================================
     // 莱瓦汀（Laevateinn）：原版 renderLaevateinn
     // 52 顶点 + 43 quad（2 重镜像：原 / -y 共 86 quad）
-    // 顶点含时间 sin 抖动（原版 thLaser.ticksExisted，1.20.1 用 tickCount+partialTicks）
+    // 顶点含时间 sin 抖动（原版 thLaser.ticksExisted，1.20.1 用 tickCount+partialTicks 更平滑）
     // ============================================================
-    private void renderLaevateinn(EntityTHLaser entity, int color,
-                                   PoseStack poseStack, MultiBufferSource buffer, int packedLight,
-                                   float partialTicks)
+    private void renderLaevateinn(VertexConsumer consumer, PoseStack poseStack, int packedLight,
+                                   int color, float zPos, int alpha, float time)
     {
         color %= 8;
         int r = COLOR_R[color];
         int g = COLOR_G[color];
         int b = COLOR_B[color];
-
-        float time = (float)entity.tickCount + partialTicks;
 
         // 原版顶点表（带 time 抖动）
         double sin60 = Math.sin(time * 60.0 / 180.0 * Math.PI) * 0.5;
@@ -511,9 +530,8 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
             {11,48,49,12}, {12,49,50,13}, {15,52,48,11}, {14,51,52,15}
         };
 
-        float zPos = 1.6F;     // 原版 Laevateinn zPos=1.6D
+        // zPos 由调用侧传入（原版白心 pass = 1.6，光晕 pass = 1.0）
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
@@ -538,16 +556,16 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
                 float y3 = (float)V[Q[i][3] - 1][1] * sy;
                 float z3 = (float)V[Q[i][3] - 1][2] + zPos;
 
-                consumer.vertex(matrix, x0, y0, z0).color(r, g, b, 255)
+                consumer.vertex(matrix, x0, y0, z0).color(r, g, b, alpha)
                         .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-                consumer.vertex(matrix, x1, y1, z1).color(r, g, b, 255)
+                consumer.vertex(matrix, x1, y1, z1).color(r, g, b, alpha)
                         .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-                consumer.vertex(matrix, x2, y2, z2).color(r, g, b, 255)
+                consumer.vertex(matrix, x2, y2, z2).color(r, g, b, alpha)
                         .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-                consumer.vertex(matrix, x3, y3, z3).color(r, g, b, 255)
+                consumer.vertex(matrix, x3, y3, z3).color(r, g, b, alpha)
                         .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
             }

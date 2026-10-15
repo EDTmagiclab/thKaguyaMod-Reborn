@@ -4,7 +4,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -23,15 +22,17 @@ import thKaguyaMod.THShotLib;
  * color = DanmakuConstants.RED → form = DanmakuConstants.LASER_GUNGNIR (1)，
  * shotId = form*8 + color = 8，落入 RenderTHLaser 的 Gungnir 分支（8-15）。
  *
+ * TODO(阶段5+): 原版右键先经 THKaguyaLib.checkSpellCardDeclaration(world, itemStack, player, 27, 2, true)
+ * 宣言符卡后才发射（宣言失败则不发射）；checkSpellCardDeclaration 尚未移植，当前直接可用，
+ * 与 ItemHisou 的处理策略一致。
+ *
  * 1.20.1 迁移要点：
  * - 原版 World.playSoundAtEntity → level().playSound(null, pos, SoundEvent, SoundSource, ...)
  * - 原版 itemStack.damageItem(1, player) → itemStack.hurtAndBreak(1, player, ...)
  * - 原版 player.getLookVec() → player.getLookAngle()
  * - 原版 setMaxDamage(95) → Item.Properties.durability(95)
  * - 原版 maxStackSize = 1 → Item.Properties.stacksTo(1)
- * - 原版 setNoRepair() → Item.Properties.setNoRepair()（无 setNoRepair；durability 后默认可修，要用
- *   enchantment.glint=false 之类不可靠；1.20.1 直接靠 durability 实现「不修复」仍可行，
- *   这里用普通无修复 flag）
+ * - 原版 setNoRepair()：1.20.1 无对应 API，未做修理不可标记（影响轻微）
  */
 public class ItemSpearTheGungnir extends Item
 {

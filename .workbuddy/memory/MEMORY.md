@@ -59,6 +59,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - Techne 模型（ModelBase/ModelRenderer）→ LayerDefinition 用 `tools/gen_models.py` 脚本转换；**只解析构造器+getTechneModelData+defaultAddChildSetting 三个方法体**，不能解析整个类（setDefaultPause 里的 `setRotationPoint(x, bodyHeight, 0)` 字段引用会误带入）。
 - `MobRenderer<M, S extends EntityModel<M>>` 泛型不匹配时，把模型泛型化 `ModelXxx<T extends EntityDanmakuMob>`。
 - 通用 boss 渲染器 `RenderTHBoss<T extends EntityDanmakuMob>`（构造传模型+贴图）。
+- **渲染移植必须连 dispatch 调用处的 GL 变换一起搬**（rotate/scale/双 pass 混合），只搬顶点表会得到尺寸/朝向/光效全错的成品（6fd5517 审查教训：Gungnir 缺 Z 自旋+0.3 缩放、Laevateinn 缺 angleZ 旋转+双 pass）。
 
 ### 4. 结构决策（已定）
 - 弹幕工作台拆成 2 方块：`danmaku_crafting_table` + `laser_crafting_table`
@@ -77,7 +78,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-5：36 符卡类全部迁移（含 SpecialShotRegistry + THSC_Helper + EntityTHShot 特殊弹分发），THKaguyaCore.commonSetup 注册 35 张；编译通过 jar 已同步
 - ✅ 阶段 3d-6：living 实体 12 个（Cirno/Reimu/Miko/Sakuya/Sanae/Rumia/Toziko/Wriggle/THPhantom/SunFlowerFairy/Familiar/DanmakuCreeper + IDanmakuMob 接口）。boss 用妖精模型占位渲染，妖精子类用 RenderTHFairy，配 12 刷怪蛋。**延后**：EntityRinnosuke/VillagerRinnosuke（阶段7 村民交易）、掉落道具（依赖未迁移的 EntityTHItem）
 - ✅ 阶段 3d-7：effect 实体 5 个（EntityAjaRedStoneEffect/CirnoIceBox/HakureiShield/HakurouReflecter/MiracleCircle，都 extends Entity）。**阶段 3 实体层全部完成 = M5 全实体达标**。渲染占位 RenderEmptyEffect（完整渲染留 4-6）；触发物品类未迁（ItemAjaRedStone/ItemIcicleSword/ItemHakurouken/ItemOharaibouS 属剩余物品类）。**Fafurotskies 12/25 分支要换回 EntityDanmakuCreeper**（现已迁移，可换回）
-- ⏳ 阶段 4 完整：4-1 弹体按形状分贴图 ✅、4-2 激光完整渲染 ✅、4-3 妖精形态切换 ✅、4-4 魔法阵/4-5 符卡完整渲染、4-6 各实体模型
+- ⏳ 阶段 4 完整：4-1 弹体按形状分贴图 ✅、4-2 激光完整渲染 ✅（含 Gungnir/Laevateinn 3D 顶点表几何 + 原版 dispatch 变换/双 pass，6fd5517 合并审查后修复）、4-3 妖精形态切换 ✅、4-4 魔法阵渲染 ✅（familiar.png + 7 色/彩虹 + billboard/平躺分支）、4-5 符卡完整渲染、4-6 各实体模型
 - ⏳ 阶段 5/6/7：GUI、客户端泄漏修复、配置/事件/村民交易
 
 ### 5. 实测修复经验（3d-4 批次）
