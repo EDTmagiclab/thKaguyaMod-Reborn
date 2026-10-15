@@ -61,6 +61,8 @@
   "item.thkaguya.extend_item": "Extend Item",
   "item.thkaguya.spiritual_strike_talisman": "Spiritual Strike Talisman",
   "item.thkaguya.shot_material": "Shot Material",
+  "item.thkaguya.laser_material": "Laser Material",
+  "item.thkaguya.roukan_senpuuzin": "Roukanken Whirlwind Blade",
   "item.thkaguya.shot_item": "Shot",
   "item.thkaguya.laser_item": "Laser",
   "item.thkaguya.red_pearl": "Red Pearl",
@@ -125,5 +127,18 @@
   "item.thkaguya.toziko_spawn_egg": "Toziko Spawn Egg",
   "entity.thkaguya.toziko": "Soga no Toziko",
   "item.thkaguya.wriggle_spawn_egg": "Wriggle Spawn Egg",
-  "entity.thkaguya.wriggle": "Wriggle"
+  "entity.thkaguya.wriggle": "Wriggle",
+  "danmakuCrafting.name": "Danmaku Crafting Table",
+  "danmakuCrafting.material": "Material",
+  "danmakuCrafting.number": "Number",
+  "danmakuCrafting.speed": "Speed",
+  "danmakuCrafting.damage": "Damage",
+  "danmakuCrafting.color": "Color",
+  "danmakuCrafting.gravity": "Gravity",
+  "danmakuCrafting.bound": "Bound",
+  "danmakuCrafting.form": "Form",
+  "danmakuCrafting.copy": "Copy",
+  "laserCrafting.name": "Laser Crafting Table",
+  "miracleMallet.material": "Material",
+  "miracleMallet.result": "Result"
 }

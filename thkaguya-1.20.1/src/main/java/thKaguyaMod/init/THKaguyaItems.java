@@ -101,6 +101,9 @@ public class THKaguyaItems
     /** 楼観剣 */
     public static final RegistryObject<Item> ROUKANKEN = register("roukanken");
 
+    /** 楼観旋風刃（原版 roukanSenpuuzin，阶段 5 奇迹小槌产物） */
+    public static final RegistryObject<Item> ROUKAN_SENPUUZIN = register("roukan_senpuuzin");
+
     /** 幽々子の扇 */
     public static final RegistryObject<Item> YUYUKO_FAN = register("yuyuko_fan");
 
@@ -187,6 +190,9 @@ public class THKaguyaItems
 
     /** 弾幕の素 */
     public static final RegistryObject<Item> SHOT_MATERIAL = register("shot_material");
+
+    /** レーザーの素（原版 laser_item，阶段 5 激光工作台素材） */
+    public static final RegistryObject<Item> LASER_MATERIAL = register("laser_material");
 
     /** 点符アイテム */
     public static final RegistryObject<Item> POINT_ITEM = register("point_item");

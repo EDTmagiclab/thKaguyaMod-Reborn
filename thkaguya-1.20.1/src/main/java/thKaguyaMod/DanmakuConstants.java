@@ -48,6 +48,9 @@ public class DanmakuConstants {
 	public static final int 乱弾			= RANDOM;
 	public static final int 虹弾			= RAINBOW;
 
+	/** 16 色染料 → 8 色弹幕色 的映射（原版 ItemTHShot.sellectbleColor，阶段 5 工作台复用） */
+	public static final int[] SELECTABLE_COLOR = {7, 0, 2, 0, 1, 4, 5, 7, 7, 4, 2, 3, 5, 4, 6, 7};
+
 	/**
 	 * 弾の形状		Shot Forms
 	 */

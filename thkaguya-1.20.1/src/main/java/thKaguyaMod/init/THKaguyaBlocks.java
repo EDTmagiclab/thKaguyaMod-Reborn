@@ -11,6 +11,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.block.BlockDanmakuCraftingTable;
 import thKaguyaMod.tileentity.TileEntityDivineSpirit;
 
 import java.util.function.Supplier;
@@ -30,19 +31,19 @@ public class THKaguyaBlocks
     /* ==================== 方块 ==================== */
     /** 弾幕作業台（弹） */
     public static final RegistryObject<Block> DANMAKU_CRAFTING_TABLE = BLOCKS.register("danmaku_crafting_table",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new BlockDanmakuCraftingTable(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(1.5F, 1.0F)
                     .sound(SoundType.WOOD)
-                    .lightLevel(s -> 15)));
+                    .lightLevel(s -> 15), false));
 
     /** 弾幕作業台（激光）— 原版 metadata 1 变体，1.20.1 拆分为独立方块 */
     public static final RegistryObject<Block> LASER_CRAFTING_TABLE = BLOCKS.register("laser_crafting_table",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new BlockDanmakuCraftingTable(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(1.5F, 1.0F)
                     .sound(SoundType.WOOD)
-                    .lightLevel(s -> 15)));
+                    .lightLevel(s -> 15), true));
 
     /** 小神霊 */
     public static final RegistryObject<Block> DIVINE_SPIRIT = BLOCKS.register("divine_spirit",

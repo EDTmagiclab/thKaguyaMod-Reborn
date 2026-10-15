@@ -1,0 +1,138 @@
+package thKaguyaMod.gui;
+
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.init.THKaguyaMenuTypes;
+
+/**
+ * 打ち出の小槌コンテナ（1.20.1 移植版，阶段 5）
+ * 原版 ContainerMiracleMallet：素材 → 结果（阴阳玉→血饿阴阳玉、隙间→折叠伞、楼観剣→楼観旋風刃）。
+ */
+public class ContainerMiracleMallet extends AbstractContainerMenu
+{
+    private final Container craftMaterial;
+    private final Container craftResult;
+
+    public ContainerMiracleMallet(int windowId, Inventory playerInventory)
+    {
+        super(THKaguyaMenuTypes.MIRACLE_MALLET.get(), windowId);
+        this.craftMaterial = new SimpleContainer(1);
+        this.craftResult = new SimpleContainer(1);
+
+        addSlot(new SlotMiracleMalletResult(playerInventory.player, this.craftMaterial,
+                this.craftResult, 0, 228, 35));
+        addSlot(new Slot(this.craftMaterial, 0, 8, 17));
+
+        for (int l = 0; l < 3; ++l)
+        {
+            for (int i = 0; i < 9; ++i)
+            {
+                addSlot(new Slot(playerInventory, i + l * 9 + 9, 48 + i * 18, 84 + l * 18));
+            }
+        }
+        for (int l = 0; l < 9; ++l)
+        {
+            addSlot(new Slot(playerInventory, l, 48 + l * 18, 142));
+        }
+    }
+
+    @Override
+    public boolean stillValid(Player player)
+    {
+        return true;
+    }
+
+    @Override
+    public void slotsChanged(Container inventory)
+    {
+        super.slotsChanged(inventory);
+
+        ItemStack originItem = craftMaterial.getItem(0);
+        ItemStack resultItem = ItemStack.EMPTY;
+
+        if (!originItem.isEmpty())
+        {
+            boolean isCommonDamage = false;
+            int originID = -1;
+
+            if (originItem.getItem() == THKaguyaItems.YIN_YANG_ORB.get())
+            {
+                resultItem = new ItemStack(THKaguyaItems.BLOODTHIRSTY_YIN_YANG_ORB.get());
+            }
+            else if (originItem.getItem() == THKaguyaItems.GAP.get())
+            {
+                resultItem = new ItemStack(THKaguyaItems.GAP_FOLDING_UMBRELLA.get());
+            }
+            else if (originItem.getItem() == THKaguyaItems.ROUKANKEN.get())
+            {
+                resultItem = new ItemStack(THKaguyaItems.ROUKAN_SENPUUZIN.get());
+                resultItem.setDamageValue(originItem.getDamageValue());
+                isCommonDamage = true;
+            }
+
+            if (!resultItem.isEmpty() && !isCommonDamage)
+            {
+                var nbt = resultItem.getOrCreateTag();
+                nbt.putInt("OriginalDamage", originItem.getDamageValue());
+                if (originID >= 0)
+                {
+                    nbt.putInt("OriginalItemID", originID);
+                }
+            }
+        }
+
+        craftResult.setItem(0, resultItem);
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index)
+    {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
+        if (slot != null && slot.hasItem())
+        {
+            ItemStack stack = slot.getItem();
+            result = stack.copy();
+
+            if (index < 2)
+            {
+                if (!this.moveItemStackTo(stack, 2, 38, true))
+                {
+                    return ItemStack.EMPTY;
+                }
+            }
+            else if (!this.moveItemStackTo(stack, 1, 2, false))
+            {
+                return ItemStack.EMPTY;
+            }
+
+            if (stack.isEmpty())
+            {
+                slot.set(ItemStack.EMPTY);
+            }
+            else
+            {
+                slot.setChanged();
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void removed(Player player)
+    {
+        super.removed(player);
+        ItemStack stack = craftMaterial.getItem(0);
+        if (!stack.isEmpty())
+        {
+            player.drop(stack, false);
+            craftMaterial.setItem(0, ItemStack.EMPTY);
+        }
+    }
+}

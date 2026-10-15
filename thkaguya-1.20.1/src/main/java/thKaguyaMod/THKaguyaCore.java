@@ -38,12 +38,13 @@ public class THKaguyaCore
         // 配置系统（阶段 3b）
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, THKaguyaConfig.SPEC);
 
-        // 注册层：物品 / 方块 / 方块实体 / 创造标签 / 实体
+        // 注册层：物品 / 方块 / 方块实体 / 创造标签 / 实体 / GUI 菜单
         THKaguyaItems.ITEMS.register(modEventBus);
         THKaguyaBlocks.BLOCKS.register(modEventBus);
         THKaguyaBlocks.BLOCK_ENTITIES.register(modEventBus);
         THKaguyaCreativeTab.CREATIVE_TABS.register(modEventBus);
         THKaguyaEntities.ENTITIES.register(modEventBus);
+        thKaguyaMod.init.THKaguyaMenuTypes.MENU_TYPES.register(modEventBus);
 
         // 实体属性注册（阶段 3b：属性系统）
         modEventBus.addListener(this::registerEntityAttributes);

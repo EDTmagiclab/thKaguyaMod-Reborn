@@ -8,7 +8,13 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraft.client.gui.screens.MenuScreens;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.client.gui.GuiDanmakuCrafting;
+import thKaguyaMod.client.gui.GuiDanmakuCraftingLaser;
+import thKaguyaMod.client.gui.GuiMerchantSanae;
+import thKaguyaMod.client.gui.GuiMiracleMallet;
 import thKaguyaMod.client.model.living.ModelCirno;
 import thKaguyaMod.client.model.living.ModelMiko;
 import thKaguyaMod.client.model.living.ModelReimu;
@@ -196,5 +202,18 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.SPIRITUAL_STRIKE_TALISMAN.get(), RenderSpiritualStrikeTalisman::new);
         event.registerEntityRenderer(THKaguyaEntities.YUUKA_PARASOL.get(),
                 ctx -> new RenderYuukaParasol(ctx, new ModelYuukaParasol<>(ctx.bakeLayer(YUUKA_PARASOL_LAYER))));
+    }
+
+    /** 注册 GUI 屏幕（阶段 5：Container→AbstractContainerMenu + GuiScreen→Screen） */
+    @SubscribeEvent
+    public static void registerMenuScreens(FMLClientSetupEvent event)
+    {
+        event.enqueueWork(() ->
+        {
+            MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.DANMAKU_CRAFTING.get(), GuiDanmakuCrafting::new);
+            MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.DANMAKU_CRAFTING_LASER.get(), GuiDanmakuCraftingLaser::new);
+            MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.MERCHANT_SANAE.get(), GuiMerchantSanae::new);
+            MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.MIRACLE_MALLET.get(), GuiMiracleMallet::new);
+        });
     }
 }
