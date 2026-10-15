@@ -153,10 +153,5 @@ public class EntitySpiritualStrikeTalisman extends Entity
 		//isSpellCard = tag.getBoolean("isSpellCard");
 	}
 
-	@Override
-	public float getShadowRadius()
-	{
-		return 0.5F;
-	}
 
 }

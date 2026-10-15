@@ -7,6 +7,19 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
+import thKaguyaMod.entity.item.EntityCursedDecoyDoll;
+import thKaguyaMod.entity.item.EntityHisou;
+import thKaguyaMod.entity.item.EntityKinkakuzi;
+import thKaguyaMod.entity.item.EntityMarisaBroom;
+import thKaguyaMod.entity.item.EntityMazinkyoukan;
+import thKaguyaMod.entity.item.EntityMiniHakkero;
+import thKaguyaMod.entity.item.EntityPendulum;
+import thKaguyaMod.entity.item.EntitySakuyaStopWatch;
+import thKaguyaMod.entity.item.EntitySakuyaWatch;
+import thKaguyaMod.entity.item.EntitySilverKnife;
+import thKaguyaMod.entity.item.EntitySpiritualStrikeTalisman;
+import thKaguyaMod.entity.item.EntitySukima;
+import thKaguyaMod.entity.item.EntityYuukaParasol;
 import thKaguyaMod.entity.living.EntityTHFairy;
 import thKaguyaMod.entity.shot.EntityDragonNeckJewel;
 import thKaguyaMod.entity.shot.EntityHomingAmulet;
@@ -148,4 +161,97 @@ public class THKaguyaEntities
                                     (EntityType.EntityFactory<EntityTHSetLaser>) (type, level) -> new EntityTHSetLaser(type, level),
                                     MobCategory.MISC)
                             .sized(0.3F, 0.3F).clientTrackingRange(64).updateInterval(1).build("th_set_laser"));
+
+    /* ==================== item 实体（阶段 3d-4，13 个）==================== */
+
+    public static final RegistryObject<EntityType<EntityCursedDecoyDoll>> CURSED_DECOY_DOLL =
+            ENTITIES.register("cursed_decoy_doll",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityCursedDecoyDoll>) (type, level) -> new EntityCursedDecoyDoll(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("cursed_decoy_doll"));
+
+    public static final RegistryObject<EntityType<EntityHisou>> HISOU =
+            ENTITIES.register("hisou",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityHisou>) (type, level) -> new EntityHisou(type, level),
+                                    MobCategory.MISC)
+                            .sized(4.4F, 4.4F).clientTrackingRange(64).build("hisou"));
+
+    public static final RegistryObject<EntityType<EntityKinkakuzi>> KINKAKUZI =
+            ENTITIES.register("kinkakuzi",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityKinkakuzi>) (type, level) -> new EntityKinkakuzi(type, level),
+                                    MobCategory.MISC)
+                            .sized(6.0F, 0.3F).clientTrackingRange(64).build("kinkakuzi"));
+
+    public static final RegistryObject<EntityType<EntityMarisaBroom>> MARISA_BROOM =
+            ENTITIES.register("marisa_broom",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityMarisaBroom>) (type, level) -> new EntityMarisaBroom(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.9F, 0.5F).clientTrackingRange(64).build("marisa_broom"));
+
+    public static final RegistryObject<EntityType<EntityMazinkyoukan>> MAZINKYOUKAN =
+            ENTITIES.register("mazinkyoukan",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityMazinkyoukan>) (type, level) -> new EntityMazinkyoukan(type, level),
+                                    MobCategory.MISC)
+                            .sized(2.0F, 2.0F).clientTrackingRange(64).build("mazinkyoukan"));
+
+    public static final RegistryObject<EntityType<EntityMiniHakkero>> MINI_HAKKERO =
+            ENTITIES.register("mini_hakkero",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityMiniHakkero>) (type, level) -> new EntityMiniHakkero(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.4F, 0.4F).clientTrackingRange(64).build("mini_hakkero"));
+
+    public static final RegistryObject<EntityType<EntityPendulum>> PENDULUM =
+            ENTITIES.register("pendulum",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityPendulum>) (type, level) -> new EntityPendulum(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.1F, 0.1F).clientTrackingRange(64).build("pendulum"));
+
+    public static final RegistryObject<EntityType<EntitySakuyaStopWatch>> SAKUYA_STOP_WATCH =
+            ENTITIES.register("sakuya_stop_watch",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySakuyaStopWatch>) (type, level) -> new EntitySakuyaStopWatch(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.2F, 0.2F).clientTrackingRange(64).build("sakuya_stop_watch"));
+
+    public static final RegistryObject<EntityType<EntitySakuyaWatch>> SAKUYA_WATCH =
+            ENTITIES.register("sakuya_watch",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySakuyaWatch>) (type, level) -> new EntitySakuyaWatch(type, level),
+                                    MobCategory.MISC)
+                            .sized(1.0F, 1.0F).clientTrackingRange(64).build("sakuya_watch"));
+
+    public static final RegistryObject<EntityType<EntitySilverKnife>> SILVER_KNIFE =
+            ENTITIES.register("silver_knife",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySilverKnife>) (type, level) -> new EntitySilverKnife(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.1F, 0.1F).clientTrackingRange(64).build("silver_knife"));
+
+    public static final RegistryObject<EntityType<EntitySpiritualStrikeTalisman>> SPIRITUAL_STRIKE_TALISMAN =
+            ENTITIES.register("spiritual_strike_talisman",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySpiritualStrikeTalisman>) (type, level) -> new EntitySpiritualStrikeTalisman(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.2F, 0.2F).clientTrackingRange(64).build("spiritual_strike_talisman"));
+
+    public static final RegistryObject<EntityType<EntitySukima>> SUKIMA =
+            ENTITIES.register("sukima",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySukima>) (type, level) -> new EntitySukima(type, level),
+                                    MobCategory.MISC)
+                            .sized(1.5F, 1.0F).clientTrackingRange(64).build("sukima"));
+
+    public static final RegistryObject<EntityType<EntityYuukaParasol>> YUUKA_PARASOL =
+            ENTITIES.register("yuuka_parasol",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityYuukaParasol>) (type, level) -> new EntityYuukaParasol(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.1F, 0.1F).clientTrackingRange(64).build("yuuka_parasol"));
 }

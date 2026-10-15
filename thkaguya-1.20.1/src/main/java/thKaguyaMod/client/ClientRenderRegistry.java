@@ -7,6 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.client.model.living.ModelTHFairy;
 import thKaguyaMod.client.render.effect.RenderSpellCardCircle;
+import thKaguyaMod.client.render.item.RenderEmptyItem;
 import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
 import thKaguyaMod.client.render.shot.RenderTHShot;
@@ -46,5 +47,20 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.SANAE_WIND.get(), RenderTHShot::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_HENYORI_LASER.get(), RenderTHLaser::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_SET_LASER.get(), RenderTHLaser::new);
+
+        // item 实体（阶段 3d-4）：占位空渲染器，阶段 4-6 补真实模型
+        event.registerEntityRenderer(THKaguyaEntities.CURSED_DECOY_DOLL.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.HISOU.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.KINKAKUZI.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.MARISA_BROOM.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.MAZINKYOUKAN.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.MINI_HAKKERO.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.PENDULUM.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.SAKUYA_STOP_WATCH.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.SAKUYA_WATCH.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.SILVER_KNIFE.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.SPIRITUAL_STRIKE_TALISMAN.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.SUKIMA.get(), RenderEmptyItem::new);
+        event.registerEntityRenderer(THKaguyaEntities.YUUKA_PARASOL.get(), RenderEmptyItem::new);
     }
 }

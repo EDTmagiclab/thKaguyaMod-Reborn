@@ -6,6 +6,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -95,7 +96,7 @@ public class EntityYuukaParasol extends Entity
 	 * 当たり判定を設定
 	 */
     @Override
-    public AABB getBoundingBox()
+    protected AABB getBoundingBoxForPose(Pose pose)
     {
     	return new AABB(getX() - 1.0D, getY() - 1.0D, getZ() - 1.0D, getX() + 1.0D, getY() + 1.0D, getZ() + 1.0D);
     }
@@ -157,7 +158,7 @@ public class EntityYuukaParasol extends Entity
     		if(getParasolMode() == 0)
     		{
     			//使用者が地面に立っているなら
-    			if(user.isSneaking() && tickCount > 10)
+    			if(user.isShiftKeyDown() && tickCount > 10)
     			{
     				setParasolMode(1);
     				tickCount = 0;
@@ -166,7 +167,7 @@ public class EntityYuukaParasol extends Entity
     		}
     		else if(getParasolMode() == 1)
     		{
-    			if(user.isSneaking() && tickCount > 10)
+    			if(user.isShiftKeyDown() && tickCount > 10)
     			{
     				setParasolMode(2);
     				tickCount = 0;
@@ -174,7 +175,7 @@ public class EntityYuukaParasol extends Entity
     		}
     		else
     		{
-    			if(user.isSneaking() && tickCount > 10)
+    			if(user.isShiftKeyDown() && tickCount > 10)
     			{
     				THKaguyaLib.itemEffectFinish(this, user, THKaguyaItems.YUUKA_PARASOL.get(), damage);
     			}

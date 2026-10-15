@@ -13,6 +13,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import thKaguyaMod.entity.living.EntityDanmakuMob;
 import thKaguyaMod.entity.living.EntityTHFairy;
+import thKaguyaMod.entity.item.EntityCursedDecoyDoll;
 import thKaguyaMod.init.THKaguyaBlocks;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaCreativeTab;
@@ -76,6 +77,7 @@ public class THKaguyaCore
     private void registerEntityAttributes(EntityAttributeCreationEvent event)
     {
         event.put(THKaguyaEntities.TH_FAIRY.get(), EntityTHFairy.createAttributes().build());
+        event.put(THKaguyaEntities.CURSED_DECOY_DOLL.get(), EntityCursedDecoyDoll.createAttributes().build());
     }
 
     /** 自然生成规则注册 */

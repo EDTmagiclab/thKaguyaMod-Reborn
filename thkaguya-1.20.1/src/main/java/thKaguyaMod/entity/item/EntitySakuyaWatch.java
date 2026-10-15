@@ -149,15 +149,15 @@ public class EntitySakuyaWatch extends Entity
 	    		{
 	    			if(mode == this.TIME_STOP)//時間停止モードなら
 	    			{
-	    				userEntity_p.addExhaustion(0.25F);//満腹度を大きく減らす
+	    				userEntity_p.getFoodData().addExhaustion(0.25F);//満腹度を大きく減らす
 	    			}
 	    			else if(mode == this.TIME_HALF)//時間減速モードなら
 	    			{
-	    				userEntity_p.addExhaustion(0.10F);//満腹度を少し減らす
+	    				userEntity_p.getFoodData().addExhaustion(0.10F);//満腹度を少し減らす
 	    			}
 	    		}
     		}
-    		if(tickCount > 10 && userEntity.isSneaking())//出現から時間が経っていて、使用者がスニークモードなら
+    		if(tickCount > 10 && userEntity.isShiftKeyDown())//出現から時間が経っていて、使用者がスニークモードなら
     		{
     			if(!isSpellCard)
     			{
@@ -326,7 +326,7 @@ public class EntitySakuyaWatch extends Entity
     			{
     				living.yHeadRot = living.yHeadRotO;
 
-    				living.attackTime++;
+    				// living.attackTime++; // TODO(阶段4): 1.20 无 attackTime 字段，时停冻结动画语义不同
 
     				if(living instanceof Creeper entityCreeper)//Creeperに属しているなら
     				{

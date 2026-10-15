@@ -190,7 +190,7 @@ public class EntitySukima extends Entity
         		{
         			//通常のスキマなら新しいワープポイントを探す
         			setNewWarpPoint();
-        			if(warp && entity.portalCooldown == 0 && !level().isClientSide)//ワープが有効だった場合の入ったEntityの処理
+        			if(warp && entity.getPortalWaitTime() == 0 && !level().isClientSide)//ワープが有効だった場合の入ったEntityの処理
         			{
         				entity.xo += warpPosX - entity.getX();
         				entity.yo += warpPosY - entity.getY();
@@ -225,7 +225,7 @@ public class EntitySukima extends Entity
         							motion.y,
         							motion.z * Math.cos(entity.getYRot()));
         				}
-        				entity.portalCooldown = 40;//２秒間スキマの影響を受けない
+        				entity.setPortalCooldown(40);//２秒間スキマの影響を受けない
         				level().playSound(null, entity.blockPosition(), sukimaWarpSound(), SoundSource.PLAYERS, 1.0F, 1.0F);
         			}
         		}
@@ -274,7 +274,7 @@ public class EntitySukima extends Entity
 	    		this.spawnAtLocation(THKaguyaItems.GAP.get(), 1);//アイテム：スキマをドロップさせる
 	    		discard();//消滅させる
 	    	}
-	    	else if(player.isSneaking())//染料も持ってなく、スニークなら
+	    	else if(player.isShiftKeyDown())//染料も持ってなく、スニークなら
 	    	{
 	    		this.spawnAtLocation(THKaguyaItems.GAP.get(), 1);//アイテム：スキマをドロップさせる
 	    		discard();//消滅させる

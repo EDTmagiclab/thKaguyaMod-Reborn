@@ -8,10 +8,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
+import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.THKaguyaLib;
@@ -74,7 +75,7 @@ public class EntityMiniHakkero extends Entity
     			SoundSource.PLAYERS, THKaguyaConfig.MasterSparkVol, 1.0F);
     	lastTime = 0;
 
-    	int special = THShotLib.EXPLOSION01;
+    	int special = DanmakuConstants.EXPLOSION01;
     	Vec3 look = THShotLib.getVecFromAngle(getYRot(), getXRot());
     	THShotLib.createLaserB(user, this, THShotLib.pos_Entity(this), look,
     			THShotLib.rotate_Default(), 0.0F, 9999, LaserData.laser(24, 4.2F, 40.0F, 8.0F, 30, 120, special), this, 1.0D, 0.0F);

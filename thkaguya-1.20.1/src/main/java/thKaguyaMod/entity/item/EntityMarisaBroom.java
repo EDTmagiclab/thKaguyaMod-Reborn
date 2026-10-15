@@ -707,7 +707,7 @@ public class EntityMarisaBroom extends Entity
 	//乗っているEntityの位置を更新
 	// 1.7: updateRiderPosition2()（Entity.updateRiderPosition の書き換え）
     @Override
-    protected void positionRider(Entity passenger)
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
     {
         if (this.hasPassenger(passenger))
         {
@@ -715,7 +715,7 @@ public class EntityMarisaBroom extends Entity
             double d0 = 0D;//Math.cos((double)this.rotationYaw * Math.PI / 180.0D) * 0.4D;
             double d1 = 0D;//Math.sin((double)this.rotationYaw * Math.PI / 180.0D) * 0.4D;
             // 1.7: riddenByEntity.setPosition(posX + d0, posY + getMountedYOffset() + riddenByEntity.getYOffset(), posZ + d1)
-            passenger.setPos(this.getX() + d0, this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset(), this.getZ() + d1);
+            moveFunction.accept(passenger, this.getX() + d0, this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset(), this.getZ() + d1);
         }
     }
 
