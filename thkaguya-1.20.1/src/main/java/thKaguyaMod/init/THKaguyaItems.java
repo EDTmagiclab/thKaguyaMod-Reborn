@@ -6,6 +6,19 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.item.ItemCursedDecoyDoll;
+import thKaguyaMod.item.ItemHisou;
+import thKaguyaMod.item.ItemKinkakuzi;
+import thKaguyaMod.item.ItemMarisaBroom;
+import thKaguyaMod.item.ItemMazinKyoukan;
+import thKaguyaMod.item.ItemMiniHakkero;
+import thKaguyaMod.item.ItemPendulum;
+import thKaguyaMod.item.ItemSakuyaStopWatch;
+import thKaguyaMod.item.ItemSakuyaWatch;
+import thKaguyaMod.item.ItemSilverKnife;
+import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
+import thKaguyaMod.item.ItemSukima;
+import thKaguyaMod.item.ItemYuukaParasol;
 
 /**
  * アイテムの登録クラス（1.20.1 移植版）
@@ -35,7 +48,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> SWALLOW_COWRIE_SHELL = register("swallow_cowrie_shell");
 
     /** 金閣寺の一枚天井 */
-    public static final RegistryObject<Item> KINKAKUJI = register("kinkakuji");
+    public static final RegistryObject<Item> KINKAKUJI = register("kinkakuji", () -> new ItemKinkakuzi());
 
     /** エイジャの赤石 */
     public static final RegistryObject<Item> AJA_RED_STONE = register("aja_red_stone");
@@ -53,10 +66,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> BLOODTHIRSTY_YIN_YANG_ORB = register("bloodthirsty_yin_yang_orb");
 
     /** 魔法の箒 */
-    public static final RegistryObject<Item> MAGIC_BROOM = register("magic_broom");
+    public static final RegistryObject<Item> MAGIC_BROOM = register("magic_broom", () -> new ItemMarisaBroom());
 
     /** ミニ八卦炉 */
-    public static final RegistryObject<Item> MINI_HAKKERO = register("mini_hakkero");
+    public static final RegistryObject<Item> MINI_HAKKERO = register("mini_hakkero", () -> new ItemMiniHakkero());
 
     /** 魔理沙の帽子 */
     public static final RegistryObject<Item> MARISA_HAT = register("marisa_hat");
@@ -65,10 +78,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> ICICLE_SWORD = register("icicle_sword");
 
     /** 咲夜の懐中時計 */
-    public static final RegistryObject<Item> SAKUYA_WATCH = register("sakuya_watch");
+    public static final RegistryObject<Item> SAKUYA_WATCH = register("sakuya_watch", () -> new ItemSakuyaWatch());
 
     /** ストップウォッチ */
-    public static final RegistryObject<Item> SAKUYA_STOPWATCH = register("sakuya_stopwatch");
+    public static final RegistryObject<Item> SAKUYA_STOPWATCH = register("sakuya_stopwatch", () -> new ItemSakuyaStopWatch());
 
     /** スピア・ザ・グングニル */
     public static final RegistryObject<Item> GUNGNIR = register("gungnir");
@@ -77,7 +90,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> LAEVATEINN = register("laevateinn");
 
     /** 呪いのデコイ人形 */
-    public static final RegistryObject<Item> CURSED_DECOY_DOLL = register("cursed_decoy_doll");
+    public static final RegistryObject<Item> CURSED_DECOY_DOLL = register("cursed_decoy_doll", () -> new ItemCursedDecoyDoll());
 
     /** 白楼剣 */
     public static final RegistryObject<Item> HAKUROUKEN = register("hakurouken");
@@ -92,7 +105,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> SOUL_TORCH = register("soul_torch");
 
     /** スキマ */
-    public static final RegistryObject<Item> GAP = register("gap");
+    public static final RegistryObject<Item> GAP = register("gap", () -> new ItemSukima());
 
     /** 隙間の折りたたみ傘 */
     public static final RegistryObject<Item> GAP_FOLDING_UMBRELLA = register("gap_folding_umbrella");
@@ -101,7 +114,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> IBUKI_GOURD = register("ibuki_gourd");
 
     /** 幽香の傘 */
-    public static final RegistryObject<Item> YUUKA_PARASOL = register("yuuka_parasol");
+    public static final RegistryObject<Item> YUUKA_PARASOL = register("yuuka_parasol", () -> new ItemYuukaParasol());
 
     /** 死神の大鎌 */
     public static final RegistryObject<Item> DEATH_SCYTHE = register("death_scythe");
@@ -134,7 +147,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> HEAVENLY_PEACH = register("heavenly_peach");
 
     /** 緋想の剣 */
-    public static final RegistryObject<Item> HISOU_SWORD = register("hisou_sword");
+    public static final RegistryObject<Item> HISOU_SWORD = register("hisou_sword", () -> new ItemHisou());
 
     /** 第三の眼 */
     public static final RegistryObject<Item> THIRD_EYE = register("third_eye");
@@ -146,7 +159,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> CLOSED_THIRD_EYE = register("closed_third_eye");
 
     /** ナズーリンペンデュラム */
-    public static final RegistryObject<Item> NAZRIN_PENDULUM = register("nazrin_pendulum");
+    public static final RegistryObject<Item> NAZRIN_PENDULUM = register("nazrin_pendulum", () -> new ItemPendulum());
 
     /** 舟幽霊の柄杓（空） */
     public static final RegistryObject<Item> SHIP_GHOST_DIPPER_EMPTY = register("ship_ghost_dipper_empty");
@@ -155,7 +168,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> SHIP_GHOST_DIPPER = register("ship_ghost_dipper");
 
     /** 魔人経巻 */
-    public static final RegistryObject<Item> SORCERER_SUTRA_SCROLL = register("sorcerer_sutra_scroll");
+    public static final RegistryObject<Item> SORCERER_SUTRA_SCROLL = register("sorcerer_sutra_scroll", () -> new ItemMazinKyoukan());
 
     /** 壁抜けの鑿 */
     public static final RegistryObject<Item> WALL_PASSING_CHISEL = register("wall_passing_chisel");
@@ -167,7 +180,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> MIRACLE_MALLET = register("miracle_mallet");
 
     /** 霊撃札 */
-    public static final RegistryObject<Item> SPIRITUAL_STRIKE_TALISMAN = register("spiritual_strike_talisman");
+    public static final RegistryObject<Item> SPIRITUAL_STRIKE_TALISMAN = register("spiritual_strike_talisman", () -> new ItemSpiritualStrikeTalisman());
 
     /** 弾幕の素 */
     public static final RegistryObject<Item> SHOT_MATERIAL = register("shot_material");
@@ -284,16 +297,16 @@ public class THKaguyaItems
 
     /* ==================== 銀ナイフ（metadata 变体拆分）==================== */
     /** 銀のナイフ 青 */
-    public static final RegistryObject<Item> SILVER_KNIFE_BLUE = register("silver_knife_blue");
+    public static final RegistryObject<Item> SILVER_KNIFE_BLUE = register("silver_knife_blue", () -> new ItemSilverKnife(0));
 
     /** 銀のナイフ 赤 */
-    public static final RegistryObject<Item> SILVER_KNIFE_RED = register("silver_knife_red");
+    public static final RegistryObject<Item> SILVER_KNIFE_RED = register("silver_knife_red", () -> new ItemSilverKnife(1));
 
     /** 銀のナイフ 緑 */
-    public static final RegistryObject<Item> SILVER_KNIFE_GREEN = register("silver_knife_green");
+    public static final RegistryObject<Item> SILVER_KNIFE_GREEN = register("silver_knife_green", () -> new ItemSilverKnife(2));
 
     /** タイムパラドックスナイフ */
-    public static final RegistryObject<Item> SILVER_KNIFE_WHITE = register("silver_knife_white");
+    public static final RegistryObject<Item> SILVER_KNIFE_WHITE = register("silver_knife_white", () -> new ItemSilverKnife(3));
 
     /* ==================== パワー（metadata 变体拆分）==================== */
     /** パワーアップアイテム 小 */
@@ -301,6 +314,11 @@ public class THKaguyaItems
 
     /** パワーアップアイテム 大 */
     public static final RegistryObject<Item> POWER_UP_ITEM_BIG = register("power_up_item_big");
+
+    private static RegistryObject<Item> register(String name, java.util.function.Supplier<Item> supplier)
+    {
+        return ITEMS.register(name, supplier);
+    }
 
     private static RegistryObject<Item> register(String name)
     {
