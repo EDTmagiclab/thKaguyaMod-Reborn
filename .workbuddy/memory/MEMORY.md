@@ -39,6 +39,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - `registerIcon`/`setUnlocalizedName` → DeferredRegister + JSON 模型
 - 配置：`Configuration` → `ForgeConfigSpec`；**静态字段不会自动同步，必须显式 `load()`**，监听 `ModConfigEvent.Loading`/`Reloading`（包 `net.minecraftforge.fml.event.config.ModConfigEvent`）。
 - `getAttackTarget()` → `getTarget()`，重写时调用父类用 `super.getTarget()`（写 `this.getTarget()` 会无限递归）。
+- **Item 类 API 映射（1.7 ItemXxx → 1.20 Item）**：`onItemRightClick`→`use(Level,Player,InteractionHand)` 返回 `InteractionResultHolder<ItemStack>`；`onEaten`→`finishUsingItem`；`onPlayerStoppedUsing(usedTime)`→`releaseUsing(..., timeLeft)`（**timeLeft 是剩余时间不是已用时间**）；`hitEntity`→`hurtEnemy`；`hasEffect`→`isFoil`；`getItemUseAction`→`getUseAnimation`(UseAnim)；`getMaxItemUseDuration`→`getUseDuration`；`onBlockDestroyed`→`mineBlock(...,BlockState,BlockPos,...)`；`getDigSpeed`→`getDestroySpeed(ItemStack,BlockState)`；`extends ItemSword`→`SwordItem(Tier,int,float,Properties)`。属性 `maxStackSize`→`Properties.stacksTo`、`setMaxDamage`→`Properties.durability`；`setHasSubtypes/setCreativeTab/setTextureName/registerIcons/getSubItems/getUnlocalizedName` 全删除。`setItemInUse`→`startUsingItem(hand)`；`getItemInUseCount`→`getUseItemRemainingTicks`；`stackSize--`→`shrink(1)`；`EntityList.getEntityString`→`e.getType().getDescriptionId()`。**音效坑：`SoundEvents.UI_BUTTON_CLICK` 是 `Holder.Reference<SoundEvent>` 需 `.get()`，其余如 `ARROW_SHOOT` 是 `SoundEvent` 直接用**。
 
 ### 3.5 版本管理（用户约定，务必遵守）
 - 项目根目录已 `git init`，**每完成一个版本/一个批次改动就提交一次本地 commit**（用户明确要求）。
@@ -59,7 +60,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-1：激光弹体 EntityTHLaser + 激光生成方法（6 个）+ RenderTHLaser + 妖精激光分支
 - ✅ 阶段 3d-2：符卡框架核心（EntitySpellCardCircle 魔法阵 + THSpellCard 基类 + ITHSpellCard + SpellCardRegistry + EntitySpellCard + THKaguyaLib 裁剪版）
 - ✅ 阶段 3d-3：shot 剩余弹体 10 个（EntityDragonNeckJewel/HomingAmulet/MasterSpark/MusouFuuin/NuclearShot/Onmyoudama/SanaeWind/THHenyoriLaser/THSetLaser/ISpecialShot）
-- ✅ 阶段 3d-4：item 实体 13 个全部迁移（compileJava 通过，占位渲染 RenderEmptyItem）
+- ✅ 阶段 3d-4：item 实体 13 个 + 触发它们的 ItemXxx 物品类 13 个（compileJava/build 通过，占位渲染 RenderEmptyItem）
 - ⏳ 阶段 3d-5：36 符卡类（THSC_*，3895 行）
 - ⏳ 阶段 3d-6/3d-7：living 15 个 + effect 5 个
 - ⏳ 阶段 4 完整：弹体按形状分贴图、妖精 11 种形态切换、激光/魔法阵/符卡完整渲染、各实体模型
