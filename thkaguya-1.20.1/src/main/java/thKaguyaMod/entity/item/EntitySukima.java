@@ -190,20 +190,25 @@ public class EntitySukima extends Entity
         		{
         			//通常のスキマなら新しいワープポイントを探す
         			setNewWarpPoint();
-        			if(warp && entity.getPortalWaitTime() == 0 && !level().isClientSide)//ワープが有効だった場合の入ったEntityの処理
+        			// 1.7: entity.timeUntilPortal == 0（传送冷却计数器）。
+        			// 注意：不能写 getPortalWaitTime() == 0 —— 1.20.1 中 Player 覆写它恒返回 80，
+        			// 会导致玩家传送条件永假（实测踩坑）。正确对应物是 isOnPortalCooldown()。
+        			if(warp && !entity.isOnPortalCooldown() && !level().isClientSide)//ワープが有効だった場合の入ったEntityの処理
         			{
+        				// 1.7: prevPos* += warpPos - pos（重设渲染插值锚点，防止瞬移残影）
         				entity.xo += warpPosX - entity.getX();
         				entity.yo += warpPosY - entity.getY();
         				entity.zo += warpPosZ - entity.getZ();
-        				entity.setPos(entity.getX(), warpPosY, entity.getZ());
         				if(entity instanceof ServerPlayer player)
         				{
-        					// 原版 yOffset は常に 0 のため warpPosY のみ
+        					// 原版: setPlayerLocation(warpPosX, warpPosY + yOffset, warpPosZ, yaw, pitch)
+        					// 1.20.1 yOffset 已废除；connection.teleport 会同步客户端并重置 positionRider
         					player.connection.teleport(warpPosX, warpPosY, warpPosZ, player.getYRot(), player.getXRot());
         				}
-        				else if(!level().isClientSide)
+        				else
         				{
-        					entity.setPos(warpPosX, warpPosY, warpPosZ);
+        					// 非玩家实体（含弹幕）：直接 teleportTo（服务端权威，自动广播位移包）
+        					entity.teleportTo(warpPosX, warpPosY, warpPosZ);
         				}
         				if(entity instanceof EntityTHShot shot)
         				{
@@ -225,6 +230,9 @@ public class EntitySukima extends Entity
         							motion.y,
         							motion.z * Math.cos(entity.getYRot()));
         				}
+        				// 传送后设置冷却（先设冷却再播音效；teleportTo 内部 setOldPosAndRot
+        				// 会把 xo/yo/zo 刷成新位置，上面手动加的 xo 偏移被覆盖属预期——
+        				// 非玩家实体没有客户端插值问题，弹幕靠 lastShotMotion 保持连续）
         				entity.setPortalCooldown(40);//２秒間スキマの影響を受けない
         				level().playSound(null, entity.blockPosition(), sukimaWarpSound(), SoundSource.PLAYERS, 1.0F, 1.0F);
         			}

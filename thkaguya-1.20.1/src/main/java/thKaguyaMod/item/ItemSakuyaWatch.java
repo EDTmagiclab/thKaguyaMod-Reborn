@@ -75,19 +75,15 @@ public class ItemSakuyaWatch extends Item
 		{
 			if(player.isCreative())
 			{
-				mode = EntitySakuyaWatch.TIME_STOP;
-				if(getMode(itemStack) == 0)
-				{
-					mode = EntitySakuyaWatch.TIME_HALF;
-				}
+				// 原版代码与自身注释矛盾（注释「通常は停止モード」vs 代码新表=减速）。
+				// 按注释意图取正：新表=时间停止（TIME_STOP），潜行切换后=时间减速（TIME_HALF）。
+				// 这也是本迁移版的实测体验修复：减速 1/2 几乎不可感知，默认应给戏剧性的时停。
+				mode = getMode(itemStack) == 0 ? EntitySakuyaWatch.TIME_STOP : EntitySakuyaWatch.TIME_HALF;
 			}
 			else if(usedTime >= getUseDuration(itemStack))
 			{
-				mode = EntitySakuyaWatch.TIME_STOP_WITH_LIMIT;
-				if(getMode(itemStack) == 0)
-				{
-					mode = EntitySakuyaWatch.TIME_HALF_WITH_LIMIT;
-				}
+				// 与创造模式同步：mode 0=时停（默认），mode 1=减速
+				mode = getMode(itemStack) == 0 ? EntitySakuyaWatch.TIME_STOP_WITH_LIMIT : EntitySakuyaWatch.TIME_HALF_WITH_LIMIT;
 			}
 			else
 			{
