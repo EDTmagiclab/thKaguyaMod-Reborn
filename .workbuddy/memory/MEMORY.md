@@ -72,3 +72,9 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - **`Player.getPortalWaitTime()` 返回 80 非 0**：「未进传送门」判断要用 `!entity.isOnPortalCooldown()`。
 - **原版代码会与自身注释矛盾**（怀表「通常は停止モード」实际新表=减速）：移植时以注释意图+玩家体验为准，本版怀表新表=TIME_STOP 时停、切换=TIME_HALF。
 - billboard 兜底渲染器 `RenderItemBillboard`（textures/entity/ 下 16 张贴图）已覆盖全部 13 个 item 实体。
+
+### 6. 二轮实测铁律（务必遵守）
+- **billboard 绝不能用 entity/*_texture.png**：那些是盒子模型 UV 展开图（64x32/64x64），铺平渲染会显示碎片（"展开的贴图"）。billboard 一律用 textures/item/ 的物品图标（完整单品图）。
+- **1.20.1 NEW_ENTITY 顶点六要素缺一即崩**：POSITION+COLOR+UV+OVERLAY+UV2+NORMAL，漏 `.color()` 抛 "Not filled all elements of the vertex"。崩溃发生在 Render thread → 实体持久化在世界里 → **重进立刻退出**（死亡循环）。
+- **cutout RenderType 无 alpha 混合**：半透明顶点（alpha<1）必须走 `entityTranslucentCull`，否则颜色错误。
+- 原版 jar 音频本就缺失（sukima.ogg 等 4 个事件引用但不存在的文件，上游遗留），自定义音效一律回退原版音效。
