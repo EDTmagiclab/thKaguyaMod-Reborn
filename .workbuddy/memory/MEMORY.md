@@ -78,7 +78,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-5：36 符卡类全部迁移（含 SpecialShotRegistry + THSC_Helper + EntityTHShot 特殊弹分发），THKaguyaCore.commonSetup 注册 35 张；编译通过 jar 已同步
 - ✅ 阶段 3d-6：living 实体 12 个（Cirno/Reimu/Miko/Sakuya/Sanae/Rumia/Toziko/Wriggle/THPhantom/SunFlowerFairy/Familiar/DanmakuCreeper + IDanmakuMob 接口）。boss 用妖精模型占位渲染，妖精子类用 RenderTHFairy，配 12 刷怪蛋。**延后**：EntityRinnosuke/VillagerRinnosuke（阶段7 村民交易）、掉落道具（依赖未迁移的 EntityTHItem）
 - ✅ 阶段 3d-7：effect 实体 5 个（EntityAjaRedStoneEffect/CirnoIceBox/HakureiShield/HakurouReflecter/MiracleCircle，都 extends Entity）。**阶段 3 实体层全部完成 = M5 全实体达标**。渲染占位 RenderEmptyEffect（完整渲染留 4-6）；触发物品类未迁（ItemAjaRedStone/ItemIcicleSword/ItemHakurouken/ItemOharaibouS 属剩余物品类）。**Fafurotskies 12/25 分支要换回 EntityDanmakuCreeper**（现已迁移，可换回）
-- ⏳ 阶段 4 完整：4-1 弹体按形状分贴图 ✅、4-2 激光完整渲染 ✅（含 Gungnir/Laevateinn 3D 顶点表几何 + 原版 dispatch 变换/双 pass，6fd5517 合并审查后修复）、4-3 妖精形态切换 ✅、4-4 魔法阵渲染 ✅（familiar.png + 7 色/彩虹 + billboard/平躺分支）、4-5 符卡完整渲染、4-6 各实体模型
+- 🔶 阶段 4 完整：4-1 弹体按形状分贴图 ✅、4-2 激光完整渲染 ✅（含 Gungnir/Laevateinn 3D 顶点表几何 + 原版 dispatch 变换/双 pass，6fd5517 合并审查后修复）、4-3 妖精形态切换 ✅、4-4 魔法阵渲染 ✅（familiar.png + 7 色/彩虹 + billboard/平躺分支）、4-5 符卡渲染 ✅（81e6bbe 卡面+边框双层，贴图全小写化复制）、4-6 effect 实体 ✅（81e6bbe 5 渲染器）、4-7 boss 真实模型 ✅（b615fc4）。**仅剩 4-6 item 实体 3D 模型**（billboard 兜底可用；原版数组式 Techne 模型待 gen_models.py 改造后迁移）
 - ⏳ 阶段 5/6/7：GUI、客户端泄漏修复、配置/事件/村民交易
 
 ### 5. 实测修复经验（3d-4 批次）
