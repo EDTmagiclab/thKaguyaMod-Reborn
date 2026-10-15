@@ -8,6 +8,7 @@
 - 新工程：`thkaguya-1.20.1/`（build 产物 `build/libs/thkaguya-1.0.0.jar`）
 - 工具脚本：`tools/`（gen_items.py / gen_recipes.py / gen_lang5.py / gen_textures.py / validate.py / append_shotgen.py）
 - 用户游戏目录：`F:\mc\versions\newserver\.minecraft\versions\1.20.1-Forge_47.4.28\mods`（PCL 启动器，非默认 .minecraft）
+- **编译后同步**：每次 `gradle build` 成功后，必须把 `build/libs/thkaguya-1.0.0.jar` 覆盖复制一份到上面 mod 目录（用户要求，便于直接进游戏亲测）。命令：`cp -f build/libs/thkaguya-1.0.0.jar "F:/mc/versions/newserver/.minecraft/versions/1.20.1-Forge_47.4.28/mods/thkaguya-1.0.0.jar"`
 
 ## 构建环境
 - Forge 1.20.1 **47.4.28**（已对齐用户版本），ForgeGradle 6
