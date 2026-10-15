@@ -20,6 +20,7 @@ import thKaguyaMod.client.model.living.ModelToziko;
 import thKaguyaMod.client.model.living.ModelWriggle;
 import thKaguyaMod.client.render.effect.RenderSpellCardCircle;
 import thKaguyaMod.client.render.item.RenderItemBillboard;
+import thKaguyaMod.client.render.item.RenderMarisaBroom;
 import thKaguyaMod.client.render.item.RenderSukima;
 import thKaguyaMod.client.render.item.RenderSilverKnife;
 import thKaguyaMod.client.render.living.RenderTHBoss;
@@ -123,11 +124,9 @@ public class ClientRenderRegistry
         // textures/entity/ 的 *_texture.png 是盒子模型 UV 展开图，铺平会显示碎片（实测踩坑）
         event.registerEntityRenderer(THKaguyaEntities.SILVER_KNIFE.get(), RenderSilverKnife::new);
         event.registerEntityRenderer(THKaguyaEntities.SUKIMA.get(), RenderSukima::new);
-        // 扫帚回退 billboard：magic_broom.png 是 32x32 对角布局物品图标，
-        // RenderMarisaBroom 的手绘 3D quad 无法准确映射该布局（实测大量透明碎片）。
-        // 完整 3D 几何留到阶段 4-6 用真实模型还原（RenderMarisaBroom 保留备用）。
-        event.registerEntityRenderer(THKaguyaEntities.MARISA_BROOM.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/magic_broom.png", 0.4F));
+        // 魔理沙扫帚：使用 RenderMarisaBroom 的程序化几何（4 面旋转长杆 + 刷毛 3 段锥形扩散），
+        // 贴图 textures/entity/magic_bloom.png（64x32，与原版 textures/MagicBloom.png 同源）。
+        event.registerEntityRenderer(THKaguyaEntities.MARISA_BROOM.get(), RenderMarisaBroom::new);
         event.registerEntityRenderer(THKaguyaEntities.CURSED_DECOY_DOLL.get(),
                 ctx -> new RenderItemBillboard<>(ctx, "textures/item/cursed_decoy_doll.png", 0.4F));
         event.registerEntityRenderer(THKaguyaEntities.HISOU.get(),
