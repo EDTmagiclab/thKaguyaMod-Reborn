@@ -13,7 +13,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.entity.effect.EntitySpellCardCircle;
 import thKaguyaMod.init.THKaguyaConfig;
 
 /**
@@ -81,17 +83,139 @@ public abstract class EntityDanmakuMob extends Mob
     protected int species_1;
     protected int species_2;
 
-    public static final int SPECIES_OTHERS = 255;
+    // 人間に属す種族
+    public static final int SPECIES_HUMAN = 0;
+    public static final int SPECIES_HUMAN_HALF = 1;
+    public static final int SPECIES_HUMAN_LUNARIAN = 2;
+    public static final int SPECIES_HUMAN_HERMIT = 3;
+    public static final int SPECIES_HUMAN_SHIKAISEN = 4;
+    public static final int SPECIES_HUMAN_CELESTIALS = 5;
+    public static final int SPECIES_HUMAN_SAINT = 6;
+    public static final int SPECIES_HUMAN_INCHLINGS = 7;
+    public static final int SPECIES_HUMAN_HOURAI = 8;
+
+    // 神に属す種族
     public static final int SPECIES_GOD = 32;
+    public static final int SPECIES_GOD_ARAHITOGAMI = 33;
+    public static final int SPECIES_GOD_YATAGARASU = 34;
+
+    // 閻魔
+    public static final int SPECIES_ENMA = 48;
+
+    // 妖精に属す種族
+    public static final int SPECIES_FAIRY = 64;
+    public static final int SPECIES_FAIRY_ICE = 65;
+
+    // 幽霊に属す種族
     public static final int SPECIES_PHANTOM = 92;
+    public static final int SPECIES_PHANTOM_HALF = 93;
+    public static final int SPECIES_PHANTOM_GHOST = 94;
+    public static final int SPECIES_PHANTOM_DIVINESPIRIT = 95;
+    public static final int SPECIES_PHANTOM_SHIP = 96;
+    public static final int SPECIES_PHANTOM_JIANGSHI = 97;
+
+    // 式神に属す種族
     public static final int SPECIES_SHIKIGAMI = 108;
     public static final int SPECIES_SHIKIGAMI_DOLL = 109;
-    public static final int SPECIES_FAIRY = 64;
+    public static final int SPECIES_SHIKIGAMI_FAMILIAR = 110;
+
+    // 妖怪に属す種族
     public static final int SPECIES_YOUKAI = 128;
+    public static final int SPECIES_YOUKAI_MAGICIAN = 129;
+    public static final int SPECIES_YOUKAI_BEAST = 130;
+    public static final int SPECIES_YOUKAI_VAMPIRE = 131;
+    public static final int SPECIES_YOUKAI_ONI = 132;
+    public static final int SPECIES_YOUKAI_KAPPA = 133;
+    public static final int SPECIES_YOUKAI_TENGU_CROW = 134;
+    public static final int SPECIES_YOUKAI_TENGU_WHITEWOLF = 135;
+    public static final int SPECIES_YOUKAI_SHINIGAMI = 136;
+    public static final int SPECIES_YOUKAI_YUKIONNA = 137;
+    public static final int SPECIES_YOUKAI_BUG = 139;
+    public static final int SPECIES_YOUKAI_YOSUZUME = 140;
+    public static final int SPECIES_YOUKAI_RABBIT = 142;
+    public static final int SPECIES_YOUKAI_TUKUMOGAMI = 143;
+    public static final int SPECIES_YOUKAI_TURUBEOTOSHI = 144;
+    public static final int SPECIES_YOUKAI_HASHIHIME = 145;
+    public static final int SPECIES_YOUKAI_SATORI = 146;
+    public static final int SPECIES_YOUKAI_NYUUDOU = 147;
+    public static final int SPECIES_YOUKAI_NUE = 148;
+    public static final int SPECIES_YOUKAI_MERMAID = 149;
+    public static final int SPECIES_YOUKAI_AMANOJAKU = 150;
+
+    // 龍神
     public static final int SPECIES_DRAGON = 192;
 
-    /** 弾幕パターン：攻撃しない */
-    public static final int NOT_ATTACK = 0;
+    // その他の種族
+    public static final int SPECIES_OTHERS = 255;
+
+    // 攻撃の段階
+    /** 攻撃の意思がない状態を表す */
+    public static final int NOT_ATTACK      = 0;
+    public static final int NORMAL_ATTACK01 = 1;
+    public static final int NORMAL_ATTACK02 = 2;
+    public static final int NORMAL_ATTACK03 = 3;
+    public static final int NORMAL_ATTACK04 = 4;
+    public static final int NORMAL_ATTACK05 = 5;
+    public static final int NORMAL_ATTACK06 = 6;
+    public static final int NORMAL_ATTACK07 = 7;
+    public static final int NORMAL_ATTACK08 = 8;
+    public static final int NORMAL_ATTACK09 = 9;
+    public static final int NORMAL_ATTACK10 = 10;
+    public static final int NORMAL_ATTACK11 = 11;
+    public static final int NORMAL_ATTACK12 = 12;
+    public static final int NORMAL_ATTACK13 = 13;
+    public static final int NORMAL_ATTACK14 = 14;
+    public static final int NORMAL_ATTACK15 = 15;
+    public static final int NORMAL_ATTACK16 = 16;
+    public static final int NORMAL_ATTACK17 = 17;
+    public static final int NORMAL_ATTACK18 = 18;
+    public static final int NORMAL_ATTACK19 = 19;
+    public static final int NORMAL_ATTACK20 = 20;
+    public static final int SPELLCARD_ATTACK01 = 101;
+    public static final int SPELLCARD_ATTACK02 = 102;
+    public static final int SPELLCARD_ATTACK03 = 103;
+    public static final int SPELLCARD_ATTACK04 = 104;
+    public static final int SPELLCARD_ATTACK05 = 105;
+    public static final int SPELLCARD_ATTACK06 = 106;
+    public static final int SPELLCARD_ATTACK07 = 107;
+    public static final int SPELLCARD_ATTACK08 = 108;
+    public static final int SPELLCARD_ATTACK09 = 109;
+    public static final int SPELLCARD_ATTACK10 = 110;
+    public static final int SPELLCARD_ATTACK11 = 111;
+    public static final int SPELLCARD_ATTACK12 = 112;
+    public static final int SPELLCARD_ATTACK13 = 113;
+    public static final int SPELLCARD_ATTACK14 = 114;
+    public static final int SPELLCARD_ATTACK15 = 115;
+    public static final int SPELLCARD_ATTACK16 = 116;
+    public static final int SPELLCARD_ATTACK17 = 117;
+    public static final int SPELLCARD_ATTACK18 = 118;
+    public static final int SPELLCARD_ATTACK19 = 119;
+    public static final int SPELLCARD_ATTACK20 = 120;
+    public static final int SPELLCARD_ATTACK21 = 121;
+    public static final int SPELLCARD_ATTACK22 = 122;
+    public static final int SPELLCARD_ATTACK23 = 123;
+    public static final int SPELLCARD_ATTACK24 = 124;
+    public static final int SPELLCARD_ATTACK25 = 125;
+    public static final int SPELLCARD_ATTACK26 = 126;
+    /** 攻撃の終了を表す(倒れた) */
+    public static final int ATTACK_END = 127;
+
+    // 魔法陣の色
+    public static final int CIRCLE_COLOR_RED = 0;
+    public static final int CIRCLE_COLOR_BLUE = 1;
+    public static final int CIRCLE_COLOR_GREEN = 2;
+    public static final int CIRCLE_COLOR_YELLOW = 3;
+    public static final int CIRCLE_COLOR_PURPLE = 4;
+    public static final int CIRCLE_COLOR_AQUA = 5;
+    public static final int CIRCLE_COLOR_ORANGE = 6;
+    public static final int CIRCLE_COLOR_WHITE = 7;
+    public static final int CIRCLE_COLOR_RAINBOW = 8;
+
+    /** 魔法陣 */
+    public EntitySpellCardCircle circle;
+
+    /** 見た目（妖精の形態 ID，渲染阶段 4 用） */
+    protected byte form;
 
     /** 英名 */
     protected String danmakuMobName = "";
@@ -255,6 +379,100 @@ public abstract class EntityDanmakuMob extends Mob
         return getSpecies_1() == species || getSpecies_2() == species;
     }
 
+    /** 名前（英名）を返す */
+    public String getDanmakuMobName()
+    {
+        return danmakuMobName;
+    }
+
+    /** 名前（英名）を設定する */
+    public void setDanmakuMobName(String name)
+    {
+        danmakuMobName = name;
+    }
+
+    /** 経験値（1.20.1 Mob.xpReward 为 private，用自有字段 + getExperienceReward 覆盖） */
+    protected int danmakuXpReward = 0;
+
+    @Override
+    public int getExperienceReward()
+    {
+        return danmakuXpReward;
+    }
+
+    /** 見た目（妖精の形態 ID）を返す */
+    public byte getForm()
+    {
+        return form;
+    }
+
+    /** 見た目（妖精の形態 ID）を設定する */
+    public void setForm(byte type)
+    {
+        form = type;
+    }
+
+    /** 使用中のスペルカードNoを返す（子类实现） */
+    public int getUsingSpellCardNo()
+    {
+        return -1;
+    }
+
+    /** スペルカードを使用中かどうか */
+    public boolean isSpellCardAttack()
+    {
+        return getUsingSpellCardNo() >= 0;
+    }
+
+    /** 魔法陣の色 */
+    public int getSpellCardCircleColor()
+    {
+        return CIRCLE_COLOR_RED;
+    }
+
+    /** スペルカードを宣言する */
+    protected void useSpellCard(int spellCardNo)
+    {
+        LivingEntity target = this.getTarget();
+        if(target != null)
+        {
+            THKaguyaLib.spellCardDeclaration(this.level(), this, target, spellCardNo, 0, THKaguyaConfig.danmakuLevel, !isSpellCardMode);
+        }
+        if(!isSpellCardMode)
+        {
+            isSpellCardMode = true;
+            // スペルカードの魔法陣を出現させる
+            circle = new EntitySpellCardCircle(this.level(), this, 16 + getSpellCardCircleColor(), -100);
+            if(!this.level().isClientSide)
+            {
+                this.level().addFreshEntity(circle);
+            }
+        }
+    }
+
+    /**
+     * 死に際して呼ばれる処理（阶段转换拦截）。
+     * @return true = 进入下一攻击阶段并复活（不真正死亡）；false = 真正死亡
+     */
+    protected boolean onDeathUpdate()
+    {
+        return false;
+    }
+
+    /**
+     * 死亡拦截：boss 在 HP 归零时先调用 onDeathUpdate() 判断是否进入下一阶段，
+     * 若复活则跳过 super.die()（1.7.10 的 onDeathUpdate 每 tick 阶段转换等价物）。
+     */
+    @Override
+    public void die(DamageSource source)
+    {
+        if(!this.level().isClientSide && this.onDeathUpdate())
+        {
+            return;
+        }
+        super.die(source);
+    }
+
     protected void setStopStart()
     {
         stop = true;
@@ -351,8 +569,8 @@ public abstract class EntityDanmakuMob extends Mob
             return;
         }
 
-        // 攻撃カウンターが発射間隔を超えたら０に戻す（次の弾幕発射を許可）
-        if(this.attackCounter > this.danmakuSpan)
+        // 妖精系のみ発射間隔で攻撃カウンターをリセット（boss は danmakuSpan=0 で自前制御）
+        if(this.danmakuSpan > 0 && this.attackCounter > this.danmakuSpan)
         {
             this.attackCounter = 0;
         }
@@ -453,11 +671,15 @@ public abstract class EntityDanmakuMob extends Mob
         }
     }
 
-    /** 無敵状態 */
+    /** 無敵状態（攻击阶段切换的间隔时间 + NOT_ATTACK 状态均无敌） */
     @Override
     public boolean isInvulnerableTo(DamageSource source)
     {
         if(attackInterval > 0)
+        {
+            return true;
+        }
+        if(getDanmakuPattern() == NOT_ATTACK)
         {
             return true;
         }
@@ -499,5 +721,57 @@ public abstract class EntityDanmakuMob extends Mob
     public boolean causeFallDamage(float distance, float multiplier, DamageSource source)
     {
         return false;
+    }
+
+    /* ==================== 掉落（阶段 3d-6 简化版） ==================== */
+    /**
+     * 掉落弹幕/威力/得点道具的底层实现。
+     * 原版依赖 EntityTHItem（弹幕拾取实体），该实体尚未迁移（属 item 相关实体），
+     * 阶段 4/7 迁移后回填；当前为 no-op 占位。
+     */
+    protected void dropItem(int type, Vec3 pos, Vec3 angle)
+    {
+        // TODO(阶段4/7): EntityTHItem 迁移后回填掉落道具
+    }
+
+    public void dropPowerUpItem(Vec3 pos, Vec3 angle)
+    {
+        dropItem(1, pos, angle);
+    }
+
+    public void dropPowerUpItem(int num)
+    {
+        // TODO: EntityTHItem 迁移后回填
+    }
+
+    public void dropPointItem(Vec3 pos, Vec3 angle)
+    {
+        dropItem(4, pos, angle);
+    }
+
+    public void dropPointItem(int num)
+    {
+        // TODO: EntityTHItem 迁移后回填
+    }
+
+    public void dropSpellCardItem(Vec3 pos, Vec3 angle)
+    {
+        dropItem(10, pos, angle);
+    }
+
+    public void dropExtendItem(Vec3 pos, Vec3 angle)
+    {
+        dropItem(11, pos, angle);
+    }
+
+    /**
+     * 倒れたときに落とすアイテム（1.7.10 dropFewItems 等价物）。
+     * 原版：符卡使用中且玩家击杀时掉落对应符卡。1.20.1 符卡已无 metadata 变体，
+     * 此处保留钩子，具体掉落留阶段 7 补全。
+     */
+    @Override
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
     }
 }

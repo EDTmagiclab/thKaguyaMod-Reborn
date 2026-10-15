@@ -202,6 +202,32 @@ public class THKaguyaItems
     public static final RegistryObject<Item> TH_FAIRY_SPAWN_EGG = ITEMS.register("th_fairy_spawn_egg",
             () -> new ForgeSpawnEggItem(THKaguyaEntities.TH_FAIRY, 0xFFFF80, 0xC0C000, new Item.Properties()));
 
+    /* ==================== living 刷怪蛋（阶段 3d-6）==================== */
+    public static final RegistryObject<Item> CIRNO_SPAWN_EGG = ITEMS.register("cirno_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.CIRNO, 0x40C0FF, 0x2020FF, new Item.Properties()));
+    public static final RegistryObject<Item> DANMAKU_CREEPER_SPAWN_EGG = ITEMS.register("danmaku_creeper_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.DANMAKU_CREEPER, 0x40C040, 0x202020, new Item.Properties()));
+    public static final RegistryObject<Item> FAMILIAR_SPAWN_EGG = ITEMS.register("familiar_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.FAMILIAR, 0xFFE0A0, 0xC08040, new Item.Properties()));
+    public static final RegistryObject<Item> MIKO_SPAWN_EGG = ITEMS.register("miko_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.MIKO, 0xFFE0E0, 0x800080, new Item.Properties()));
+    public static final RegistryObject<Item> REIMU_SPAWN_EGG = ITEMS.register("reimu_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.REIMU, 0xFF4040, 0xFFFFFF, new Item.Properties()));
+    public static final RegistryObject<Item> RUMIA_SPAWN_EGG = ITEMS.register("rumia_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.RUMIA, 0xFFE080, 0x402020, new Item.Properties()));
+    public static final RegistryObject<Item> SAKUYA_SPAWN_EGG = ITEMS.register("sakuya_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.SAKUYA, 0xC0C0FF, 0x404080, new Item.Properties()));
+    public static final RegistryObject<Item> SANAE_SPAWN_EGG = ITEMS.register("sanae_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.SANAE, 0x80E080, 0xFFFFFF, new Item.Properties()));
+    public static final RegistryObject<Item> SUNFLOWER_FAIRY_SPAWN_EGG = ITEMS.register("sunflower_fairy_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.SUNFLOWER_FAIRY, 0xFFD000, 0x804000, new Item.Properties()));
+    public static final RegistryObject<Item> TH_PHANTOM_SPAWN_EGG = ITEMS.register("th_phantom_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.TH_PHANTOM, 0xE0E0FF, 0x8080C0, new Item.Properties()));
+    public static final RegistryObject<Item> TOZIKO_SPAWN_EGG = ITEMS.register("toziko_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.TOZIKO, 0x80FF80, 0x404040, new Item.Properties()));
+    public static final RegistryObject<Item> WRIGGLE_SPAWN_EGG = ITEMS.register("wriggle_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.WRIGGLE, 0xC0FF40, 0x406000, new Item.Properties()));
+
     /* ==================== 真珠（metadata 变体拆分）==================== */
     /** 赤真珠 */
     public static final RegistryObject<Item> RED_PEARL = register("red_pearl");

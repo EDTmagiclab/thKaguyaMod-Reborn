@@ -1,5 +1,6 @@
 package thKaguyaMod.client;
 
+import net.minecraft.client.renderer.entity.CreeperRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -11,6 +12,7 @@ import thKaguyaMod.client.render.effect.RenderSpellCardCircle;
 import thKaguyaMod.client.render.item.RenderItemBillboard;
 import thKaguyaMod.client.render.item.RenderSukima;
 import thKaguyaMod.client.render.item.RenderSilverKnife;
+import thKaguyaMod.client.render.living.RenderDanmakuMob;
 import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
 import thKaguyaMod.client.render.shot.RenderTHShot;
@@ -41,6 +43,20 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.TH_LASER.get(), RenderTHLaser::new);
         event.registerEntityRenderer(THKaguyaEntities.SPELL_CARD_CIRCLE.get(), RenderSpellCardCircle::new);
         event.registerEntityRenderer(THKaguyaEntities.SPELL_CARD.get(), RenderSpellCard::new);
+
+        // living 实体（阶段 3d-6）：boss 用妖精模型占位，妖精子类用 RenderTHFairy
+        event.registerEntityRenderer(THKaguyaEntities.CIRNO.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.DANMAKU_CREEPER.get(), CreeperRenderer::new);
+        event.registerEntityRenderer(THKaguyaEntities.FAMILIAR.get(), RenderTHFairy::new);
+        event.registerEntityRenderer(THKaguyaEntities.MIKO.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.REIMU.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.RUMIA.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.SAKUYA.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.SANAE.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.SUNFLOWER_FAIRY.get(), RenderTHFairy::new);
+        event.registerEntityRenderer(THKaguyaEntities.TH_PHANTOM.get(), RenderTHFairy::new);
+        event.registerEntityRenderer(THKaguyaEntities.TOZIKO.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.WRIGGLE.get(), RenderDanmakuMob::new);
 
         // 特殊弹体（阶段 3d-3）：继承 THShot 用 RenderTHShot，继承 THLaser 用 RenderTHLaser
         event.registerEntityRenderer(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), RenderTHShot::new);

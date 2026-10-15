@@ -24,6 +24,40 @@ import thKaguyaMod.registry.SpellCardRegistry;
  */
 public class EntitySpellCard extends Entity
 {
+    // スペルカード番号定数（原版 EntitySpellCard，boss 类 getUsingSpellCardNo 引用）
+    public static final int SC_REIMU_MusouFuuin = 0;
+    public static final int SC_MARISA_MasterSpark = 1;
+    public static final int SC_YUYUKO_Kasho_no_Eimin = 2;
+    public static final int SC_MARISA_MeteonicShower = 3;
+    public static final int SC_YUKARI_Nami_to_Tubu_no_Kyoukai = 4;
+    public static final int SC_YUKARI_NijuuKokushichou = 5;
+    public static final int SC_REMILIA_ScarletShoot = 6;
+    public static final int SC_TENSHI_Zenzinrui_no_Hisouten = 7;
+    public static final int SC_SAKUYA_SatuzinDoll = 8;
+    public static final int SC_CIRNO_PerfectFreeze = 9;
+    public static final int SC_YUKARI_HikouchuuNest = 10;
+    public static final int SC_NITORI_Kappa_no_Pororoca = 11;
+    public static final int SC_MARISA_StardustReverie = 12;
+    public static final int SC_SUWAKO_Kerochan_Fuu_ni_Makezu = 13;
+    public static final int SC_SANAE_MiracleFruit = 14;
+    public static final int SC_SANAE_Fafrotskies_no_Kiseki = 15;
+    public static final int SC_SANAE_YouryokuSpoiler = 16;
+    public static final int SC_SANAE_Moses_no_Kiseki = 17;
+    public static final int SC_SANAE_Yasaka_no_Kamikaze = 18;
+    public static final int SC_CIRNO_IcicleFall = 19;
+    public static final int SC_FLANDRE_StarbowBreak = 20;
+    public static final int SC_FLANDRE_Catadioptric = 21;
+    public static final int SC_SUWAKO_MishagujiSama = 22;
+    public static final int SC_REMILIA_RedMagic = 23;
+    public static final int SC_SAKUYA_EternalMeek = 24;
+    public static final int SC_MARISA_NonDirectionalLaser = 25;
+    public static final int SC_YUUKA_Kachoufuugetu_Shoufuurougetu = 26;
+    public static final int SC_REMILIA_Spear_the_Gungnir = 27;
+    public static final int SC_RUMIA_MoonlightRay = 28;
+    public static final int SC_MEIRIN_Houkakenran = 29;
+    public static final int SC_MEIRIN_Saikouranbu = 30;
+    public static final int SC_PATCHOULI_PrincessUndine = 31;
+
     private static final EntityDataAccessor<Integer> SPELL_CARD_NUMBER =
             SynchedEntityData.defineId(EntitySpellCard.class, EntityDataSerializers.INT);
 

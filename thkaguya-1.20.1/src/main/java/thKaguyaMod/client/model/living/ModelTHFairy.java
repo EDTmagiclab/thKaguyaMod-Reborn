@@ -13,14 +13,15 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import thKaguyaMod.THKaguyaCore;
-import thKaguyaMod.entity.living.EntityTHFairy;
+import thKaguyaMod.entity.living.EntityDanmakuMob;
 
 /**
  * 妖精模型（1.20.1 移植版）
  * 原版 Techne 生成模型（ModelBase/ModelRenderer），迁移为 LayerDefinition 体系。
  * 头/身体/手臂/腿/裙子/长发/蝴蝶结/花/翅膀，完整保留。
+ * 泛型化：供 EntityTHFairy（妖精）与 EntityDanmakuMob（boss 占位）共用。
  */
-public class ModelTHFairy extends EntityModel<EntityTHFairy>
+public class ModelTHFairy<T extends EntityDanmakuMob> extends EntityModel<T>
 {
     public static final ModelLayerLocation LAYER_LOCATION =
             new ModelLayerLocation(new ResourceLocation(THKaguyaCore.MODID, "th_fairy"), "main");
@@ -127,7 +128,7 @@ public class ModelTHFairy extends EntityModel<EntityTHFairy>
     }
 
     @Override
-    public void setupAnim(EntityTHFairy entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch)
+    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch)
     {
         this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
         this.head.xRot = headPitch * ((float)Math.PI / 180F);

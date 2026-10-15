@@ -78,6 +78,20 @@ public class THKaguyaCore
     {
         event.put(THKaguyaEntities.TH_FAIRY.get(), EntityTHFairy.createAttributes().build());
         event.put(THKaguyaEntities.CURSED_DECOY_DOLL.get(), EntityCursedDecoyDoll.createAttributes().build());
+
+        // living 实体（阶段 3d-6）
+        event.put(THKaguyaEntities.CIRNO.get(), thKaguyaMod.entity.living.EntityCirno.createAttributes().build());
+        event.put(THKaguyaEntities.DANMAKU_CREEPER.get(), thKaguyaMod.entity.living.EntityDanmakuCreeper.createAttributes().build());
+        event.put(THKaguyaEntities.FAMILIAR.get(), thKaguyaMod.entity.living.EntityFamiliar.createAttributes().build());
+        event.put(THKaguyaEntities.MIKO.get(), thKaguyaMod.entity.living.EntityMiko.createAttributes().build());
+        event.put(THKaguyaEntities.REIMU.get(), thKaguyaMod.entity.living.EntityReimu.createAttributes().build());
+        event.put(THKaguyaEntities.RUMIA.get(), thKaguyaMod.entity.living.EntityRumia.createAttributes().build());
+        event.put(THKaguyaEntities.SAKUYA.get(), thKaguyaMod.entity.living.EntitySakuya.createAttributes().build());
+        event.put(THKaguyaEntities.SANAE.get(), thKaguyaMod.entity.living.EntitySanae.createAttributes().build());
+        event.put(THKaguyaEntities.SUNFLOWER_FAIRY.get(), thKaguyaMod.entity.living.EntitySunFlowerFairy.createAttributes().build());
+        event.put(THKaguyaEntities.TH_PHANTOM.get(), thKaguyaMod.entity.living.EntityTHPhantom.createAttributes().build());
+        event.put(THKaguyaEntities.TOZIKO.get(), thKaguyaMod.entity.living.EntityToziko.createAttributes().build());
+        event.put(THKaguyaEntities.WRIGGLE.get(), thKaguyaMod.entity.living.EntityWriggle.createAttributes().build());
     }
 
     /** 自然生成规则注册 */

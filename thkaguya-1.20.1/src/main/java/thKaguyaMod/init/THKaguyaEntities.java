@@ -20,7 +20,19 @@ import thKaguyaMod.entity.item.EntitySilverKnife;
 import thKaguyaMod.entity.item.EntitySpiritualStrikeTalisman;
 import thKaguyaMod.entity.item.EntitySukima;
 import thKaguyaMod.entity.item.EntityYuukaParasol;
+import thKaguyaMod.entity.living.EntityCirno;
+import thKaguyaMod.entity.living.EntityDanmakuCreeper;
+import thKaguyaMod.entity.living.EntityFamiliar;
+import thKaguyaMod.entity.living.EntityMiko;
+import thKaguyaMod.entity.living.EntityReimu;
+import thKaguyaMod.entity.living.EntityRumia;
+import thKaguyaMod.entity.living.EntitySakuya;
+import thKaguyaMod.entity.living.EntitySanae;
+import thKaguyaMod.entity.living.EntitySunFlowerFairy;
 import thKaguyaMod.entity.living.EntityTHFairy;
+import thKaguyaMod.entity.living.EntityTHPhantom;
+import thKaguyaMod.entity.living.EntityToziko;
+import thKaguyaMod.entity.living.EntityWriggle;
 import thKaguyaMod.entity.shot.EntityDragonNeckJewel;
 import thKaguyaMod.entity.shot.EntityHomingAmulet;
 import thKaguyaMod.entity.shot.EntityMasterSpark;
@@ -54,6 +66,92 @@ public class THKaguyaEntities
                             .sized(0.6F, 1.5F)
                             .clientTrackingRange(64)
                             .build("th_fairy"));
+
+    /* ==================== living 实体（阶段 3d-6，12 个 boss/杂鱼）==================== */
+
+    public static final RegistryObject<EntityType<EntityCirno>> CIRNO =
+            ENTITIES.register("cirno",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityCirno>) (type, level) -> new EntityCirno(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("cirno"));
+
+    public static final RegistryObject<EntityType<EntityDanmakuCreeper>> DANMAKU_CREEPER =
+            ENTITIES.register("danmaku_creeper",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityDanmakuCreeper>) (type, level) -> new EntityDanmakuCreeper(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(0.6F, 1.7F).clientTrackingRange(64).build("danmaku_creeper"));
+
+    public static final RegistryObject<EntityType<EntityFamiliar>> FAMILIAR =
+            ENTITIES.register("familiar",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityFamiliar>) (type, level) -> new EntityFamiliar(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(0.6F, 0.6F).clientTrackingRange(64).build("familiar"));
+
+    public static final RegistryObject<EntityType<EntityMiko>> MIKO =
+            ENTITIES.register("miko",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityMiko>) (type, level) -> new EntityMiko(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("miko"));
+
+    public static final RegistryObject<EntityType<EntityReimu>> REIMU =
+            ENTITIES.register("reimu",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityReimu>) (type, level) -> new EntityReimu(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("reimu"));
+
+    public static final RegistryObject<EntityType<EntityRumia>> RUMIA =
+            ENTITIES.register("rumia",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityRumia>) (type, level) -> new EntityRumia(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("rumia"));
+
+    public static final RegistryObject<EntityType<EntitySakuya>> SAKUYA =
+            ENTITIES.register("sakuya",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySakuya>) (type, level) -> new EntitySakuya(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("sakuya"));
+
+    public static final RegistryObject<EntityType<EntitySanae>> SANAE =
+            ENTITIES.register("sanae",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySanae>) (type, level) -> new EntitySanae(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(0.6F, 1.7F).clientTrackingRange(64).build("sanae"));
+
+    public static final RegistryObject<EntityType<EntitySunFlowerFairy>> SUNFLOWER_FAIRY =
+            ENTITIES.register("sunflower_fairy",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntitySunFlowerFairy>) (type, level) -> new EntitySunFlowerFairy(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(0.9F, 1.7F).clientTrackingRange(64).build("sunflower_fairy"));
+
+    public static final RegistryObject<EntityType<EntityTHPhantom>> TH_PHANTOM =
+            ENTITIES.register("th_phantom",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityTHPhantom>) (type, level) -> new EntityTHPhantom(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.0F).clientTrackingRange(64).build("th_phantom"));
+
+    public static final RegistryObject<EntityType<EntityToziko>> TOZIKO =
+            ENTITIES.register("toziko",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityToziko>) (type, level) -> new EntityToziko(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("toziko"));
+
+    public static final RegistryObject<EntityType<EntityWriggle>> WRIGGLE =
+            ENTITIES.register("wriggle",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityWriggle>) (type, level) -> new EntityWriggle(type, level),
+                                    MobCategory.MONSTER)
+                            .sized(1.0F, 1.8F).clientTrackingRange(64).build("wriggle"));
 
     /** 弹体 */
     public static final RegistryObject<EntityType<EntityTHShot>> TH_SHOT =
