@@ -19,16 +19,32 @@ import thKaguyaMod.client.model.living.ModelSunFlowerFairy;
 import thKaguyaMod.client.model.living.ModelTHFairy;
 import thKaguyaMod.client.model.living.ModelToziko;
 import thKaguyaMod.client.model.living.ModelWriggle;
+import thKaguyaMod.client.model.item.ModelCursedDecoyDoll;
+import thKaguyaMod.client.model.item.ModelHisou;
+import thKaguyaMod.client.model.item.ModelKinkakuzi;
+import thKaguyaMod.client.model.item.ModelMiniHakkero;
+import thKaguyaMod.client.model.item.ModelMiniHakkero2;
+import thKaguyaMod.client.model.item.ModelPrivateSquare;
+import thKaguyaMod.client.model.item.ModelYuukaParasol;
 import thKaguyaMod.client.render.effect.RenderAjaRedStoneEffect;
 import thKaguyaMod.client.render.effect.RenderCirnoIceBox;
 import thKaguyaMod.client.render.effect.RenderHakureiShield;
 import thKaguyaMod.client.render.effect.RenderHakurouReflecter;
 import thKaguyaMod.client.render.effect.RenderMiracleCircle;
 import thKaguyaMod.client.render.effect.RenderSpellCardCircle;
-import thKaguyaMod.client.render.item.RenderItemBillboard;
+import thKaguyaMod.client.render.item.RenderCursedDecoyDoll;
+import thKaguyaMod.client.render.item.RenderHisou;
+import thKaguyaMod.client.render.item.RenderKinkakuzi;
 import thKaguyaMod.client.render.item.RenderMarisaBroom;
-import thKaguyaMod.client.render.item.RenderSukima;
+import thKaguyaMod.client.render.item.RenderMazinkyoukan;
+import thKaguyaMod.client.render.item.RenderMiniHakkero;
+import thKaguyaMod.client.render.item.RenderPendulum;
+import thKaguyaMod.client.render.item.RenderPrivateSquare;
+import thKaguyaMod.client.render.item.RenderSakuyaStopWatch;
 import thKaguyaMod.client.render.item.RenderSilverKnife;
+import thKaguyaMod.client.render.item.RenderSpiritualStrikeTalisman;
+import thKaguyaMod.client.render.item.RenderSukima;
+import thKaguyaMod.client.render.item.RenderYuukaParasol;
 import thKaguyaMod.client.render.living.RenderTHBoss;
 import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.living.RenderSunFlowerFairy;
@@ -66,6 +82,15 @@ public class ClientRenderRegistry
     private static final ModelLayerLocation WRIGGLE_LAYER = layer("wriggle");
     private static final ModelLayerLocation SUNFLOWER_LAYER = layer("sunflower_fairy");
 
+    /* item 实体 3D 模型 layer 位置（阶段 4-6） */
+    private static final ModelLayerLocation HISOU_LAYER            = layer("hisou");
+    private static final ModelLayerLocation KINKAKUZI_LAYER        = layer("kinkakuzi");
+    private static final ModelLayerLocation MINI_HAKKERO_LAYER     = layer("mini_hakkero");
+    private static final ModelLayerLocation MINI_HAKKERO2_LAYER    = layer("mini_hakkero2");
+    private static final ModelLayerLocation YUUKA_PARASOL_LAYER    = layer("yuuka_parasol");
+    private static final ModelLayerLocation PRIVATE_SQUARE_LAYER   = layer("private_square");
+    private static final ModelLayerLocation DECOY_LAYER            = layer("cursed_decoy_doll");
+
     private static ModelLayerLocation layer(String name)
     {
         return new ModelLayerLocation(new ResourceLocation(THKaguyaCore.MODID, name), "main");
@@ -84,6 +109,14 @@ public class ClientRenderRegistry
         event.registerLayerDefinition(TOZIKO_LAYER, ModelToziko::createBodyLayer);
         event.registerLayerDefinition(WRIGGLE_LAYER, ModelWriggle::createBodyLayer);
         event.registerLayerDefinition(SUNFLOWER_LAYER, ModelSunFlowerFairy::createBodyLayer);
+        // item 实体 3D 模型（阶段 4-6）
+        event.registerLayerDefinition(HISOU_LAYER, ModelHisou::createBodyLayer);
+        event.registerLayerDefinition(KINKAKUZI_LAYER, ModelKinkakuzi::createBodyLayer);
+        event.registerLayerDefinition(MINI_HAKKERO_LAYER, ModelMiniHakkero::createBodyLayer);
+        event.registerLayerDefinition(MINI_HAKKERO2_LAYER, ModelMiniHakkero2::createBodyLayer);
+        event.registerLayerDefinition(YUUKA_PARASOL_LAYER, ModelYuukaParasol::createBodyLayer);
+        event.registerLayerDefinition(PRIVATE_SQUARE_LAYER, ModelPrivateSquare::createBodyLayer);
+        event.registerLayerDefinition(DECOY_LAYER, ModelCursedDecoyDoll::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -144,25 +177,24 @@ public class ClientRenderRegistry
         // 魔理沙扫帚：使用 RenderMarisaBroom 的程序化几何（4 面旋转长杆 + 刷毛 3 段锥形扩散），
         // 贴图 textures/entity/magic_bloom.png（64x32，与原版 textures/MagicBloom.png 同源）。
         event.registerEntityRenderer(THKaguyaEntities.MARISA_BROOM.get(), RenderMarisaBroom::new);
+        // item 实体 3D 模型（阶段 4-6：替换 billboard 兜底）
         event.registerEntityRenderer(THKaguyaEntities.CURSED_DECOY_DOLL.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/cursed_decoy_doll.png", 0.4F));
+                ctx -> new RenderCursedDecoyDoll(ctx, new ModelCursedDecoyDoll<>(ctx.bakeLayer(DECOY_LAYER))));
         event.registerEntityRenderer(THKaguyaEntities.HISOU.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/hisou_sword.png", 0.5F));
+                ctx -> new RenderHisou(ctx, new ModelHisou<>(ctx.bakeLayer(HISOU_LAYER))));
         event.registerEntityRenderer(THKaguyaEntities.KINKAKUZI.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/kinkakuji.png", 0.4F));
-        event.registerEntityRenderer(THKaguyaEntities.MAZINKYOUKAN.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/wall_passing_chisel.png", 0.4F));
+                ctx -> new RenderKinkakuzi(ctx, new ModelKinkakuzi<>(ctx.bakeLayer(KINKAKUZI_LAYER))));
+        event.registerEntityRenderer(THKaguyaEntities.MAZINKYOUKAN.get(), RenderMazinkyoukan::new);
         event.registerEntityRenderer(THKaguyaEntities.MINI_HAKKERO.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/mini_hakkero.png", 0.35F));
-        event.registerEntityRenderer(THKaguyaEntities.PENDULUM.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/nazrin_pendulum.png", 0.35F));
+                ctx -> new RenderMiniHakkero(ctx, new ModelMiniHakkero<>(ctx.bakeLayer(MINI_HAKKERO_LAYER)),
+                        new ModelMiniHakkero2<>(ctx.bakeLayer(MINI_HAKKERO2_LAYER))));
+        event.registerEntityRenderer(THKaguyaEntities.PENDULUM.get(), RenderPendulum::new);
         event.registerEntityRenderer(THKaguyaEntities.SAKUYA_STOP_WATCH.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/sakuya_stopwatch.png", 0.35F));
+                ctx -> new RenderSakuyaStopWatch(ctx, new ModelPrivateSquare<>(ctx.bakeLayer(PRIVATE_SQUARE_LAYER))));
         event.registerEntityRenderer(THKaguyaEntities.SAKUYA_WATCH.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/sakuya_watch.png", 0.4F));
-        event.registerEntityRenderer(THKaguyaEntities.SPIRITUAL_STRIKE_TALISMAN.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/spiritual_strike_talisman.png", 0.4F));
+                ctx -> new RenderPrivateSquare(ctx, new ModelPrivateSquare<>(ctx.bakeLayer(PRIVATE_SQUARE_LAYER))));
+        event.registerEntityRenderer(THKaguyaEntities.SPIRITUAL_STRIKE_TALISMAN.get(), RenderSpiritualStrikeTalisman::new);
         event.registerEntityRenderer(THKaguyaEntities.YUUKA_PARASOL.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/yuuka_parasol.png", 0.4F));
+                ctx -> new RenderYuukaParasol(ctx, new ModelYuukaParasol<>(ctx.bakeLayer(YUUKA_PARASOL_LAYER))));
     }
 }

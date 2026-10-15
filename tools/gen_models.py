@@ -68,10 +68,10 @@ def eval_float(java_expr, env):
 
 
 def fmt(v):
-    """float -> 简洁数字字符串（Java float 字面量）。"""
+    """float -> 简洁数字字符串（Java float 字面量，非整数须加 F 后缀）。"""
     if abs(v - round(v)) < 1e-6:
         return '%d' % round(v)
-    return ('%g' % v)
+    return ('%gF' % v)
 
 
 # ============================================================
@@ -231,6 +231,9 @@ def parse_renderers(body):
         if args is not None:
             # 求值每个参数成数字
             parts = [fmt(eval_float(p, {})) for p in split_args(args)]
+            # 1.7.10 addBox(x,y,z,w,h,d,grow) 第 7 参是 grow（恒 0），1.20.1 无此重载 → 丢弃
+            if len(parts) == 7:
+                parts = parts[:6]
             cur['boxes'].append(', '.join(parts))
             continue
         args = extract_args(line, '.setRotationPoint')
@@ -352,11 +355,11 @@ def _anim_part_fields(renderers):
     return [p for p in anim_parts if p in all_names]
 
 
-def gen_class(cls, tw, th, renderers, entity_type='Entity'):
+def gen_class(cls, tw, th, renderers, entity_type='Entity', pkg='thKaguyaMod.client.model.living'):
     """生成模型类。entity_type: 'Entity'（item 静态）或 'EntityDanmakuMob'（living 动画）。"""
     is_mob = entity_type == 'EntityDanmakuMob'
     L = []
-    L.append('package thKaguyaMod.client.model.living;')
+    L.append('package ' + pkg + ';')
     L.append('')
     L.append('import com.mojang.blaze3d.vertex.PoseStack;')
     L.append('import com.mojang.blaze3d.vertex.VertexConsumer;')
@@ -369,7 +372,7 @@ def gen_class(cls, tw, th, renderers, entity_type='Entity'):
     L.append('import net.minecraft.client.model.geom.builders.PartDefinition;')
     if is_mob:
         L.append('import net.minecraft.util.Mth;')
-    L.append('import thKaguyaMod.entity.living.EntityDanmakuMob;')
+        L.append('import thKaguyaMod.entity.living.EntityDanmakuMob;')
     L.append('import net.minecraft.world.entity.Entity;')
     L.append('')
     L.append('/** 自动生成自原版 ' + cls + '（Techne → LayerDefinition） */')
@@ -437,8 +440,12 @@ if __name__ == '__main__':
     path = args[0]
     write_path = None
     is_mob = False
+    pkg = 'thKaguyaMod.client.model.living'
     if '--mob' in args:
         is_mob = True
+    if '--pkg' in args:
+        pi = args.index('--pkg')
+        pkg = args[pi + 1]
     if '--write' in args:
         wi = args.index('--write')
         write_path = args[wi + 1]
@@ -457,6 +464,6 @@ if __name__ == '__main__':
         print(f'        box: {boxes}')
 
     if write_path:
-        code = gen_class(cls, tw, th, renderers, entity_type)
+        code = gen_class(cls, tw, th, renderers, entity_type, pkg)
         open(write_path, 'w', encoding='utf-8', newline='\n').write(code)
         print(f'written {write_path}')
