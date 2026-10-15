@@ -10,7 +10,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.LaserData;
+import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 
 /**
@@ -84,6 +86,60 @@ public class EntityTHLaser extends EntityTHShot
             {
                 setLaserLength(laserLength);
             }
+        }
+    }
+
+    /**
+     * 特殊激光每 tick 处理（原版 EntityTHLaser.specialMotion 的 GUNGNIR case）
+     *
+     * 冈格尼尔之枪（special=GUNGNIR）的枪形激光初速度为 0，长度不靠 speed 增长，
+     * 而是靠这里每 tick +1.0 增长到 maxLaserLength；前 10 tick 同时旋转 18°/tick。
+     * 第 10 tick 玩家反冲并开始加速，之后发射环形弹（神枪落地爆炸）。
+     * 原版缺此分支会导致 laserLength 恒 0、渲染时 z 缩放为 0、枪形压扁不可见（"丢不出去"）。
+     */
+    @Override
+    protected void specialMotion()
+    {
+        super.specialMotion();
+
+        if(level().isClientSide || shotSpecial != DanmakuConstants.GUNGNIR)
+        {
+            return;
+        }
+
+        if(tickCount <= 10)
+        {
+            // 枪形激光长度增长 + 旋转 18°/tick（原版 getVectorFromRotation(rotate, angle, 18F)）
+            Vec3 move = THShotLib.getVectorFromRotation(rotate, angle, 18F);
+            if(getLaserLength() < getMaxLaserLength())
+            {
+                setLaserLength(getLaserLength() + 1.0D);
+            }
+            else
+            {
+                setLaserLength(getMaxLaserLength());
+            }
+            angle = move;
+            updateAngle();
+        }
+        if(tickCount == 10)
+        {
+            // 玩家反冲 + 开始加速（原版 shotLimitSpeed=2.0D, shotAcceleration=0.6D）
+            if(user != null)
+            {
+                user.setDeltaMovement(user.getDeltaMovement().subtract(angle.x, 0.0D, angle.z));
+            }
+            shotLimitSpeed = 2.0D;
+            shotAcceleration = 0.6D;
+        }
+        if(tickCount > 10)
+        {
+            // 神枪落地爆炸：红色结晶环形弹
+            ShotData shot = ShotData.shot(DanmakuConstants.FORM_CRYSTAL, DanmakuConstants.RED,
+                    0.45F, 6.0F, 0, 40);
+            THShotLib.createRingShot(user, this, THShotLib.pos_Entity(this), angle, 0F, 9999,
+                    1.4D, 0.1D, -0.1D, THShotLib.gravity_Zero(), shot, 4, 0.3D, 240F,
+                    tickCount * 10F);
         }
     }
 
