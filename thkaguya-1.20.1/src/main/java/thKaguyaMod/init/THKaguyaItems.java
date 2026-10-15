@@ -9,6 +9,7 @@ import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemHisou;
 import thKaguyaMod.item.ItemKinkakuzi;
+import thKaguyaMod.item.ItemLaevateinn;
 import thKaguyaMod.item.ItemMarisaBroom;
 import thKaguyaMod.item.ItemMazinKyoukan;
 import thKaguyaMod.item.ItemMiniHakkero;
@@ -16,6 +17,7 @@ import thKaguyaMod.item.ItemPendulum;
 import thKaguyaMod.item.ItemSakuyaStopWatch;
 import thKaguyaMod.item.ItemSakuyaWatch;
 import thKaguyaMod.item.ItemSilverKnife;
+import thKaguyaMod.item.ItemSpearTheGungnir;
 import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
 import thKaguyaMod.item.ItemSukima;
 import thKaguyaMod.item.ItemYuukaParasol;
@@ -84,10 +86,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> SAKUYA_STOPWATCH = register("sakuya_stopwatch", () -> new ItemSakuyaStopWatch());
 
     /** スピア・ザ・グングニル */
-    public static final RegistryObject<Item> GUNGNIR = register("gungnir");
+    public static final RegistryObject<Item> GUNGNIR = register("gungnir", () -> new ItemSpearTheGungnir());
 
     /** レーヴァテイン */
-    public static final RegistryObject<Item> LAEVATEINN = register("laevateinn");
+    public static final RegistryObject<Item> LAEVATEINN = register("laevateinn", () -> new ItemLaevateinn());
 
     /** 呪いのデコイ人形 */
     public static final RegistryObject<Item> CURSED_DECOY_DOLL = register("cursed_decoy_doll", () -> new ItemCursedDecoyDoll());
