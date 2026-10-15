@@ -88,6 +88,43 @@ public class THKaguyaCore
             // 弹幕图案注册表初始化（依赖 danmakuLevel 配置，须在配置加载后调用）
             DanmakuPatternRegistry.setDanmakuPattern();
 
+            // 符卡注册（阶段 3d-5，对齐原版 CommonProxy.registerSpellCards）
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MusouFuuin.class, "thkaguyamod", "MusouFuuin", 0);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MasterSpark.class, "thkaguyamod", "MasterSpark", 1);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Kasho_no_Eimin.class, "thkaguyamod", "Kasho_no_Eimin", 2);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MeteonicShower.class, "thkaguyamod", "MeteonicShower", 3);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Nami_to_Tubu_no_Kyoukai.class, "thkaguyamod", "Nami_to_Tubu_no_Kyoukai", 4);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_NijuuKokushichou.class, "thkaguyamod", "NijuuKokushichou", 5);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_ScarletShoot.class, "thkaguyamod", "ScarletShoot", 6);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Zenzinrui_no_Hisouten.class, "thkaguyamod", "Zenzinrui_no_Hisouten", 7);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_SatuzinDoll.class, "thkaguyamod", "SatuzinDoll", 8);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_PerfectFreeze.class, "thkaguyamod", "PerfectFreeze", 9);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_HikouchuuNest.class, "thkaguyamod", "HikouchuuNest", 10);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_KappaPororoca.class, "thkaguyamod", "Kappa'sPororoca", 11);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_StardustReverie.class, "thkaguyamod", "StardustReverie", 12);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Kerochan_Fuuu_ni_Makezu.class, "thkaguyamod", "Kerochan_Fuuu_ni_Makezu", 13);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MiracleFruit.class, "thkaguyamod", "MiracleFruit", 14);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Fafurotskies_no_Kiseki.class, "thkaguyamod", "Fafrotskies_no_Kiseki", 15);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_YouryokuSpoiler.class, "thkaguyamod", "YouryokuSpoiler", 16);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MosesMiracle.class, "thkaguyamod", "Moses_no_Kiseki", 17);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Yasaka_no_Kamikaze.class, "thkaguyamod", "Yasaka_no_Kamikaze", 18);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_IcicleFall.class, "thkaguyamod", "IcicleFall", 19);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_StarbowBreak.class, "thkaguyamod", "StarbowBreak", 20);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Catadioptric.class, "thkaguyamod", "Catadioptric", 21);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Mishagujisama.class, "thkaguyamod", "Mishagujisama", 22);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_RedMagic.class, "thkaguyamod", "RedMagic", 23);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_EternalMeek.class, "thkaguyamod", "EternalMeek", 24);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_NonDirectionalLaser.class, "thkaguyamod", "Non-DirectionalLaser", 25);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Kachoufuugetu.class, "thkaguyamod", "KachoufuugetuShoufuurougetu", 26);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_Spear_the_Gungnir.class, "thkaguyamod", "Spear_the_Gungnir", 27);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MoonlightRay.class, "thkaguyamod", "MoonlightRay", 28);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_HoukaKenran.class, "thkaguyamod", "HoukaKenran", 29);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_SaikouRanbu.class, "thkaguyamod", "SaikouRanbu", 30);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_FujiyamaVolcano.class, "thkaguyamod", "FujiyamaVolcano", 33);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_LittleBugStorm.class, "thkaguyamod", "LittleBugStorm", 34);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MeteorOnEarth.class, "thkaguyamod", "Meteor_on_Earth", 35);
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_GagoujiCyclone.class, "thkaguyamod", "GagoujiCyclone", 40);
+
             SpawnPlacements.register(THKaguyaEntities.TH_FAIRY.get(),
                     SpawnPlacements.Type.ON_GROUND,
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

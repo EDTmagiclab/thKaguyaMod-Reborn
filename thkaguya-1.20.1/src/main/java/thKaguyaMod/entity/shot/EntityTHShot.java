@@ -20,6 +20,7 @@ import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
+import thKaguyaMod.registry.SpecialShotRegistry;
 
 /**
  * ショット系のEntityの共通処理（1.20.1 移植版）
@@ -325,6 +326,19 @@ public class EntityTHShot extends Entity
     /** 特殊弹的每 tick 处理（子类重写） */
     protected void specialMotion()
     {
+        // 原版 977 行：shotSpecial 查 SpecialShotRegistry 分发到 ISpecialShot.specialShot_move
+        if(shotSpecial != 0)
+        {
+            Class<? extends ISpecialShot> specialShotClass = SpecialShotRegistry.getSpecialShotClass(shotSpecial);
+            if(specialShotClass != null)
+            {
+                try {
+                    ISpecialShot iSpecialShot = specialShotClass.getDeclaredConstructor().newInstance();
+                    iSpecialShot.specialShot_move(level(), shotSpecial, this);
+                } catch (ReflectiveOperationException e) {
+                }
+            }
+        }
     }
 
     /** 使用者に当たるかどうか（子类重写） */
@@ -333,9 +347,22 @@ public class EntityTHShot extends Entity
         return false;
     }
 
-    /** Entity 命中时的特殊处理（子类重写），返回 true 表示弹体继续存在 */
+    /** Entity 命中时的特殊处理，返回 true 表示弹体继续存在。
+     *  原版 1192 行：shotSpecial 查 SpecialShotRegistry 分发到 ISpecialShot.specialShot_hitEntity */
     public boolean entityHitSpecialProcess(Entity hitEntity)
     {
+        if(shotSpecial != 0)
+        {
+            Class<? extends ISpecialShot> specialShotClass = SpecialShotRegistry.getSpecialShotClass(shotSpecial);
+            if(specialShotClass != null)
+            {
+                try {
+                    ISpecialShot iSpecialShot = specialShotClass.getDeclaredConstructor().newInstance();
+                    return iSpecialShot.specialShot_hitEntity(level(), shotSpecial, this, hitEntity);
+                } catch (ReflectiveOperationException e) {
+                }
+            }
+        }
         return false;
     }
 
@@ -368,10 +395,94 @@ public class EntityTHShot extends Entity
         return false;
     }
 
-    /** 方块碰撞的特殊处理（子类重写，返回 true 表示弹体继续存在） */
+    /** 方块碰撞的特殊处理，返回 true 表示弹体继续存在。
+     *  原版 1240 行：shotSpecial 查 SpecialShotRegistry 分发到 ISpecialShot.specialShot_hitBlock */
     public boolean blockHitSpecialProcess(HitResult result)
     {
+        if(shotSpecial != 0)
+        {
+            Class<? extends ISpecialShot> specialShotClass = SpecialShotRegistry.getSpecialShotClass(shotSpecial);
+            if(specialShotClass != null)
+            {
+                try {
+                    ISpecialShot iSpecialShot = specialShotClass.getDeclaredConstructor().newInstance();
+                    return iSpecialShot.specialShot_hitBlock(level(), shotSpecial, this, result);
+                } catch (ReflectiveOperationException e) {
+                }
+            }
+        }
         return false;
+    }
+
+    /** 特殊弾から普通の弾に戻す（原版 specialEnd） */
+    public void specialEnd()
+    {
+        shotSpecial = 0;
+    }
+
+    /** ショットの左右の方向の角度を変更する（原版 setShotRotationYaw） */
+    public void setShotRotationYaw(float rotateAngle)
+    {
+        Vec3 newAngle = THShotLib.getVectorFromRotation(rotate.x, rotate.y, rotate.z, angle.x, angle.y, angle.z, rotateAngle);
+
+        angle = newAngle;
+        updateMotion();
+    }
+
+    /** 弾の消滅時間を設定（原版 setDeadTime 的别名，符卡代码大量使用） */
+    public void setDeadTime(int time)
+    {
+        setShotEndTime(time);
+    }
+
+    /** 弾の消滅時間を返す（原版 getDeadTime 的别名，符卡代码大量使用） */
+    public int getDeadTime()
+    {
+        return getShotEndTime();
+    }
+
+    /** 消滅時間に達したかどうか（原版 isShotEndTime） */
+    public boolean isShotEndTime()
+    {
+        return tickCount == getShotEndTime();
+    }
+
+    /** 現在の弾の情報を引き継ぎ再生成する（原版 reCreate）。この弾は消えずに残り、コピーを作る */
+    public EntityTHShot reCreate()
+    {
+        if(!level().isClientSide)
+        {
+            return THShotLib.createShot(
+                    this.user,
+                    this.source,
+                    THShotLib.pos_Entity(this),
+                    this.angle,
+                    this.getAngleZ(),
+                    this.rotate,
+                    this.rotationYawSpeed,
+                    this.rotationEnd,
+                    this.shotSpeed,
+                    this.shotLimitSpeed,
+                    this.shotAcceleration,
+                    this.gravity,
+                    ShotData.shot(this.getShotForm(),
+                                  this.getShotColor(),
+                                  this.getShotSize(),
+                                  this.shotDamage,
+                                  this.delayTime,
+                                  this.getShotEndTime(),
+                                  this.shotSpecial
+                                  )
+                    );
+        }
+        return null;
+    }
+
+    /** 速度を設定（原版 setSpeed）。限界速度は越えない */
+    public void setShotSpeed(double speed)
+    {
+        shotSpeed = speed;
+        updateMotion();
     }
 
     /** Entity との当たり判定 */
@@ -489,6 +600,11 @@ public class EntityTHShot extends Entity
             }
             else
             {
+                // 原版 1192 行：特殊弹的实体命中处理，返回 false 表示普通命中流程
+                if(entityHitSpecialProcess(hit))
+                {
+                    return;
+                }
                 // 伤害倍率默认 1（原版在命中时设为 1.0F；字段默认 0，不设则无伤害）
                 damageRate = 1.0F;
                 float dmg = getShotDamageWithDifficulty() * damageRate;
