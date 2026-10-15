@@ -60,9 +60,9 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-1：激光弹体 EntityTHLaser + 激光生成方法（6 个）+ RenderTHLaser + 妖精激光分支
 - ✅ 阶段 3d-2：符卡框架核心（EntitySpellCardCircle 魔法阵 + THSpellCard 基类 + ITHSpellCard + SpellCardRegistry + EntitySpellCard + THKaguyaLib 裁剪版）
 - ✅ 阶段 3d-3：shot 剩余弹体 10 个（EntityDragonNeckJewel/HomingAmulet/MasterSpark/MusouFuuin/NuclearShot/Onmyoudama/SanaeWind/THHenyoriLaser/THSetLaser/ISpecialShot）
-- ✅ 阶段 3d-4：item 实体 13 个 + 触发它们的 ItemXxx 物品类 13 个；用户实测反馈修复：渲染（4 渲染器 + 16 贴图）/隙间传送/怀表模式，已提交
-- ⏳ 阶段 3d-5：36 符卡类（THSC_*，3895 行）
-- ⏳ 阶段 3d-6/3d-7：living 15 个 + effect 5 个
+- ✅ 阶段 3d-4：item 实体 13 个 + 触发它们的 ItemXxx 物品类 13 个；用户实测反馈修复：渲染（4 渲染器 + 16 贴图）/隙间传送/怀表模式，已提交；扫帚渲染回退 billboard（magic_broom.png 是对角布局图标，手绘 3D quad 映射不了）
+- ✅ 阶段 3d-5：36 符卡类全部迁移（含 SpecialShotRegistry + THSC_Helper + EntityTHShot 特殊弹分发），THKaguyaCore.commonSetup 注册 35 张；编译通过 jar 已同步
+- ⏳ 阶段 3d-6/3d-7：living 15 个 + effect 5 个（Fafurotskies 12/25 分支要换回 EntityDanmakuCreeper）
 - ⏳ 阶段 4 完整：弹体按形状分贴图、妖精 11 种形态切换、激光/魔法阵/符卡完整渲染、各实体模型
 - ⏳ 阶段 5/6/7：GUI、客户端泄漏修复、配置/事件/村民交易
 
@@ -78,3 +78,14 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - **1.20.1 NEW_ENTITY 顶点六要素缺一即崩**：POSITION+COLOR+UV+OVERLAY+UV2+NORMAL，漏 `.color()` 抛 "Not filled all elements of the vertex"。崩溃发生在 Render thread → 实体持久化在世界里 → **重进立刻退出**（死亡循环）。
 - **cutout RenderType 无 alpha 混合**：半透明顶点（alpha<1）必须走 `entityTranslucentCull`，否则颜色错误。
 - 原版 jar 音频本就缺失（sukima.ogg 等 4 个事件引用但不存在的文件，上游遗留），自定义音效一律回退原版音效。
+
+### 7. 符卡迁移经验（3d-5 批次）
+- **批量迁移用 Python 脚本**（tools/conv_spellcards.py）：机械映射 import/API/Vec3 分量名，剩余点状错误第二轮脚本（fix_spellcards2.py）逐文件修。先编译抓错误清单再归类批量处理，效率最高。
+- **1.20.1 Vec3 不可变**：`vec.x = ...`、`vec.rotateAroundY(...)` 全部非法。分量赋值模式 → `THSC_Helper.vec3(...)` 重建；旋转 → `THSC_Helper.rotateX/Y/Z`。
+- **`getDeltaMovement().x *= k` 非法**（返回 final 字段副本）→ `entity.setDeltaMovement(entity.getDeltaMovement().scale(k))`。
+- **rotation 赋值**：1.7 `entity.rotationYaw = x` → 1.20 `entity.setYRot(x)`（getter 返回值不能赋值）。
+- **新增 API 别名**（EntityTHShot）：`getDeadTime()`=`getShotEndTime()`、`setDeadTime()`=`setShotEndTime()`、`isShotEndTime()`=`tickCount == getShotEndTime()`、`reCreate()` 继承信息再造副本、`setShotSpeed()` 设速并 `updateMotion()`、`specialEnd()` 清 shotSpecial、`setShotRotationYaw()` 绕 rotate 轴转 angle。
+- **原版 world.getCurrentDate()** → `Calendar.getInstance()`（1.20.1 Level 无此方法）。
+- **`world.getEntitiesWithinAABBExcludingEntity(e, bb.expand(x,y,z))`** → `world.getEntitiesOfClass(Entity.class, bb.inflate(x,y,z))`。
+- **KappaPororoca 的 `shot.bound()` 反弹方法未迁移**，暂简化为消弹，阶段 4 完整化时补。
+- **原版 `enum` 1.7 无**：`Items.fish` → `Items.COD`。
