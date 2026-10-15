@@ -1,12 +1,10 @@
 package thKaguyaMod.entity.shot;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaEntities;
@@ -19,8 +17,6 @@ import thKaguyaMod.init.THKaguyaEntities;
  */
 public class EntityTHSetLaser extends EntityTHLaser
 {
-	private static final Logger LOGGER = LogUtils.getLogger();
-
 	private double settingLength;
 	private double settingYOffset;
 
@@ -43,11 +39,6 @@ public class EntityTHSetLaser extends EntityTHLaser
 		settingLength = setLength;
 		settingYOffset = setYOffset;
 		setting = set;
-		if(!world.isClientSide)
-		{
-			LOGGER.info("[SetLaser] spawn color={} length={} angle=({},{},{}) set={} setLength={} setYOffset={}",
-					color, length, angle.x, angle.y, angle.z, set, setLength, setYOffset);
-		}
 		if(set != null)
 		{
 			double x = set.getX() + angle.x * settingLength;

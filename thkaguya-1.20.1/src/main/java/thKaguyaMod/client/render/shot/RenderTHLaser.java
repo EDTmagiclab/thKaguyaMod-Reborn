@@ -2,7 +2,6 @@ package thKaguyaMod.client.render.shot;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.logging.LogUtils;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -13,7 +12,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.slf4j.Logger;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.entity.shot.EntityTHLaser;
 import thKaguyaMod.entity.shot.EntityTHSetLaser;
@@ -36,8 +34,6 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
     private static final int[] COLOR_R = {224,   0,   0, 224, 224,   0, 255, 255};
     private static final int[] COLOR_G = {  0,   0, 224, 224,   0, 224, 128, 255};
     private static final int[] COLOR_B = {  0, 224,   0,   0, 224, 224,   0, 255};
-
-    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final ResourceLocation TEX_LASER = tex("textures/shot/laser.png");
     private static final ResourceLocation TEX_LIGHT  = tex("textures/shot/musoufuuin.png");
@@ -69,15 +65,6 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         if(length < 0.1D)
         {
             length = 0.1D;
-        }
-
-        if(entity.tickCount % 10 == 0)
-        {
-            LOGGER.info("[THLaser] type={} shotId={} laserLength={} length={} width={} angleZ={} yaw={} xRot={} delta=({},{},{}) pos=({},{},{}) anim={}",
-                    entity.getClass().getSimpleName(), shotId, entity.getLaserLength(), length, width,
-                    entity.getAngleZ(), yaw, entity.getXRot(),
-                    entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z,
-                    entity.getX(), entity.getY(), entity.getZ(), entity.getAnimationCount());
         }
 
         poseStack.pushPose();
