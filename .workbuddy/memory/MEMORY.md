@@ -40,8 +40,9 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 ## 进度快照
 - ✅ 阶段 0/1/2：工程骨架 + 注册（91 物品/3 方块/1 TE/77 配方/5 语言/94 模型）+ 资源
 - ✅ 阶段 3 实体层全完成（M5 达标）：3a/3b/3c 最小链路 + 3d-1 激光 + 3d-2 符卡框架 + 3d-3 shot 10 + 3d-4 item 实体13+物品类13 + 3d-5 符卡36 + 3d-6 living 12 + 3d-7 effect 5
-- 🔶 阶段 4 渲染：4-1 弹幕 form ✅ / 4-2 激光 ✅ / 4-3 妖精形态 ✅ / 4-4 魔法阵 ✅ / 4-5 符卡 ✅ / 4-6 effect ✅、**item 实体 3D 模型 🔶**（billboard 兜底可用，原版数组式 Techne 待转换）/ 4-7 boss ✅
-- ⬜ 阶段 5/6/7：GUI、客户端泄漏、配置/事件/村民交易
+- ✅ 阶段 4 渲染：4-1 弹幕 form ✅ / 4-2 激光 ✅ / 4-3 妖精形态 ✅ / 4-4 魔法阵 ✅ / 4-5 符卡 ✅ / 4-6 effect ✅ + **item 实体 3D 模型 ✅**（7 模型 + 10 渲染器）/ 4-7 boss ✅
+- ✅ 阶段 5 GUI：4 套（弹幕/激光工作台 + 奇迹小槌 + 早苗商店）MenuType + AbstractContainerMenu + Screen + Slot + 方块 openScreen。早苗商店为简化骨架（原版 IMerchant 半成品，交易留阶段 7）
+- ⬜ 阶段 6/7：客户端泄漏、配置/事件、村民交易、掉落 EntityTHItem、触发物品类 ItemAjaRedStone/Hakurouken/OharaibouS
 
 ## 结构决策
 - 弹幕工作台拆 2 方块 `danmaku_crafting_table`+`laser_crafting_table`；物品 snake_case（91=55+36 变体）；lang 用 JSON；32 符卡配方暂缓（依赖符卡系统）
