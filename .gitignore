@@ -34,3 +34,4 @@ Thumbs.db
 # ===== 上游参考仓库（各自独立 git 历史，不纳入本仓库）=====
 thkaguya-1.12.2/
 thkaguya-1.14.4/
+tools/crashreport-1015/
