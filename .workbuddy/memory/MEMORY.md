@@ -47,6 +47,19 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - `.gitignore` 已排除 build/run/日志/*.jar/*.class/IDE 产物；`thkaguya-1.12.2`、`thkaguya-1.14.4` 是带独立 git 历史的上游参考仓库，**不纳入本仓库追踪**（已在 .gitignore 排除）。
 - `.gitattributes` 设 `* -text`，禁止 git 改写行尾，避免 CRLF diff 噪音。
 
+### 3.6 AccessTransformer（1.20.1 改 MC private 成员，3d-6 踩坑）
+- **AT 文件必须用 SRG 名**（`m_xxx_`/`f_xxx_`），不是 Mojang 官方名！参考 Forge 自带 `build/_atJar_4/parent_at.cfg`（全 srg 名 + `# official名` 注释）。
+- 格式：`protected net.minecraft.world.entity.monster.Creeper m_32315_()V # explodeCreeper`
+- 查 srg 名：`javap -p -cp ~/.gradle/caches/forge_gradle/mcp_repo/net/minecraft/joined/1.20.1-xxx/joined-1.20.1-xxx-srg.jar <全类名>`（private 方法显示为 `m_xxx_`）。
+- build.gradle 的 `minecraft{}` 里加 `accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')`。
+- 例：`Creeper.explodeCreeper` 是 private，AT 提 protected 后 override，让弹幕苦力怕撒弹幕替代方块爆炸。
+
+### 3.7 渲染/模型迁移（1.20.1）
+- 刷怪蛋 item model：`parent: minecraft:item/template_spawn_egg`（缺 model 会紫黑块）。
+- Techne 模型（ModelBase/ModelRenderer）→ LayerDefinition 用 `tools/gen_models.py` 脚本转换；**只解析构造器+getTechneModelData+defaultAddChildSetting 三个方法体**，不能解析整个类（setDefaultPause 里的 `setRotationPoint(x, bodyHeight, 0)` 字段引用会误带入）。
+- `MobRenderer<M, S extends EntityModel<M>>` 泛型不匹配时，把模型泛型化 `ModelXxx<T extends EntityDanmakuMob>`。
+- 通用 boss 渲染器 `RenderTHBoss<T extends EntityDanmakuMob>`（构造传模型+贴图）。
+
 ### 4. 结构决策（已定）
 - 弹幕工作台拆成 2 方块：`danmaku_crafting_table` + `laser_crafting_table`
 - 物品注册名统一 snake_case（91 个：55 独立 + 36 变体）
