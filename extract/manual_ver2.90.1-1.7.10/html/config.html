@@ -1,0 +1,128 @@
+<html>
+  
+  <head>
+    <title>五つの難題MOD+ コンフィグ</title>
+  </head>
+  
+  <body bgcolor=#EEE8AA>
+  
+  <hr>
+  
+  <center><img src="image/item1.png" alt="アイテム１" align="bottom">
+  <font face="ＭＳ Ｐ明朝" size="12" color=#B22222><u>コンフィグ</u></font>
+  <img src="image/item1.png" alt="アイテム１" align="bottom"></center>
+  
+  <hr>
+  
+  <br>
+  <center>
+  コンフィグファイルの内容を変えることで、一部の設定を変更できます。<br>
+  configフォルダ内の、<font color="red"><b>THKaguyaMod.cfg</b></font>がこのMODのコンフィグファイルです。
+  </center>
+  <br>
+  <hr>
+  <br>
+  
+  <table border="2" bgcolor=#C6C6C6>
+    <tr bgcolor=#2F4F4F><td colspan="4"><center><font size="8" color="white">danmaku</font></center></td></tr>
+    <tr><td colspan="4"><center>弾幕に関連した項目群</center></td></tr>
+    <tr><td>項目名</td> <td>用途</td> <td>有効値</td> <td>初期値</td></tr>
+    <tr><td>Danmaku 1 Kill Mode</td> <td>弾幕で即死するモードの選択<br>
+                                       trueで有効</td> <td>true<br>
+                                                           <b>false</b></td> <td><center>false</center></td></tr>
+    <tr><td>Danmaku Level</td> <td>敵の弾幕の難易度設定<br>
+                                   威力には影響しない</td> <td>0, 1, <b>2</b>, 3, 4<br><br>
+                                                               0 : 弾幕を出さない<br>
+                                                               1 : EASY<br>
+                                                               2 : NORMAL<br>
+                                                               3 : HARD<br>
+                                                               4 : LUNATIC</td> <td><center>2</center></td></tr>
+    
+    <tr><td>Fairy Spawn Rate(%)</td> <td>妖精のスポーン率<br>
+                                         0で妖精はスポーンしない<br>
+                                         100で最大レベルでスポーンする</td> <td>0 ～ 100</td> <td><center>50</center></td></tr>
+
+    <tr><td>Hit Rate of Entity Danmaku</td> <td>妖精や幽霊の弾幕の命中精度<br>
+                                         0ででたらめな方向に(当たらないとは言っていない)<br>
+                                         100で的確に狙う(誤差なし自機狙い)<br>
+                                         ボスやスペルカードには影響しない</td> <td>0 ～ 100</td> <td><center>80</center></td></tr>
+    <tr><td>Spawn Danmaku Mob</td> <td>このMODの追加モブがスポーンするか<br>
+                                       falseで全ての追加モブがスポーンしない</td> <td><b>true</b><br>
+                                                                                      false</td> <td><center>true</center></td></tr>
+                                                                                      
+    <tr><td>Spawn Danmaku Mob Boss</td> <td>このMODの追加ボスがスポーンするか<br>
+                                            falseで全ての追加ボスがスポーンしない</td> <td><b>true</b><br>
+                                                                                      false</td> <td><center>true</center></td></tr>
+
+    <tr><td>Spawn Fairy</td> <td>妖精がスポーンするか<br>
+                                 falseで妖精がスポーンしない</td> <td><b>true</b><br>
+                                                                         false</td> <td><center>true</center></td></tr>
+
+    <tr><td>Spawn Phantom</td> <td>幽霊がスポーンするか<br>
+                                   falseで幽霊がスポーンしない</td> <td><b>true</b><br>
+                                                                           false</td> <td><center>true</center></td></tr>
+  </table>
+  
+  <br><br>
+  <table border="2" bgcolor=#C6C6C6>
+    <tr bgcolor=#2F4F4F><td colspan="4"><center><font size="8" color="white">effect</font></center></td></tr>
+    <tr><td colspan="4"><center>エフェクトに関連した項目群</center></td></tr>
+    <tr><td>項目名</td> <td>用途</td> <td>有効値</td> <td>初期値</td></tr>
+    <tr><td>Appear Time stop effect</td> <td>咲夜の懐中時計の時間停止のエフェクトの有無<br>
+                                             falseで無効</td> <td><b>true</b><br>
+                                                                  false</td> <td><center>false</center></td></tr>
+    <tr><td>Use default Gap(Sukima)SE</td> <td>スキマをデフォルト以外のSEに変更する<br>
+                                               falseにした上で、指定の場所に指定の音声ファイルを<br>
+                                               入れることで再生される</td> <td><b>true</b><br>
+                                                                               false</td> <td><center>true</center></td></tr>
+  </table>
+  
+  <br><br>
+  <table border="2" bgcolor=#C6C6C6>
+    <tr bgcolor=#2F4F4F><td colspan="4"><center><font size="8" color="white">limit</font></center></td></tr>
+    <tr><td colspan="4"><center>制限に関連した項目群</center></td></tr>
+    <tr><td>項目名</td> <td>用途</td> <td>有効値</td> <td>初期値</td></tr>
+    <tr><td>Can Use Wall-Passing Chisel</td> <td>壁抜けの鑿の壁抜けの有効無効<br>
+                                                 falseで無効<br>
+                                                 マルチの場合はサーバーの設定を反映</td> <td><b>true</b><br>
+                                                                                                false</td> <td><center>true</center></td></tr>
+    <tr><td>Laser Max Number</td> <td>レーザー弾幕作業台で作成するレーザーの弾数制限</td> <td>1 ～ 64</td> <td><center>8</center></td></tr>
+    <tr><td>Master Spark Destryos Blocks</td> <td>ミニ八卦炉を直接使うマスタースパークが地形を破戒するか<br>
+                                                  trueで地形を破壊する</td> <td><b>true</b><br>
+                                                                            false</td> <td><center>false</center></td></tr>
+    <tr><td>Shot Max Number</td> <td>弾幕作業台で作成する弾の弾数制限</td> <td>1 ～ 64</td> <td><center>32</center></td></tr>
+    <tr><td>Use Master Spark</td> <td>マスタースパークを使うことができるか<br>
+                                      trueで使用できる<br>
+                                      恋符「マスタースパーク」には影響しない</td> <td><b>true</b><br>
+                                                                                      false</td> <td><center>false</center></td></tr>
+  </table>
+  
+  
+  <br><br>
+  <table border="2" bgcolor=#C6C6C6>
+    <tr bgcolor=#2F4F4F><td colspan="4"><center><font size="8" color="white">other</font></center></td></tr>
+    <tr><td colspan="4"><center>その他の項目群</center></td></tr>
+    <tr><td>項目名</td> <td>用途</td> <td>有効値</td> <td>初期値</td></tr>
+    <tr><td>Add Recipeless Items Recipe</td> <td>レシピのないアイテムのレシピを追加するか<br>
+                                                 trueで有効（非推奨）</td> <td>true<br>
+                                                                               <b>false</b></td> <td><center>false</center></td></tr>
+    <tr><td>Spawn Hanabeeper</td> <td>ハナビーパーがスポーンするかどうか<br>
+                                      trueでスポーンする</td> <td>true<br>
+                                                                  <b>false</b></td> <td><center>false</center></td></tr>
+
+  </table>
+  
+  <br><br>
+  <table border="2" bgcolor=#C6C6C6>
+    <tr bgcolor=#2F4F4F><td colspan="4"><center><font size="8" color="white">se vol</font></center></td></tr>
+    <tr><td colspan="4"><center>音量設定の項目群</center></td></tr>
+    <tr><td>項目名</td> <td>用途</td> <td>有効値</td> <td>初期値</td></tr>
+    <tr><td>Hisouten Vol</td> <td>「全人類の緋想天」の追加音声の音量</td> <td>0 ～ 100</td> <td><center>20</center></td></tr>
+    <tr><td>Master Spark Vol</td> <td>マスタースパークの追加音声の音量</td> <td>0 ～ 100</td> <td><center>50</center></td></tr>
+    <tr><td>Spell Card Vol</td> <td>スペルカード宣言の追加音声の音量</td> <td>0 ～ 100</td> <td><center>50</center></td></tr>
+    <tr><td>Down Card Vol</td> <td>倒れたときの追加音声の音量</td> <td>0 ～ 100</td> <td><center>50</center></td></tr>
+
+  </table>
+  
+  </body>
+</html>

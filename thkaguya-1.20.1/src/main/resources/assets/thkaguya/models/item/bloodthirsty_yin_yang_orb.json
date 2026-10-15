@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "thkaguya:item/bloodthirsty_yin_yang_orb"
+  }
+}

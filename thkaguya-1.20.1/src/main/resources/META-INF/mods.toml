@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All rights reserved"
+
+[[mods]]
+modId="thkaguya"
+version="1.0.0"
+displayName="Itutu no Nandai MOD+"
+description="东方Project「五つの難題」伪物与东方角色物品、弹幕、妖精的追加 Mod（1.7.10 移植版）"
+authors="thKaguyaMod (original), ported to 1.20.1"
+
+[[dependencies.thkaguya]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.thkaguya]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"

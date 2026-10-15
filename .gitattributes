@@ -1,0 +1,2 @@
+# 禁止 git 改写行尾（Windows CRLF / 避免 diff 噪音）
+* -text

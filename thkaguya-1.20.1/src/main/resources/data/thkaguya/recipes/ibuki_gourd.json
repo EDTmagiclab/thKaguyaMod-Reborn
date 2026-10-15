@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PLL",
+    "LWL",
+    "LLP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "L": {
+      "item": "minecraft:lapis_block"
+    },
+    "W": {
+      "item": "minecraft:nether_wart"
+    }
+  },
+  "result": {
+    "item": "thkaguya:ibuki_gourd",
+    "count": 1
+  }
+}

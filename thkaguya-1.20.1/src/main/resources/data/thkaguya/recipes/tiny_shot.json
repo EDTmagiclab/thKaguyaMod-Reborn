@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B"
+  ],
+  "key": {
+    "B": {
+      "item": "thkaguya:shot_material"
+    }
+  },
+  "result": {
+    "item": "thkaguya:tiny_shot",
+    "count": 1
+  }
+}

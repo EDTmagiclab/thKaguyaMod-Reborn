@@ -1,0 +1,36 @@
+# ===== 构建产物 =====
+build/
+.gradle/
+out/
+bin/
+
+# ===== Minecraft 运行目录 =====
+run/
+logs/
+crash-reports/
+*.mca
+*.mcr
+*.log
+
+# ===== IDE / 编辑器 =====
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+*.ipr
+*.iws
+
+# ===== Java 编译产物 / 二进制 =====
+*.class
+*.jar
+
+# ===== 系统 / 临时 =====
+Thumbs.db
+.DS_Store
+*.tmp
+
+# ===== 上游参考仓库（各自独立 git 历史，不纳入本仓库）=====
+thkaguya-1.12.2/
+thkaguya-1.14.4/
