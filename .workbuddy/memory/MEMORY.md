@@ -22,7 +22,10 @@
 - **Minecraft 1.13+ 的 ResourceLocation 路径只允许 `[a-z0-9/._-]`**，大写字母直接抛 `ResourceLocationException`。
 - 贴图文件名本身也要小写（资源加载大小写敏感）。原版 1.7.10 大量 camelCase 贴图名（`Shot.png`、`FairyTexture_0.png`），迁移时必须重命名为全小写。
 - `static final ResourceLocation` 在类加载时（`<clinit>`）就校验，含非法字符会在**资源重载阶段崩溃 = 游戏启动不了**（不是刷实体才崩）。
+- **目录名同样必须全小写**（883cedb 教训：文件名小写了但目录 `spellCard` 大写 C 漏了，渲染时才崩，比启动崩更难定位）。
 - Windows NTFS 大小写不敏感，批量重命名需两步（先 `*.tmp` 再目标名），否则 rename 静默失败。
+- **git 大小写重命名**：Windows `core.ignorecase=true` 下 git 不识别目录大小写变化。用 `git -c core.ignorecase=false add -A` 检测（会产生大小写重复条目），再 `git -c core.ignorecase=false rm -r --cached <大写路径>` 删大写条目，最终识别为 R(rename)。
+- **网络备用**：MCPRepo 拉 pom 时 `Connection reset by peer`（代理活着但 maven 服务器侧问题）→ 用 `gradle build --offline` 跳过网络检查（依赖已缓存即可）。
 
 ### 2. 1.20.1 实体三大注册缺一不可
 EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实体生成即崩。**runServer 验证不了渲染缺失**（服务器不渲染实体），客户端才会暴露。
