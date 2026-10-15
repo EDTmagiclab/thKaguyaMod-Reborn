@@ -60,8 +60,15 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-1：激光弹体 EntityTHLaser + 激光生成方法（6 个）+ RenderTHLaser + 妖精激光分支
 - ✅ 阶段 3d-2：符卡框架核心（EntitySpellCardCircle 魔法阵 + THSpellCard 基类 + ITHSpellCard + SpellCardRegistry + EntitySpellCard + THKaguyaLib 裁剪版）
 - ✅ 阶段 3d-3：shot 剩余弹体 10 个（EntityDragonNeckJewel/HomingAmulet/MasterSpark/MusouFuuin/NuclearShot/Onmyoudama/SanaeWind/THHenyoriLaser/THSetLaser/ISpecialShot）
-- ✅ 阶段 3d-4：item 实体 13 个 + 触发它们的 ItemXxx 物品类 13 个（compileJava/build 通过，占位渲染 RenderEmptyItem）
+- ✅ 阶段 3d-4：item 实体 13 个 + 触发它们的 ItemXxx 物品类 13 个；用户实测反馈修复：渲染（4 渲染器 + 16 贴图）/隙间传送/怀表模式，已提交
 - ⏳ 阶段 3d-5：36 符卡类（THSC_*，3895 行）
 - ⏳ 阶段 3d-6/3d-7：living 15 个 + effect 5 个
 - ⏳ 阶段 4 完整：弹体按形状分贴图、妖精 11 种形态切换、激光/魔法阵/符卡完整渲染、各实体模型
 - ⏳ 阶段 5/6/7：GUI、客户端泄漏修复、配置/事件/村民交易
+
+### 5. 实测修复经验（3d-4 批次）
+- **时停回退前提已字节码验证**：1.20.1 `ServerLevel.tickNonPassenger` 先 `setOldPosAndRot()` 快照 xo/yo/zo、再 tickCount++、再 tick()——与 1.7.10 语义一致，`setPos(xo,yo,zo)` 冻结法有效。EntityTickList 是插入序 LinkedHashMap。
+- **传送必须用 `teleportTo(DDD)`**：`setPos` 服务器端不广播位移包；`teleportTo` 内部 moveTo + 广播。
+- **`Player.getPortalWaitTime()` 返回 80 非 0**：「未进传送门」判断要用 `!entity.isOnPortalCooldown()`。
+- **原版代码会与自身注释矛盾**（怀表「通常は停止モード」实际新表=减速）：移植时以注释意图+玩家体验为准，本版怀表新表=TIME_STOP 时停、切换=TIME_HALF。
+- billboard 兜底渲染器 `RenderItemBillboard`（textures/entity/ 下 16 张贴图）已覆盖全部 13 个 item 实体。

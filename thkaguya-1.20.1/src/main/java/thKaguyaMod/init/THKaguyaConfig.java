@@ -116,7 +116,9 @@ public class THKaguyaConfig
         useDefaultGapSE = USE_DEFAULT_GAP_SE.get();
         if(!useDefaultGapSE)
         {
-            sukimaWarpSE = "thkaguya:sukima";
+            // 原版 jar 也没有 sukima.ogg 音频（sounds.json 引用但文件缺失，属上游遗留）。
+            // 自定义音效名回退到同款原版音效，避免资源缺失 WARNING。
+            sukimaWarpSE = "mob.endermen.portal";
         }
         SpellCardVol = (float)SPELL_CARD_VOL.get() / 100F;
         MasterSparkVol = (float)MASTER_SPARK_VOL.get() / 100F;

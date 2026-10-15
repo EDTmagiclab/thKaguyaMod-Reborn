@@ -55,28 +55,30 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.TH_SET_LASER.get(), RenderTHLaser::new);
 
         // item 实体（阶段 3d-4）：专属渲染器 + billboard 兜底
+        // billboard 必须用 textures/item/ 的物品图标（完整单品图）；
+        // textures/entity/ 的 *_texture.png 是盒子模型 UV 展开图，铺平会显示碎片（实测踩坑）
         event.registerEntityRenderer(THKaguyaEntities.SILVER_KNIFE.get(), RenderSilverKnife::new);
         event.registerEntityRenderer(THKaguyaEntities.SUKIMA.get(), RenderSukima::new);
         event.registerEntityRenderer(THKaguyaEntities.MARISA_BROOM.get(), RenderMarisaBroom::new);
         event.registerEntityRenderer(THKaguyaEntities.CURSED_DECOY_DOLL.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/item/cursed_decoy_doll.png", 0.8F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/cursed_decoy_doll.png", 0.4F));
         event.registerEntityRenderer(THKaguyaEntities.HISOU.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/hisou_texture.png", 1.6F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/hisou_sword.png", 0.5F));
         event.registerEntityRenderer(THKaguyaEntities.KINKAKUZI.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/kinkakuzi_texture.png", 2.2F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/kinkakuji.png", 0.4F));
         event.registerEntityRenderer(THKaguyaEntities.MAZINKYOUKAN.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/mazinkyoukan_texture.png", 0.9F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/wall_passing_chisel.png", 0.4F));
         event.registerEntityRenderer(THKaguyaEntities.MINI_HAKKERO.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/mini_hakkero_texture.png", 0.4F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/mini_hakkero.png", 0.35F));
         event.registerEntityRenderer(THKaguyaEntities.PENDULUM.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/pendulum_texture.png", 0.4F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/nazrin_pendulum.png", 0.35F));
         event.registerEntityRenderer(THKaguyaEntities.SAKUYA_STOP_WATCH.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/sakuya_stop_watch_texture.png", 0.4F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/sakuya_stopwatch.png", 0.35F));
         event.registerEntityRenderer(THKaguyaEntities.SAKUYA_WATCH.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/sakuya_watch_texture.png", 0.5F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/sakuya_watch.png", 0.4F));
         event.registerEntityRenderer(THKaguyaEntities.SPIRITUAL_STRIKE_TALISMAN.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/spiritual_strike_talisman_texture.png", 0.4F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/spiritual_strike_talisman.png", 0.4F));
         event.registerEntityRenderer(THKaguyaEntities.YUUKA_PARASOL.get(),
-                ctx -> new RenderItemBillboard<>(ctx, "textures/entity/yuuka_parasol_texture.png", 0.6F));
+                ctx -> new RenderItemBillboard<>(ctx, "textures/item/yuuka_parasol.png", 0.4F));
     }
 }

@@ -18,11 +18,14 @@ import thKaguyaMod.entity.item.EntityMarisaBroom;
  *
  * 原版 RenderMarisaBroom 用 Tessellator 手绘 4 面旋转长杆 + 刷毛（贴图 MagicBloom.png）。
  * 这里还原同样几何：杆身 4 面长条 + 刷毛 3 段锥形扩散 ×4 方向，保留受击摇摆动画。
+ * 贴图改用 textures/item/magic_broom.png（64x32 原版 MagicBloom 是模型展开图，
+ * UV 坐标仍按其 0..1 布局取样，杆/刷毛区域近似对应）。
+ * 实测坑：quad() 若缺 .color() 会崩（Not filled all elements of the vertex）。
  */
 public class RenderMarisaBroom extends EntityRenderer<EntityMarisaBroom>
 {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation(THKaguyaCore.MODID, "textures/entity/magic_bloom.png");
+            new ResourceLocation(THKaguyaCore.MODID, "textures/item/magic_broom.png");
 
     public RenderMarisaBroom(EntityRendererProvider.Context context)
     {
@@ -74,19 +77,19 @@ public class RenderMarisaBroom extends EntityRenderer<EntityMarisaBroom>
         for(int i = 0; i < 4; i++)
         {
             quad(consumer, poseStack,
-                    rodWidth, -rodWidth,  (float)rodLengthHalf, 0.0F, 2.0F / 32.0F,
-                    rodWidth, -rodWidth, -(float)rodLengthHalf, 1.0F, 2.0F / 32.0F,
-                    rodWidth,  rodWidth, -(float)rodLengthHalf, 1.0F, 0.0F,
+                    rodWidth, -rodWidth,  (float)rodLengthHalf, 0.0F, 2.0F / 64.0F,
+                    rodWidth, -rodWidth, -(float)rodLengthHalf, 0.5F, 2.0F / 64.0F,
+                    rodWidth,  rodWidth, -(float)rodLengthHalf, 0.5F, 0.0F,
                     rodWidth,  rodWidth,  (float)rodLengthHalf, 0.0F, 0.0F);
             poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
         }
 
         // 杆身前端封口
         quad(consumer, poseStack,
-                -rodWidth, -rodWidth,  (float)rodLengthHalf, 0.0F,         2.0F / 32.0F,
-                 rodWidth, -rodWidth,  (float)rodLengthHalf, 2.0F / 64.0F, 2.0F / 32.0F,
-                 rodWidth,  rodWidth,  (float)rodLengthHalf, 2.0F / 64.0F, 4.0F / 32.0F,
-                -rodWidth,  rodWidth,  (float)rodLengthHalf, 0.0F,         4.0F / 32.0F);
+                -rodWidth, -rodWidth,  (float)rodLengthHalf, 0.0F, 2.0F / 64.0F,
+                 rodWidth, -rodWidth,  (float)rodLengthHalf, 0.5F, 2.0F / 64.0F,
+                 rodWidth,  rodWidth,  (float)rodLengthHalf, 0.5F, 4.0F / 64.0F,
+                -rodWidth,  rodWidth,  (float)rodLengthHalf, 0.0F, 4.0F / 64.0F);
 
         // 刷毛颈部
         quad(consumer, poseStack,
@@ -107,20 +110,20 @@ public class RenderMarisaBroom extends EntityRenderer<EntityMarisaBroom>
         {
             quad(consumer, poseStack,
                     rodWidth4, -rodWidth4, -(float)rodLengthHalf + 0.3F, 0.5F, 0.5F,
-                    rodWidth,  -rodWidth,  -(float)rodLengthHalf,        0.5F, 3.0F / 32.0F,
-                    rodWidth,   rodWidth,  -(float)rodLengthHalf,        1.0F, 3.0F / 32.0F,
+                    rodWidth,  -rodWidth,  -(float)rodLengthHalf,        0.5F, 3.0F / 64.0F,
+                    rodWidth,   rodWidth,  -(float)rodLengthHalf,        1.0F, 3.0F / 64.0F,
                     rodWidth4,  rodWidth4, -(float)rodLengthHalf + 0.3F, 1.0F, 0.5F);
 
             quad(consumer, poseStack,
                     rodWidth,   -rodWidth,  -(float)rodLengthHalf,        0.5F, 0.5F,
-                    rodWidth2,  -rodWidth2, -(float)rodLengthHalf - 0.6F, 0.5F, 3.0F / 32.0F,
-                    rodWidth2,   rodWidth2, -(float)rodLengthHalf - 0.6F, 1.0F, 3.0F / 32.0F,
+                    rodWidth2,  -rodWidth2, -(float)rodLengthHalf - 0.6F, 0.5F, 3.0F / 64.0F,
+                    rodWidth2,   rodWidth2, -(float)rodLengthHalf - 0.6F, 1.0F, 3.0F / 64.0F,
                     rodWidth,    rodWidth,  -(float)rodLengthHalf,        1.0F, 0.5F);
 
             quad(consumer, poseStack,
                     rodWidth2,  -rodWidth2, -(float)rodLengthHalf - 0.6F, 0.5F, 1.0F,
-                    rodWidth3,  -rodWidth3, -(float)rodLengthHalf - 1.3F, 0.5F, 16.0F / 32.0F,
-                    rodWidth3,   rodWidth3, -(float)rodLengthHalf - 1.3F, 1.0F, 16.0F / 32.0F,
+                    rodWidth3,  -rodWidth3, -(float)rodLengthHalf - 1.3F, 0.5F, 16.0F / 64.0F,
+                    rodWidth3,   rodWidth3, -(float)rodLengthHalf - 1.3F, 1.0F, 16.0F / 64.0F,
                     rodWidth2,   rodWidth2, -(float)rodLengthHalf - 0.6F, 1.0F, 1.0F);
 
             poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
@@ -130,7 +133,9 @@ public class RenderMarisaBroom extends EntityRenderer<EntityMarisaBroom>
         super.render(broom, yaw, partialTick, poseStack, buffer, packedLight);
     }
 
-    /** 原版 Tessellator.addVertexWithUV 四顶点四边形的等价实现 */
+    /** 原版 Tessellator.addVertexWithUV 四顶点四边形的等价实现。
+     *  1.20.1 NEW_ENTITY 格式必须填满 POSITION/COLOR/UV/OVERLAY/UV2/NORMAL 六要素，
+     *  缺 color 会抛「Not filled all elements of the vertex」崩溃（实测踩坑）。 */
     private static void quad(VertexConsumer consumer, PoseStack poseStack,
             float ax, float ay, float az, float uA, float vA,
             float bx, float by, float bz, float uB, float vB,
@@ -140,16 +145,16 @@ public class RenderMarisaBroom extends EntityRenderer<EntityMarisaBroom>
         PoseStack.Pose pose = poseStack.last();
         var matrix = pose.pose();
         var normal = pose.normal();
-        consumer.vertex(matrix, ax, ay, az).uv(uA, vA)
+        consumer.vertex(matrix, ax, ay, az).color(255, 255, 255, 255).uv(uA, vA)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, bx, by, bz).uv(uB, vB)
+        consumer.vertex(matrix, bx, by, bz).color(255, 255, 255, 255).uv(uB, vB)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, cx, cy, cz).uv(uC, vC)
+        consumer.vertex(matrix, cx, cy, cz).color(255, 255, 255, 255).uv(uC, vC)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, dx, dy, dz).uv(uD, vD)
+        consumer.vertex(matrix, dx, dy, dz).color(255, 255, 255, 255).uv(uD, vD)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
     }

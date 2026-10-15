@@ -189,7 +189,8 @@ public class ItemSukima extends Item
 			}
 			else
 			{
-				// TODO(阶段7): 自定义音效 THKaguyaConfig.sukimaWarpSE
+				// 自定义音效：原版 jar 无 sukima.ogg（上游遗留），回退同款原版音效
+				level.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
 			}
 
 			if(!level.isClientSide)

@@ -16,15 +16,16 @@ import thKaguyaMod.entity.item.EntitySilverKnife;
  * 銀のナイフの描画（1.20.1 移植版，阶段 3d-4 可见性修复）
  *
  * 原版 RenderSilverKnife 用 ModelSilverKnife 立体模型（护手/柄/刃尖三盒）。
- * 阶段 4-6 再迁完整模型；当前用刀形贴图（textures/shot/silverknife_*.png）画
- * 沿弹道方向的长条四边形，按 knifeColor 选 4 张贴图，保留投掷朝向。
+ * 阶段 4-6 再迁完整模型；当前用物品图标（textures/item/silver_knife_*.png，16x16
+ * 完整刀形图）画沿弹道方向的细长四边形，按 knifeColor 选 4 张贴图，保留投掷朝向。
+ * 注意：不能用 textures/shot/silverknife_*.png（64x32 弹幕精灵图，作 billboard 会显示展开碎片）。
  */
 public class RenderSilverKnife extends EntityRenderer<EntitySilverKnife>
 {
-    private static final ResourceLocation TEX_BLUE  = tex("textures/shot/silverknife_blue.png");
-    private static final ResourceLocation TEX_RED   = tex("textures/shot/silverknife_red.png");
-    private static final ResourceLocation TEX_GREEN = tex("textures/shot/silverknife_green.png");
-    private static final ResourceLocation TEX_WHITE = tex("textures/entity/silver_knife_white.png");
+    private static final ResourceLocation TEX_BLUE  = tex("textures/item/silver_knife_blue.png");
+    private static final ResourceLocation TEX_RED   = tex("textures/item/silver_knife_red.png");
+    private static final ResourceLocation TEX_GREEN = tex("textures/item/silver_knife_green.png");
+    private static final ResourceLocation TEX_WHITE = tex("textures/item/silver_knife_white.png");
 
     private static ResourceLocation tex(String path)
     {
@@ -67,22 +68,23 @@ public class RenderSilverKnife extends EntityRenderer<EntitySilverKnife>
         ResourceLocation texture = getKnifeTexture(knife.getKnifeColor());
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        // 顶部十字双面四边形（0.8x0.8 平面，近似刀形）
+        // 刀形物品图标 billboard（16x16 物品贴图，细长条比例，保留投掷朝向）
         PoseStack.Pose pose = poseStack.last();
         var matrix = pose.pose();
         var normal = pose.normal();
-        float half = 0.4F;
+        float hw = 0.11F;  // 刀身宽度的一半（细长条，接近原版刀形观感）
+        float hh = 0.40F;  // 刀身长度的一半
 
-        consumer.vertex(matrix,  half,  half, 0.0F).color(255, 255, 255, 255)
+        consumer.vertex(matrix,  hw,  hh, 0.0F).color(255, 255, 255, 255)
                 .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, -half,  half, 0.0F).color(255, 255, 255, 255)
+        consumer.vertex(matrix, -hw,  hh, 0.0F).color(255, 255, 255, 255)
                 .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, -half, -half, 0.0F).color(255, 255, 255, 255)
+        consumer.vertex(matrix, -hw, -hh, 0.0F).color(255, 255, 255, 255)
                 .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix,  half, -half, 0.0F).color(255, 255, 255, 255)
+        consumer.vertex(matrix,  hw, -hh, 0.0F).color(255, 255, 255, 255)
                 .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
 

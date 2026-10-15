@@ -4,6 +4,7 @@ import static thKaguyaMod.DanmakuConstants.*;
 
 import java.util.List;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -43,6 +44,8 @@ import thKaguyaMod.init.THKaguyaItems;
  */
 public class EntitySukima extends Entity
 {
+	private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
+
 	private static final EntityDataAccessor<Integer> COLOR =
 			SynchedEntityData.defineId(EntitySukima.class, EntityDataSerializers.INT);
 
@@ -235,13 +238,20 @@ public class EntitySukima extends Entity
         				// 非玩家实体没有客户端插值问题，弹幕靠 lastShotMotion 保持连续）
         				entity.setPortalCooldown(40);//２秒間スキマの影響を受けない
         				level().playSound(null, entity.blockPosition(), sukimaWarpSound(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        				// 诊断日志（阶段 3d-4 二轮实测：用户报告传送无效，定位用）
+        				if(entity instanceof ServerPlayer sp)
+        				{
+        					LOGGER.info("[THKaguya] Sukima warp player: color={} -> ({}, {}, {})",
+        							getColor(), (int)warpPosX, (int)warpPosY, (int)warpPosZ);
+        				}
         			}
         		}
             }
         }
 	}
 
-	/** コンフィグのスキマ効果音を SoundEvent に変換（"mob.endermen.portal" -> ENDERMAN_TELEPORT） */
+	/** コンフィグのスキマ効果音を SoundEvent に変換
+	 *  原版 jar 无 sukima.ogg 音频（上游遗留），自定义名也回退到末影人传送音 */
 	private static SoundEvent sukimaWarpSound()
 	{
 		String name = THKaguyaConfig.sukimaWarpSE;
