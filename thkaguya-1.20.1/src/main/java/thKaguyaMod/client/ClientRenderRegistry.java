@@ -15,6 +15,7 @@ import thKaguyaMod.client.model.living.ModelReimu;
 import thKaguyaMod.client.model.living.ModelRumia;
 import thKaguyaMod.client.model.living.ModelSakuya;
 import thKaguyaMod.client.model.living.ModelSanae;
+import thKaguyaMod.client.model.living.ModelSunFlowerFairy;
 import thKaguyaMod.client.model.living.ModelTHFairy;
 import thKaguyaMod.client.model.living.ModelToziko;
 import thKaguyaMod.client.model.living.ModelWriggle;
@@ -26,6 +27,7 @@ import thKaguyaMod.client.render.item.RenderSukima;
 import thKaguyaMod.client.render.item.RenderSilverKnife;
 import thKaguyaMod.client.render.living.RenderTHBoss;
 import thKaguyaMod.client.render.living.RenderTHFairy;
+import thKaguyaMod.client.render.living.RenderSunFlowerFairy;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
 import thKaguyaMod.client.render.shot.RenderTHShot;
 import thKaguyaMod.client.render.spellcard.RenderSpellCard;
@@ -58,6 +60,7 @@ public class ClientRenderRegistry
     private static final ModelLayerLocation SANAE_LAYER   = layer("sanae");
     private static final ModelLayerLocation TOZIKO_LAYER  = layer("toziko");
     private static final ModelLayerLocation WRIGGLE_LAYER = layer("wriggle");
+    private static final ModelLayerLocation SUNFLOWER_LAYER = layer("sunflower_fairy");
 
     private static ModelLayerLocation layer(String name)
     {
@@ -76,6 +79,7 @@ public class ClientRenderRegistry
         event.registerLayerDefinition(SANAE_LAYER, ModelSanae::createBodyLayer);
         event.registerLayerDefinition(TOZIKO_LAYER, ModelToziko::createBodyLayer);
         event.registerLayerDefinition(WRIGGLE_LAYER, ModelWriggle::createBodyLayer);
+        event.registerLayerDefinition(SUNFLOWER_LAYER, ModelSunFlowerFairy::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -109,7 +113,8 @@ public class ClientRenderRegistry
                 ctx -> new RenderTHBoss<EntitySakuya>(ctx, new ModelSakuya<>(ctx.bakeLayer(SAKUYA_LAYER)), "textures/mob/sakuyatexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.SANAE.get(),
                 ctx -> new RenderTHBoss<EntitySanae>(ctx, new ModelSanae<>(ctx.bakeLayer(SANAE_LAYER)), "textures/mob/sanaetexture.png", 0.25F));
-        event.registerEntityRenderer(THKaguyaEntities.SUNFLOWER_FAIRY.get(), RenderTHFairy::new);
+        event.registerEntityRenderer(THKaguyaEntities.SUNFLOWER_FAIRY.get(),
+                ctx -> new RenderSunFlowerFairy(ctx, new ModelSunFlowerFairy<>(ctx.bakeLayer(SUNFLOWER_LAYER))));
         event.registerEntityRenderer(THKaguyaEntities.TH_PHANTOM.get(), RenderTHFairy::new);
         event.registerEntityRenderer(THKaguyaEntities.TOZIKO.get(),
                 ctx -> new RenderTHBoss<EntityToziko>(ctx, new ModelToziko<>(ctx.bakeLayer(TOZIKO_LAYER)), "textures/mob/tozikotexture.png", 0.25F));

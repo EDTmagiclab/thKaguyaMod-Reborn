@@ -28,6 +28,8 @@ public class EntityTHFairy extends EntityDanmakuMob
         this.lastTime = 0;
         this.setSpeed(0.3D);
         this.setSpecies(this.SPECIES_FAIRY);
+        // 妖精形态：原版 setForm(rand.nextInt(3))，随机 0/1/2（僵尸形态 -1 由 onDeathUpdate 在万圣节/地狱设定）
+        this.setForm((byte)this.random.nextInt(3));
         this.isFlyingMode = true;
         this.setAttackDistance(8.0D);
         this.setDetectionDistance(8.0D);

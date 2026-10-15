@@ -10,11 +10,22 @@ import thKaguyaMod.entity.living.EntityTHFairy;
 /**
  * 妖精渲染器（1.20.1 移植版）
  * 原版 RenderTHFairy（RenderLiving）-> 1.20.1 MobRenderer。
+ *
+ * 贴图随形态切换（原版逻辑）：
+ *   getForm() >= 0 → FairyTexture_{danmakuPattern % 3}.png（3 种身体）
+ *   getForm() < 0  → ZombieFairyTexture.png（僵尸妖精）
  */
 public class RenderTHFairy extends MobRenderer<EntityTHFairy, ModelTHFairy<EntityTHFairy>>
 {
-    private static final ResourceLocation TEXTURE =
-            new ResourceLocation(THKaguyaCore.MODID, "textures/mob/fairytexture_0.png");
+    private static final ResourceLocation[] FAIRY_TEXTURES =
+    {
+        new ResourceLocation(THKaguyaCore.MODID, "textures/mob/fairytexture_0.png"),
+        new ResourceLocation(THKaguyaCore.MODID, "textures/mob/fairytexture_1.png"),
+        new ResourceLocation(THKaguyaCore.MODID, "textures/mob/fairytexture_2.png")
+    };
+
+    private static final ResourceLocation ZOMBIE_TEXTURE =
+            new ResourceLocation(THKaguyaCore.MODID, "textures/mob/zombiefairytexture.png");
 
     public RenderTHFairy(EntityRendererProvider.Context context)
     {
@@ -24,6 +35,10 @@ public class RenderTHFairy extends MobRenderer<EntityTHFairy, ModelTHFairy<Entit
     @Override
     public ResourceLocation getTextureLocation(EntityTHFairy entity)
     {
-        return TEXTURE;
+        if(entity.getForm() >= 0)
+        {
+            return FAIRY_TEXTURES[Math.floorMod(entity.getDanmakuPattern(), 3)];
+        }
+        return ZOMBIE_TEXTURE;
     }
 }
