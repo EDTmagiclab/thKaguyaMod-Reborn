@@ -8,7 +8,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.DanmakuConstants;
@@ -35,6 +34,8 @@ public class EntityTHLaser extends EntityTHShot
     public EntityTHLaser(EntityType<?> type, Level level)
     {
         super(type, level);
+        // 原版 ignoreFrustumCheck = true：激光中心出视野也渲染（1.20.1 等价物 noCulling 字段）
+        this.noCulling = true;
     }
 
     public EntityTHLaser(Level level, LivingEntity user, Entity source,
@@ -46,6 +47,7 @@ public class EntityTHLaser extends EntityTHShot
         super(level, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
                 firstSpeed, limitSpeed, acceleration, gravity,
                 shotId, width, damage, delay, end, special);
+        this.noCulling = true;
         setLaserLength(0.0D);
         setMaxLaserLength(length);
     }
@@ -68,31 +70,6 @@ public class EntityTHLaser extends EntityTHShot
         super.defineSynchedData();
         this.entityData.define(LASER_LENGTH, 0);
         this.entityData.define(MAX_LASER_LENGTH, 0);
-    }
-
-    /**
-     * 原版 EntityTHLaser 构造里 ignoreFrustumCheck = true：
-     * 激光实体 AABB 只有 0.1×0.1（发射点），但激光本身可长达几十格，
-     * 若按发射点 AABB 做视锥剔除，激光中心/发射点一旦偏出视野，整条激光就不渲染。
-     * 1.20.1 无 noCulling()，视锥剔除用 getBoundingBoxForCulling() 的 AABB，
-     * 故返回覆盖激光全长的 AABB（原版 ignoreFrustumCheck 的等价实现）。
-     */
-    @Override
-    public AABB getBoundingBoxForCulling()
-    {
-        double len = getLaserLength();
-        if(len < 0.1D)
-        {
-            len = 0.1D;
-        }
-        double x0 = getX(), y0 = getY(), z0 = getZ();
-        double x1 = x0 + angle.x * len;
-        double y1 = y0 + angle.y * len;
-        double z1 = z0 + angle.z * len;
-        return new AABB(
-                Math.min(x0, x1), Math.min(y0, y1), Math.min(z0, z1),
-                Math.max(x0, x1), Math.max(y0, y1), Math.max(z0, z1)
-        ).inflate(1.0D);
     }
 
     /** 毎 tick 処理：激光长度增长 */
