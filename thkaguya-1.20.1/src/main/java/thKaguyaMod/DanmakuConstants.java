@@ -136,6 +136,9 @@ public class DanmakuConstants {
 	/** 気質弾特殊動作ID（原版 THSC_Zenzinrui_no_Hisouten.SPECIAL_HISOUTEN01，阶段 3d-4 上移避免循环依赖） */
 	public static final int SPECIAL_HISOUTEN01 = 700;
 
+	/** エイジャの赤石のレーザー特殊動作ID（原版 ItemAjaRedStone.SPECIAL_AJA_REDSTONE，阶段 3d-7 上移避免依赖未迁移物品类） */
+	public static final int SPECIAL_AJA_REDSTONE = 351;
+
 	/** 幽々子のパラソルの耐久値（原版 ItemYuukaParasol.PARASOL_MAX_DAMAGE，EntityYuukaParasol 用） */
 	public static final int PARASOL_MAX_DAMAGE = 60;
 

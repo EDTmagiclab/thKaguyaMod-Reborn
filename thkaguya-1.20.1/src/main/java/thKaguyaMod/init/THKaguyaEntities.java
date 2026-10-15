@@ -6,6 +6,11 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.entity.effect.EntityAjaRedStoneEffect;
+import thKaguyaMod.entity.effect.EntityCirnoIceBox;
+import thKaguyaMod.entity.effect.EntityHakureiShield;
+import thKaguyaMod.entity.effect.EntityHakurouReflecter;
+import thKaguyaMod.entity.effect.EntityMiracleCircle;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
 import thKaguyaMod.entity.item.EntityCursedDecoyDoll;
 import thKaguyaMod.entity.item.EntityHisou;
@@ -194,6 +199,43 @@ public class THKaguyaEntities
                             .sized(0.4F, 0.4F)
                             .clientTrackingRange(64)
                             .build("spell_card"));
+
+    /* ==================== effect 实体（阶段 3d-7，5 个）==================== */
+
+    public static final RegistryObject<EntityType<EntityAjaRedStoneEffect>> AJA_RED_STONE_EFFECT =
+            ENTITIES.register("aja_red_stone_effect",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityAjaRedStoneEffect>) (type, level) -> new EntityAjaRedStoneEffect(type, level),
+                                    MobCategory.MISC)
+                            .sized(2.0F, 0.1F).clientTrackingRange(64).updateInterval(1).build("aja_red_stone_effect"));
+
+    public static final RegistryObject<EntityType<EntityCirnoIceBox>> CIRNO_ICE_BOX =
+            ENTITIES.register("cirno_ice_box",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityCirnoIceBox>) (type, level) -> new EntityCirnoIceBox(type, level),
+                                    MobCategory.MISC)
+                            .sized(1.0F, 1.0F).clientTrackingRange(64).updateInterval(1).build("cirno_ice_box"));
+
+    public static final RegistryObject<EntityType<EntityHakureiShield>> HAKUREI_SHIELD =
+            ENTITIES.register("hakurei_shield",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityHakureiShield>) (type, level) -> new EntityHakureiShield(type, level),
+                                    MobCategory.MISC)
+                            .sized(1.5F, 1.5F).clientTrackingRange(64).updateInterval(1).build("hakurei_shield"));
+
+    public static final RegistryObject<EntityType<EntityHakurouReflecter>> HAKUROU_REFLECTER =
+            ENTITIES.register("hakurou_reflecter",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityHakurouReflecter>) (type, level) -> new EntityHakurouReflecter(type, level),
+                                    MobCategory.MISC)
+                            .sized(1.5F, 1.5F).clientTrackingRange(64).updateInterval(1).build("hakurou_reflecter"));
+
+    public static final RegistryObject<EntityType<EntityMiracleCircle>> MIRACLE_CIRCLE =
+            ENTITIES.register("miracle_circle",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityMiracleCircle>) (type, level) -> new EntityMiracleCircle(type, level),
+                                    MobCategory.MISC)
+                            .sized(2.0F, 0.1F).clientTrackingRange(64).updateInterval(1).build("miracle_circle"));
 
     /* ==================== 特殊弹体（阶段 3d-3）==================== */
 
