@@ -14,16 +14,17 @@ import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 
-/** ハナビーパー：爆発時に弾幕をまき散らすクリーパー（1.20.1 移植版） */
+/**
+ * ハナビーパー：爆発時に弾幕をまき散らすクリーパー（1.20.1 移植版）
+ *
+ * 通过 AccessTransformer 把 Creeper.explodeCreeper 提升为 protected 后重写：
+ * 膨胀到最大时不破坏方块，改为撒一圈弹幕并消失（对齐原版注释掉的 createExplosion）。
+ */
 public class EntityDanmakuCreeper extends Creeper
 {
-    /** 点燃后的弹幕引信计数（替代原版方块爆炸） */
-    private int danmakuFuse;
-
     public EntityDanmakuCreeper(EntityType<? extends EntityDanmakuCreeper> type, Level level)
     {
         super(type, level);
-        this.danmakuFuse = 0;
     }
 
     public EntityDanmakuCreeper(Level level)
@@ -36,24 +37,14 @@ public class EntityDanmakuCreeper extends Creeper
         return Creeper.createAttributes();
     }
 
+    /** 膨胀到最大时：用弹幕爆炸替代方块爆炸 */
     @Override
-    public void tick()
+    public void explodeCreeper()
     {
-        super.tick();
-
-        // 点燃后膨胀到引信耗尽时，用弹幕爆炸替代方块爆炸（原版注释掉了 createExplosion）
-        if(!this.level().isClientSide && this.isIgnited())
+        if(!this.level().isClientSide)
         {
-            this.danmakuFuse++;
-            if(this.danmakuFuse >= 20)
-            {
-                this.fireDanmaku();
-                this.discard();
-            }
-        }
-        else
-        {
-            this.danmakuFuse = 0;
+            this.fireDanmaku();
+            this.discard();
         }
     }
 
@@ -61,7 +52,8 @@ public class EntityDanmakuCreeper extends Creeper
     {
         int level = Math.max(1, Math.min(THKaguyaConfig.danmakuLevel, 4));
         float size = 0.1F + level * 0.1F;
-        int[] ways = {8, 12, 20, 32, 44};
+        // 原版 ways = {8,12,20,32,44} 按 level 索引；44 超出迁移版 ways 数组范围，改用 level-1 索引（8/12/20/32）
+        int[] ways = {8, 12, 20, 32};
         int way = ways[level - 1];
         float damage = 5.0F;
 

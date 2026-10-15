@@ -1,22 +1,40 @@
 package thKaguyaMod.client;
 
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.CreeperRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.client.model.living.ModelCirno;
+import thKaguyaMod.client.model.living.ModelMiko;
+import thKaguyaMod.client.model.living.ModelReimu;
+import thKaguyaMod.client.model.living.ModelRumia;
+import thKaguyaMod.client.model.living.ModelSakuya;
+import thKaguyaMod.client.model.living.ModelSanae;
 import thKaguyaMod.client.model.living.ModelTHFairy;
+import thKaguyaMod.client.model.living.ModelToziko;
+import thKaguyaMod.client.model.living.ModelWriggle;
 import thKaguyaMod.client.render.effect.RenderSpellCardCircle;
 import thKaguyaMod.client.render.item.RenderItemBillboard;
 import thKaguyaMod.client.render.item.RenderSukima;
 import thKaguyaMod.client.render.item.RenderSilverKnife;
-import thKaguyaMod.client.render.living.RenderDanmakuMob;
+import thKaguyaMod.client.render.living.RenderTHBoss;
 import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
 import thKaguyaMod.client.render.shot.RenderTHShot;
 import thKaguyaMod.client.render.spellcard.RenderSpellCard;
+import thKaguyaMod.entity.living.EntityCirno;
+import thKaguyaMod.entity.living.EntityMiko;
+import thKaguyaMod.entity.living.EntityReimu;
+import thKaguyaMod.entity.living.EntityRumia;
+import thKaguyaMod.entity.living.EntitySakuya;
+import thKaguyaMod.entity.living.EntitySanae;
+import thKaguyaMod.entity.living.EntityToziko;
+import thKaguyaMod.entity.living.EntityWriggle;
 import thKaguyaMod.init.THKaguyaEntities;
 
 /**
@@ -29,10 +47,33 @@ import thKaguyaMod.init.THKaguyaEntities;
 @Mod.EventBusSubscriber(modid = THKaguyaCore.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientRenderRegistry
 {
+    /* boss 模型 layer 位置（阶段 3d-6） */
+    private static final ModelLayerLocation CIRNO_LAYER   = layer("cirno");
+    private static final ModelLayerLocation MIKO_LAYER    = layer("miko");
+    private static final ModelLayerLocation REIMU_LAYER   = layer("reimu");
+    private static final ModelLayerLocation RUMIA_LAYER   = layer("rumia");
+    private static final ModelLayerLocation SAKUYA_LAYER  = layer("sakuya");
+    private static final ModelLayerLocation SANAE_LAYER   = layer("sanae");
+    private static final ModelLayerLocation TOZIKO_LAYER  = layer("toziko");
+    private static final ModelLayerLocation WRIGGLE_LAYER = layer("wriggle");
+
+    private static ModelLayerLocation layer(String name)
+    {
+        return new ModelLayerLocation(new ResourceLocation(THKaguyaCore.MODID, name), "main");
+    }
+
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event)
     {
         event.registerLayerDefinition(ModelTHFairy.LAYER_LOCATION, ModelTHFairy::createBodyLayer);
+        event.registerLayerDefinition(CIRNO_LAYER, ModelCirno::createBodyLayer);
+        event.registerLayerDefinition(MIKO_LAYER, ModelMiko::createBodyLayer);
+        event.registerLayerDefinition(REIMU_LAYER, ModelReimu::createBodyLayer);
+        event.registerLayerDefinition(RUMIA_LAYER, ModelRumia::createBodyLayer);
+        event.registerLayerDefinition(SAKUYA_LAYER, ModelSakuya::createBodyLayer);
+        event.registerLayerDefinition(SANAE_LAYER, ModelSanae::createBodyLayer);
+        event.registerLayerDefinition(TOZIKO_LAYER, ModelToziko::createBodyLayer);
+        event.registerLayerDefinition(WRIGGLE_LAYER, ModelWriggle::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -44,19 +85,27 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.SPELL_CARD_CIRCLE.get(), RenderSpellCardCircle::new);
         event.registerEntityRenderer(THKaguyaEntities.SPELL_CARD.get(), RenderSpellCard::new);
 
-        // living 实体（阶段 3d-6）：boss 用妖精模型占位，妖精子类用 RenderTHFairy
-        event.registerEntityRenderer(THKaguyaEntities.CIRNO.get(), RenderDanmakuMob::new);
+        // living boss（阶段 3d-6）：用原版模型 + 贴图，替换妖精占位
+        event.registerEntityRenderer(THKaguyaEntities.CIRNO.get(),
+                ctx -> new RenderTHBoss<EntityCirno>(ctx, new ModelCirno<>(ctx.bakeLayer(CIRNO_LAYER)), "textures/mob/cirnotexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.DANMAKU_CREEPER.get(), CreeperRenderer::new);
         event.registerEntityRenderer(THKaguyaEntities.FAMILIAR.get(), RenderTHFairy::new);
-        event.registerEntityRenderer(THKaguyaEntities.MIKO.get(), RenderDanmakuMob::new);
-        event.registerEntityRenderer(THKaguyaEntities.REIMU.get(), RenderDanmakuMob::new);
-        event.registerEntityRenderer(THKaguyaEntities.RUMIA.get(), RenderDanmakuMob::new);
-        event.registerEntityRenderer(THKaguyaEntities.SAKUYA.get(), RenderDanmakuMob::new);
-        event.registerEntityRenderer(THKaguyaEntities.SANAE.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.MIKO.get(),
+                ctx -> new RenderTHBoss<EntityMiko>(ctx, new ModelMiko<>(ctx.bakeLayer(MIKO_LAYER)), "textures/mob/mikotexture.png", 0.25F));
+        event.registerEntityRenderer(THKaguyaEntities.REIMU.get(),
+                ctx -> new RenderTHBoss<EntityReimu>(ctx, new ModelReimu<>(ctx.bakeLayer(REIMU_LAYER)), "textures/mob/reimutexture.png", 0.25F));
+        event.registerEntityRenderer(THKaguyaEntities.RUMIA.get(),
+                ctx -> new RenderTHBoss<EntityRumia>(ctx, new ModelRumia<>(ctx.bakeLayer(RUMIA_LAYER)), "textures/mob/rumiatexture.png", 0.25F));
+        event.registerEntityRenderer(THKaguyaEntities.SAKUYA.get(),
+                ctx -> new RenderTHBoss<EntitySakuya>(ctx, new ModelSakuya<>(ctx.bakeLayer(SAKUYA_LAYER)), "textures/mob/sakuyatexture.png", 0.25F));
+        event.registerEntityRenderer(THKaguyaEntities.SANAE.get(),
+                ctx -> new RenderTHBoss<EntitySanae>(ctx, new ModelSanae<>(ctx.bakeLayer(SANAE_LAYER)), "textures/mob/sanaetexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.SUNFLOWER_FAIRY.get(), RenderTHFairy::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_PHANTOM.get(), RenderTHFairy::new);
-        event.registerEntityRenderer(THKaguyaEntities.TOZIKO.get(), RenderDanmakuMob::new);
-        event.registerEntityRenderer(THKaguyaEntities.WRIGGLE.get(), RenderDanmakuMob::new);
+        event.registerEntityRenderer(THKaguyaEntities.TOZIKO.get(),
+                ctx -> new RenderTHBoss<EntityToziko>(ctx, new ModelToziko<>(ctx.bakeLayer(TOZIKO_LAYER)), "textures/mob/tozikotexture.png", 0.25F));
+        event.registerEntityRenderer(THKaguyaEntities.WRIGGLE.get(),
+                ctx -> new RenderTHBoss<EntityWriggle>(ctx, new ModelWriggle<>(ctx.bakeLayer(WRIGGLE_LAYER)), "textures/mob/wriggletexture.png", 0.25F));
 
         // 特殊弹体（阶段 3d-3）：继承 THShot 用 RenderTHShot，继承 THLaser 用 RenderTHLaser
         event.registerEntityRenderer(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), RenderTHShot::new);
