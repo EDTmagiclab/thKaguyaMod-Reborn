@@ -19,7 +19,11 @@ import thKaguyaMod.client.model.living.ModelSunFlowerFairy;
 import thKaguyaMod.client.model.living.ModelTHFairy;
 import thKaguyaMod.client.model.living.ModelToziko;
 import thKaguyaMod.client.model.living.ModelWriggle;
-import thKaguyaMod.client.render.effect.RenderEmptyEffect;
+import thKaguyaMod.client.render.effect.RenderAjaRedStoneEffect;
+import thKaguyaMod.client.render.effect.RenderCirnoIceBox;
+import thKaguyaMod.client.render.effect.RenderHakureiShield;
+import thKaguyaMod.client.render.effect.RenderHakurouReflecter;
+import thKaguyaMod.client.render.effect.RenderMiracleCircle;
 import thKaguyaMod.client.render.effect.RenderSpellCardCircle;
 import thKaguyaMod.client.render.item.RenderItemBillboard;
 import thKaguyaMod.client.render.item.RenderMarisaBroom;
@@ -91,12 +95,12 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.SPELL_CARD_CIRCLE.get(), RenderSpellCardCircle::new);
         event.registerEntityRenderer(THKaguyaEntities.SPELL_CARD.get(), RenderSpellCard::new);
 
-        // effect 实体（阶段 3d-7）：占位渲染器（完整渲染留阶段 4-6）
-        event.registerEntityRenderer(THKaguyaEntities.AJA_RED_STONE_EFFECT.get(), RenderEmptyEffect::new);
-        event.registerEntityRenderer(THKaguyaEntities.CIRNO_ICE_BOX.get(), RenderEmptyEffect::new);
-        event.registerEntityRenderer(THKaguyaEntities.HAKUREI_SHIELD.get(), RenderEmptyEffect::new);
-        event.registerEntityRenderer(THKaguyaEntities.HAKUROU_REFLECTER.get(), RenderEmptyEffect::new);
-        event.registerEntityRenderer(THKaguyaEntities.MIRACLE_CIRCLE.get(), RenderEmptyEffect::new);
+        // effect 实体（阶段 4-6）：完整渲染（原版 RenderAjaRedStoneEffect 等）
+        event.registerEntityRenderer(THKaguyaEntities.AJA_RED_STONE_EFFECT.get(), RenderAjaRedStoneEffect::new);
+        event.registerEntityRenderer(THKaguyaEntities.CIRNO_ICE_BOX.get(), RenderCirnoIceBox::new);
+        event.registerEntityRenderer(THKaguyaEntities.HAKUREI_SHIELD.get(), RenderHakureiShield::new);
+        event.registerEntityRenderer(THKaguyaEntities.HAKUROU_REFLECTER.get(), RenderHakurouReflecter::new);
+        event.registerEntityRenderer(THKaguyaEntities.MIRACLE_CIRCLE.get(), RenderMiracleCircle::new);
 
         // living boss（阶段 3d-6）：用原版模型 + 贴图，替换妖精占位
         event.registerEntityRenderer(THKaguyaEntities.CIRNO.get(),
