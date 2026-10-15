@@ -62,7 +62,8 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-3：shot 剩余弹体 10 个（EntityDragonNeckJewel/HomingAmulet/MasterSpark/MusouFuuin/NuclearShot/Onmyoudama/SanaeWind/THHenyoriLaser/THSetLaser/ISpecialShot）
 - ✅ 阶段 3d-4：item 实体 13 个 + 触发它们的 ItemXxx 物品类 13 个；用户实测反馈修复：渲染（4 渲染器 + 16 贴图）/隙间传送/怀表模式，已提交；扫帚渲染回退 billboard（magic_broom.png 是对角布局图标，手绘 3D quad 映射不了）
 - ✅ 阶段 3d-5：36 符卡类全部迁移（含 SpecialShotRegistry + THSC_Helper + EntityTHShot 特殊弹分发），THKaguyaCore.commonSetup 注册 35 张；编译通过 jar 已同步
-- ⏳ 阶段 3d-6/3d-7：living 15 个 + effect 5 个（Fafurotskies 12/25 分支要换回 EntityDanmakuCreeper）
+- ✅ 阶段 3d-6：living 实体 12 个（Cirno/Reimu/Miko/Sakuya/Sanae/Rumia/Toziko/Wriggle/THPhantom/SunFlowerFairy/Familiar/DanmakuCreeper + IDanmakuMob 接口）。boss 用妖精模型占位渲染，妖精子类用 RenderTHFairy，配 12 刷怪蛋。**延后**：EntityRinnosuke/VillagerRinnosuke（阶段7 村民交易）、掉落道具（依赖未迁移的 EntityTHItem）
+- ⏳ 阶段 3d-7：effect 5 个（EntityAjaRedStoneEffect/CirnoIceBox/HakureiShield/HakurouReflecter/MiracleCircle）。**Fafurotskies 12/25 分支要换回 EntityDanmakuCreeper**（现已迁移，可换回）
 - ⏳ 阶段 4 完整：弹体按形状分贴图、妖精 11 种形态切换、激光/魔法阵/符卡完整渲染、各实体模型
 - ⏳ 阶段 5/6/7：GUI、客户端泄漏修复、配置/事件/村民交易
 
