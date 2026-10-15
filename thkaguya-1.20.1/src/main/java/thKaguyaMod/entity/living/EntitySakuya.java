@@ -59,8 +59,7 @@ public class EntitySakuya extends EntityDanmakuMob implements IDanmakuMob
             moveDanmakuAttack(SPELLCARD_ATTACK01, 40, 60.0F, 160);
             return true;
         case SPELLCARD_ATTACK01:
-            moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
-            return true;
+            return false;  // 最终阶段：真正死亡
         default:
             return false;
         }

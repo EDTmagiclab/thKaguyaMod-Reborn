@@ -63,8 +63,7 @@ public class EntityToziko extends EntityDanmakuMob
             this.setFlyingHeight(2);
             return true;
         case SPELLCARD_ATTACK01:
-            moveDanmakuAttack(ATTACK_END, 30, 0F, 60);
-            return true;
+            return false;  // 最终阶段：真正死亡
         default:
             return false;
         }

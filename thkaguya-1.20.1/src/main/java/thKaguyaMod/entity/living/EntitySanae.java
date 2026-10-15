@@ -73,8 +73,7 @@ public class EntitySanae extends EntityDanmakuMob implements IDanmakuMob
         case SPELLCARD_ATTACK02:
         case SPELLCARD_ATTACK03:
         case SPELLCARD_ATTACK04:
-            moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
-            return true;
+            return false;  // 最终阶段：真正死亡
         default:
             return false;
         }
