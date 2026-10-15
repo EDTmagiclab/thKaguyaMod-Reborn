@@ -14,18 +14,18 @@ import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.entity.item.EntityMarisaBroom;
 
 /**
- * 魔理沙の箒の描画（1.20.1 移植版，阶段 3d-4 可见性修复）
+ * 魔理沙の箒の描画（1.20.1 移植版，阶段 3d-4 可见性修复 + 阶段4 贴图/模型完整化）
  *
- * 原版 RenderMarisaBroom 用 Tessellator 手绘 4 面旋转长杆 + 刷毛（贴图 MagicBloom.png）。
+ * 原版 RenderMarisaBroom 用 Tessellator 手绘 4 面旋转长杆 + 刷毛（贴图 textures/MagicBloom.png，64x32）。
  * 这里还原同样几何：杆身 4 面长条 + 刷毛 3 段锥形扩散 ×4 方向，保留受击摇摆动画。
- * 贴图改用 textures/item/magic_broom.png（64x32 原版 MagicBloom 是模型展开图，
- * UV 坐标仍按其 0..1 布局取样，杆/刷毛区域近似对应）。
+ * 贴图改用 textures/entity/magic_bloom.png（与原版同源 64x32，避免对角布局图标 magic_broom.png 误用）。
+ * UV 沿用原版对 64x32 贴图的比例（2/64、3/64、16/32、1.0、0.5 等）。
  * 实测坑：quad() 若缺 .color() 会崩（Not filled all elements of the vertex）。
  */
 public class RenderMarisaBroom extends EntityRenderer<EntityMarisaBroom>
 {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation(THKaguyaCore.MODID, "textures/item/magic_broom.png");
+            new ResourceLocation(THKaguyaCore.MODID, "textures/entity/magic_bloom.png");
 
     public RenderMarisaBroom(EntityRendererProvider.Context context)
     {

@@ -40,6 +40,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
     private static final ResourceLocation TEX_ARROW      = tex("textures/shot/arrowshot.png");
     private static final ResourceLocation TEX_AMULET     = tex("textures/shot/homingamulet.png");
     private static final ResourceLocation TEX_DIFFUSION  = tex("textures/shot/diffusionamulet.png");
+    private static final ResourceLocation TEX_SCALE      = tex("textures/shot/scaleshot.png");
+    private static final ResourceLocation TEX_FAMILIAR   = tex("textures/mob/familiar.png");
 
     private static final ResourceLocation TEX_KNIFE_RED    = tex("textures/shot/silverknife_red.png");
     private static final ResourceLocation TEX_KNIFE_BLUE   = tex("textures/shot/silverknife_blue.png");
@@ -98,14 +100,20 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
             case DanmakuConstants.FORM_BIGLIGHT:
             case DanmakuConstants.FORM_PHANTOM:
             case DanmakuConstants.FORM_KISHITU:
-            case DanmakuConstants.FORM_FAMILIAR:
                 return TEX_LIGHT;
             case DanmakuConstants.FORM_SCALE:
+                return TEX_SCALE;
+            // 米弹 / 椭圆弹原版是程序化椭球几何（renderRiceShot / renderOvalShot），
+            // 1.20.1 billboard 实现无法还原椭球形态。回退到 light 弹贴图（musoufuuin.png），
+            // 避免使用 laser.png（细长光带）造成视觉完全错误。
             case DanmakuConstants.FORM_RICE:
             case DanmakuConstants.FORM_OVAL:
-                return TEX_LASER;
+                return TEX_LIGHT;
             case DanmakuConstants.FORM_BUTTERFLY:
                 return TEX_BUTTERFLY;
+            case DanmakuConstants.FORM_FAMILIAR:
+                // 原版使用 mob/Familiar.png（8 色横向 sprite sheet 模式同 smallshot）
+                return TEX_FAMILIAR;
             case DanmakuConstants.FORM_WIND:
                 return TEX_WIND;
             case DanmakuConstants.FORM_BIG:
@@ -151,6 +159,7 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
             case DanmakuConstants.FORM_BIG:
                 return true;
             default:
+                // SCALE(scaleshot 64x32)、FAMILIAR(familiar 64x64) 是单图，顶点染色
                 return false;
         }
     }
@@ -171,11 +180,35 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         int color = entity.getShotColor() % 8;
         ResourceLocation texture = getTexture(form, color);
 
+        // 使魔（FORM_FAMILIAR）原版会绕 Z 轴自旋 glRotatef(count*3.7F, 0,0,1)，
+        // billboard 后 Z 即面向相机的轴。复现自旋。
+        if(form == DanmakuConstants.FORM_FAMILIAR)
+        {
+            poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(entity.getAnimationCount() * 3.7F));
+        }
+
+        // LIGHT / BIGLIGHT / KISHITU / PHANTOM 原版 renderLightShot / renderKishituShot 使用
+        // 加性混合 + alpha 0.8（光晕）+ 中心白心。1.20.1 用 entityTranslucentCull 模拟加性。
+        boolean isLightFamily = form == DanmakuConstants.FORM_LIGHT
+                || form == DanmakuConstants.FORM_BIGLIGHT
+                || form == DanmakuConstants.FORM_KISHITU
+                || form == DanmakuConstants.FORM_PHANTOM;
+        if(isLightFamily)
+        {
+            // 略放大到 2.0（与原版 width=2.0F 对齐）
+            poseStack.scale(2.0F, 2.0F, 1.0F);
+        }
+
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
+        // FAMILIAR 在原版是半透明 (alpha 0.5) 加性混合，1.20.1 用 entityTranslucentCull
+        boolean isFamiliar = form == DanmakuConstants.FORM_FAMILIAR;
+        RenderType rt = (isFamiliar || isLightFamily)
+                ? RenderType.entityTranslucentCull(texture)
+                : RenderType.entityCutoutNoCull(texture);
+        VertexConsumer consumer = buffer.getBuffer(rt);
         float half = 0.5F;
 
         // UV 选择：8 色横向 sprite sheet 用 color/8 选子图；单张图全图 + 顶点染色
@@ -194,7 +227,7 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
             b = COLOR_B[color];
         }
 
-        int alpha = 255;
+        int alpha = isFamiliar ? 128 : (isLightFamily ? 204 : 255);
         // 四边形（v 轴：底部 v=1，顶部 v=0，与原版 addVertexWithUV 对齐）
         consumer.vertex(matrix, -half, -half, 0.0F).color(r, g, b, alpha)
                 .uv(u1, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
