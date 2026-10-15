@@ -14,6 +14,7 @@ import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.init.THKaguyaEntities;
 
 /**
  * レーザー系の共通処理（1.20.1 移植版）
@@ -38,18 +39,30 @@ public class EntityTHLaser extends EntityTHShot
         this.noCulling = true;
     }
 
+    public EntityTHLaser(EntityType<?> type, Level level, LivingEntity user, Entity source,
+            Vec3 pos, Vec3 angle, float slope,
+            Vec3 rotate, float rotationSpeed, int rotationEnd,
+            double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
+            int shotId, float width, float length, float damage, int delay, int end, int special)
+    {
+        super(type, level, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+                firstSpeed, limitSpeed, acceleration, gravity,
+                shotId, width, damage, delay, end, special);
+        this.noCulling = true;
+        setLaserLength(0.0D);
+        setMaxLaserLength(length);
+    }
+
     public EntityTHLaser(Level level, LivingEntity user, Entity source,
             Vec3 pos, Vec3 angle, float slope,
             Vec3 rotate, float rotationSpeed, int rotationEnd,
             double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
             int shotId, float width, float length, float damage, int delay, int end, int special)
     {
-        super(level, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+        this(THKaguyaEntities.TH_LASER.get(), level, user, source, pos, angle, slope,
+                rotate, rotationSpeed, rotationEnd,
                 firstSpeed, limitSpeed, acceleration, gravity,
-                shotId, width, damage, delay, end, special);
-        this.noCulling = true;
-        setLaserLength(0.0D);
-        setMaxLaserLength(length);
+                shotId, width, length, damage, delay, end, special);
     }
 
     public EntityTHLaser(Level level, LivingEntity user, Entity source,

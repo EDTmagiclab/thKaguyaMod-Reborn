@@ -110,14 +110,14 @@ public class EntityTHShot extends Entity
         this.entityData.define(SHOT_SIZE, 0);
     }
 
-    /** 完整参数构造 */
-    public EntityTHShot(Level level, LivingEntity entityUser, Entity entity,
+    /** 完整参数构造（指定 EntityType，供激光等子类传入自己的类型） */
+    public EntityTHShot(EntityType<?> type, Level level, LivingEntity entityUser, Entity entity,
             Vec3 pos, Vec3 angle, float slope,
             Vec3 rotate, float rotationSpeed, int rotationEnd,
             double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
             int form, float size, float damage, int delay, int end, int special)
     {
-        this(level);
+        this(type, level);
         user = entityUser;
         source = entity;
 
@@ -150,6 +150,19 @@ public class EntityTHShot extends Entity
         updateYawAndPitch();
         lastTime = 0;
         setAnimationCount(-delay);
+    }
+
+    /** 完整参数构造（默认 EntityType = TH_SHOT，普通弹体用） */
+    public EntityTHShot(Level level, LivingEntity entityUser, Entity entity,
+            Vec3 pos, Vec3 angle, float slope,
+            Vec3 rotate, float rotationSpeed, int rotationEnd,
+            double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
+            int form, float size, float damage, int delay, int end, int special)
+    {
+        this(THKaguyaEntities.TH_SHOT.get(), level, entityUser, entity, pos, angle, slope,
+                rotate, rotationSpeed, rotationEnd,
+                firstSpeed, limitSpeed, acceleration, gravity,
+                form, size, damage, delay, end, special);
     }
 
     public EntityTHShot(Level level, LivingEntity entityUser, Entity entity,

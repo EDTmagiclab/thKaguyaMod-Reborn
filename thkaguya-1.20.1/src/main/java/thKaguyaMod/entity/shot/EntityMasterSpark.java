@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.init.THKaguyaEntities;
 
 /**
  * マスタースパーク　地形破壊、高威力のレーザー（1.20.1 移植版）
@@ -38,7 +39,7 @@ public class EntityMasterSpark extends EntityTHSetLaser
     	Vec3 pos, Vec3 angle, float slope, Vec3 rotate, float rotationSpeed, int rotationEnd,
     	int color, float width, float length, float damage, int delay, int end, int special, Entity set, double setLength, double setYOffset)
     {
-        super(world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+        super(THKaguyaEntities.MASTER_SPARK.get(), world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
                 0, width, length, damage, delay, end, special, set, setLength, setYOffset);
     }
 

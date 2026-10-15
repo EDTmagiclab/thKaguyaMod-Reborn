@@ -1,12 +1,15 @@
 package thKaguyaMod.entity.shot;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.init.THKaguyaEntities;
 
 /**
  * 固定レーザー系の共通処理（1.20.1 移植版）
@@ -16,6 +19,8 @@ import thKaguyaMod.THShotLib;
  */
 public class EntityTHSetLaser extends EntityTHLaser
 {
+	private static final Logger LOGGER = LogUtils.getLogger();
+
 	private double settingLength;
 	private double settingYOffset;
 
@@ -26,18 +31,23 @@ public class EntityTHSetLaser extends EntityTHLaser
         super(type, level);
     }
 
-	public EntityTHSetLaser(Level world, LivingEntity user, Entity source,
+	public EntityTHSetLaser(EntityType<?> type, Level world, LivingEntity user, Entity source,
 			Vec3 pos, Vec3 angle, float slope, Vec3 rotate, float rotationSpeed, int rotationEnd,
 			int color, float width, float length, float damage, int delay, int end, int special,
 			Entity set, double setLength, double setYOffset)
 	{
-		super(world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+		super(type, world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
 				0.0D, 0.0D, 0.0D, THShotLib.gravity_Zero(), color, width, length, damage, delay, end, special);
 		setLaserLength(length);
 		setMaxLaserLength(length);
 		settingLength = setLength;
 		settingYOffset = setYOffset;
 		setting = set;
+		if(!world.isClientSide)
+		{
+			LOGGER.info("[SetLaser] spawn color={} length={} angle=({},{},{}) set={} setLength={} setYOffset={}",
+					color, length, angle.x, angle.y, angle.z, set, setLength, setYOffset);
+		}
 		if(set != null)
 		{
 			double x = set.getX() + angle.x * settingLength;
@@ -45,6 +55,15 @@ public class EntityTHSetLaser extends EntityTHLaser
 			double z = set.getZ() + angle.z * settingLength;
 			this.setPos(x, y, z);
 		}
+	}
+
+	public EntityTHSetLaser(Level world, LivingEntity user, Entity source,
+			Vec3 pos, Vec3 angle, float slope, Vec3 rotate, float rotationSpeed, int rotationEnd,
+			int color, float width, float length, float damage, int delay, int end, int special,
+			Entity set, double setLength, double setYOffset)
+	{
+		this(THKaguyaEntities.TH_SET_LASER.get(), world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+				color, width, length, damage, delay, end, special, set, setLength, setYOffset);
 	}
 
 	public EntityTHSetLaser(Level world, LivingEntity user, Entity source,

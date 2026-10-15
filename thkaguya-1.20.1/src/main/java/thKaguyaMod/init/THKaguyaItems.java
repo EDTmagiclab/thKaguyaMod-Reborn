@@ -8,6 +8,7 @@ import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemHisou;
+import thKaguyaMod.item.ItemIcicleSword;
 import thKaguyaMod.item.ItemKinkakuzi;
 import thKaguyaMod.item.ItemLaevateinn;
 import thKaguyaMod.item.ItemMarisaBroom;
@@ -77,7 +78,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> MARISA_HAT = register("marisa_hat");
 
     /** アイシクルソード */
-    public static final RegistryObject<Item> ICICLE_SWORD = register("icicle_sword");
+    public static final RegistryObject<Item> ICICLE_SWORD = register("icicle_sword", () -> new ItemIcicleSword());
 
     /** 咲夜の懐中時計 */
     public static final RegistryObject<Item> SAKUYA_WATCH = register("sakuya_watch", () -> new ItemSakuyaWatch());

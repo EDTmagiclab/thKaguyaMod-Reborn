@@ -2,8 +2,10 @@ package thKaguyaMod.entity.living;
 
 import static thKaguyaMod.DanmakuConstants.*;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.LaserData;
@@ -11,6 +13,7 @@ import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
 import thKaguyaMod.init.THKaguyaEntities;
+import thKaguyaMod.init.THKaguyaItems;
 
 /** チルノ（1.20.1 移植版） */
 public class EntityCirno extends EntityDanmakuMob
@@ -194,5 +197,18 @@ public class EntityCirno extends EntityDanmakuMob
     public int getMaxSpawnClusterSize()
     {
         return 1;
+    }
+
+    /** 死亡掉落：SPELLCARD_ATTACK02（完美冻结符卡阶段）被玩家击杀时掉落冰剑 */
+    @Override
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+
+        if(recentlyHit && getDanmakuPattern() == SPELLCARD_ATTACK02)
+        {
+            this.spawnAtLocation(new ItemStack(THKaguyaItems.ICICLE_SWORD.get(), 1));
+            // 原版还 dropExtendItem（得点道具，依赖未迁移的 EntityTHItem），暂略
+        }
     }
 }
