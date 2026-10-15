@@ -58,7 +58,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺任意一个实�
 - ✅ 阶段 3d-1：激光弹体 EntityTHLaser + 激光生成方法（6 个）+ RenderTHLaser + 妖精激光分支
 - ✅ 阶段 3d-2：符卡框架核心（EntitySpellCardCircle 魔法阵 + THSpellCard 基类 + ITHSpellCard + SpellCardRegistry + EntitySpellCard + THKaguyaLib 裁剪版）
 - ✅ 阶段 3d-3：shot 剩余弹体 10 个（EntityDragonNeckJewel/HomingAmulet/MasterSpark/MusouFuuin/NuclearShot/Onmyoudama/SanaeWind/THHenyoriLaser/THSetLaser/ISpecialShot）
-- ⏳ 阶段 3d-4：item 实体 13 个（依赖顺序 shot → item → 符卡 → living）
+- ✅ 阶段 3d-4：item 实体 13 个全部迁移（compileJava 通过，占位渲染 RenderEmptyItem）
 - ⏳ 阶段 3d-5：36 符卡类（THSC_*，3895 行）
 - ⏳ 阶段 3d-6/3d-7：living 15 个 + effect 5 个
 - ⏳ 阶段 4 完整：弹体按形状分贴图、妖精 11 种形态切换、激光/魔法阵/符卡完整渲染、各实体模型
