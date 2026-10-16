@@ -244,13 +244,8 @@ public class EntityTHShot extends Entity
         if(!tickDiagLogged)
         {
             tickDiagLogged = true;
-            String msg = "[TH] tick alive: special=" + shotSpecial + " anim=" + getAnimationCount()
-                    + " dmg=" + shotDamage + " client=" + level().isClientSide;
-            LOGGER.info(msg);
-            if(!level().isClientSide && user instanceof Player p)
-            {
-                p.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
-            }
+            LOGGER.info("[TH] tick alive: special={} anim={} dmg={} client={}",
+                    shotSpecial, getAnimationCount(), shotDamage, level().isClientSide);
         }
 
         // 弹主不存在则消失
@@ -380,13 +375,8 @@ public class EntityTHShot extends Entity
         {
             specialDiagLogged = true;
             Class<? extends ISpecialShot> c = SpecialShotRegistry.getSpecialShotClass(shotSpecial);
-            String msg = "[TH] special=" + shotSpecial + " -> " + (c == null ? "NOT REGISTERED" : c.getSimpleName())
-                    + " (client=" + level().isClientSide + ")";
-            LOGGER.info(msg);
-            if(!level().isClientSide && user instanceof Player p)
-            {
-                p.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
-            }
+            LOGGER.info("[TH] special={} -> {} (client={})", shotSpecial,
+                    c == null ? "NOT REGISTERED" : c.getSimpleName(), level().isClientSide);
         }
 
         // 原版 977 行：shotSpecial 查 SpecialShotRegistry 分发到 ISpecialShot.specialShot_move
@@ -441,6 +431,11 @@ public class EntityTHShot extends Entity
         {
             homingCalledLogged = true;
             LOGGER.info("[thkaguya] homing() called (special={}, entity={})", shotSpecial, getId());
+            if(user instanceof Player p)
+            {
+                p.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                        "[TH] homing() called (special=" + shotSpecial + ")"), false);
+            }
         }
 
         AABB searchBox = getBoundingBox()
@@ -501,6 +496,11 @@ public class EntityTHShot extends Entity
             {
                 homingPickedLogged = true;
                 LOGGER.info("[thkaguya] homing() locked on target={} distance={}", nearEntity, nearDistance);
+                if(user instanceof Player p)
+                {
+                    p.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            "[TH] homing locked on " + nearEntity.getType().toShortString()), false);
+                }
             }
             Vec3 targetVec = THShotLib.getVectorNomalize(new Vec3(
                     nearEntity.getX() - getX(),
