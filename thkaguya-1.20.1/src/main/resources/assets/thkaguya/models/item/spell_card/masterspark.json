@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thkaguya:items/spellcard/masterspark",
-    "layer1": "thkaguya:items/spellcard/spellcard_lv5"
+    "layer0": "thkaguya:item/spellcard/masterspark",
+    "layer1": "thkaguya:item/spellcard/spellcard_lv5"
   }
 }

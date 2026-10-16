@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thkaguya:items/spellcard/iciclefall",
-    "layer1": "thkaguya:items/spellcard/spellcard_lv1"
+    "layer0": "thkaguya:item/spellcard/iciclefall",
+    "layer1": "thkaguya:item/spellcard/spellcard_lv1"
   }
 }

@@ -19,8 +19,8 @@ import thKaguyaMod.registry.SpellCardRegistry;
  * 符卡实体渲染器（1.20.1 移植版，阶段 4-5 完整化）
  *
  * 原版 RenderSpellCard：渲染一张竖持的符卡卡面 + 等级边框两层 billboard。
- *   - 卡面贴图 = textures/items/spellcard/{name}.png（name 来自 SpellCardRegistry）
- *   - 边框贴图 = textures/items/spellcard/spellcard_lv{level}.png
+ *   - 卡面贴图 = textures/item/spellcard/{name}.png（name 来自 SpellCardRegistry）
+ *   - 边框贴图 = textures/item/spellcard/spellcard_lv{level}.png
  *   - 绕 Y 轴自旋 21°/tick + 绕 Z 轴倾斜 30°（固定朝向，非面向相机）
  *   - UV 子图 14/128 ~ 114/128（128 宽贴图，左右各留 14px 边距）
  *
@@ -56,7 +56,7 @@ public class RenderSpellCard extends EntityRenderer<EntitySpellCard>
         // 等级边框（原版 getLevel() 反射实例化取 needLevel，这里直接用实体 level 字段）
         int level = Math.max(1, Math.min(5, entity.level));
         ResourceLocation frameTex = new ResourceLocation(THKaguyaCore.MODID,
-                "textures/items/spellcard/spellcard_lv" + level + ".png");
+                "textures/item/spellcard/spellcard_lv" + level + ".png");
 
         poseStack.pushPose();
         // 原版：绕 Y 自旋 21°/tick + 绕 Z 倾斜 30°
@@ -91,7 +91,7 @@ public class RenderSpellCard extends EntityRenderer<EntitySpellCard>
         }
         // 贴图文件名 = 注册名全小写 + 去单引号（Kappa'sPororoca -> kappaspororoca）
         return new ResourceLocation(THKaguyaCore.MODID,
-                "textures/items/spellcard/" + name.toLowerCase().replace("'", "") + ".png");
+                "textures/item/spellcard/" + name.toLowerCase().replace("'", "") + ".png");
     }
 
     private void renderBillboard(PoseStack poseStack, VertexConsumer consumer, int packedLight,

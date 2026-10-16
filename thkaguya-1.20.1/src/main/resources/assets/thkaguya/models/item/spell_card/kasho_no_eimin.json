@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thkaguya:items/spellcard/kasho_no_eimin",
-    "layer1": "thkaguya:items/spellcard/spellcard_lv3"
+    "layer0": "thkaguya:item/spellcard/kasho_no_eimin",
+    "layer1": "thkaguya:item/spellcard/spellcard_lv3"
   }
 }

@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thkaguya:items/spellcard/satuzindoll",
-    "layer1": "thkaguya:items/spellcard/spellcard_lv4"
+    "layer0": "thkaguya:item/spellcard/satuzindoll",
+    "layer1": "thkaguya:item/spellcard/spellcard_lv4"
   }
 }

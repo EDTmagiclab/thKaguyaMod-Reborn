@@ -17,6 +17,7 @@ import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.entity.item.EntityHisou;
 import thKaguyaMod.init.THKaguyaItems;
 
@@ -104,11 +105,20 @@ public class ItemHisou extends SwordItem
 		ItemStack itemStack = player.getItemInHand(hand);
 		if(!level.isClientSide)
 		{
-			// TODO(阶段3d-5): 原版先 THKaguyaLib.checkSpellCardDeclaration 宣言「全人類の緋想天」（依赖符卡系统），此处直接生成
-			EntityHisou hisou_0 = new EntityHisou(level, player, null, 8, 0);
+			// 原版：先宣言符卡「全人類の緋想天」（符卡 No 7 = Zenzinrui_no_Hisouten，难度 Normal），
+			// 宣言失败（非创造模式下 bomb_item + 经验等级不足 / 早苗卡未充能 / 视线内无目标 /
+			// 已有同使用者的 EntitySpellCard）则不发射。
+			if(!THKaguyaLib.checkSpellCardDeclaration(level, itemStack, player, 7, 2, true))
+			{
+				return InteractionResultHolder.success(itemStack);
+			}
+
+			// 緋想の剣本体を出現させる（原版：damage に現在の損傷値を渡す）
+			EntityHisou hisou_0 = new EntityHisou(level, player, null, 7 + 1, itemStack.getDamageValue());
 			level.addFreshEntity(hisou_0);
 			itemStack.shrink(1);
 
+			// 残像を 7 つ出現させる
 			for(int i = 0; i < 7; i++)
 			{
 				EntityHisou hisou_1 = new EntityHisou(level, player, hisou_0, i + 1, 0);

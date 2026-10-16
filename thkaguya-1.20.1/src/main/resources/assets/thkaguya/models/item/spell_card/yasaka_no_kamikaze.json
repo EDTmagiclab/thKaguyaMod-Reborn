@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thkaguya:items/spellcard/yasaka_no_kamikaze",
-    "layer1": "thkaguya:items/spellcard/spellcard_lv3"
+    "layer0": "thkaguya:item/spellcard/yasaka_no_kamikaze",
+    "layer1": "thkaguya:item/spellcard/spellcard_lv3"
   }
 }

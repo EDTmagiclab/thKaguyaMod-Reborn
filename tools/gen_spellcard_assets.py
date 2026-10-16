@@ -17,6 +17,12 @@
   - assets/thkaguya/models/item/spell_card.json          （overrides 入口）
   - assets/thkaguya/models/item/spell_card/<tex>.json    （卡面 layer0 + 等级边框 layer1）
   - 5 个 lang JSON 的 item.thkaguya.spell_card.<id> / itemGroup.thkaguya.spellcard / thKaguya.msg.sneSc1-4
+
+注意（务必遵守）：
+  贴图必须放在 textures/item/ 下。1.20.1 的物品模型走「blocks 图集」，
+  图集只收录 textures/block/ 与 textures/item/ 两个目录；放在 1.7.10 遗留的
+  textures/items/（复数）里，实体渲染（独立贴图，不走图集）能正常显示，
+  但物品模型会报 "Missing textures in model ..." 并显示成缺失材质。
 """
 
 import json
@@ -91,7 +97,7 @@ def main():
         print("ERROR: 未解析到任何符卡注册", file=sys.stderr)
         return 1
 
-    texdir = os.path.join(ASSETS, "textures", "items", "spellcard")
+    texdir = os.path.join(ASSETS, "textures", "item", "spellcard")
     existing = set(os.listdir(texdir)) if os.path.isdir(texdir) else set()
 
     model_dir = os.path.join(ASSETS, "models", "item", "spell_card")
@@ -115,8 +121,8 @@ def main():
         model = {
             "parent": "minecraft:item/generated",
             "textures": {
-                "layer0": "%s:items/spellcard/%s" % (MODID, tn),
-                "layer1": "%s:items/spellcard/spellcard_lv%d" % (MODID, lv),
+                "layer0": "%s:item/spellcard/%s" % (MODID, tn),
+                "layer1": "%s:item/spellcard/spellcard_lv%d" % (MODID, lv),
             },
         }
         with open(os.path.join(model_dir, tn + ".json"), "w", encoding="utf-8") as f:
