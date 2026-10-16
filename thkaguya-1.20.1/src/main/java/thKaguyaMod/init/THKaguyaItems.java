@@ -6,9 +6,13 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.item.ItemAjaRedStone;
 import thKaguyaMod.item.ItemByoukiheiyuMamori;
 import thKaguyaMod.item.ItemClosedThirdEye;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
+import thKaguyaMod.item.ItemDeathScythe;
+import thKaguyaMod.item.ItemDragonNeckJewel;
+import thKaguyaMod.item.ItemHakurouken;
 import thKaguyaMod.item.ItemHisou;
 import thKaguyaMod.item.ItemHomingAmulet;
 import thKaguyaMod.item.ItemIcicleSword;
@@ -17,11 +21,14 @@ import thKaguyaMod.item.ItemKinkakuzi;
 import thKaguyaMod.item.ItemLaevateinn;
 import thKaguyaMod.item.ItemMarisaBroom;
 import thKaguyaMod.item.ItemMazinKyoukan;
+import thKaguyaMod.item.ItemNuclearControlRod;
 import thKaguyaMod.item.ItemMiniHakkero;
 import thKaguyaMod.item.ItemOnbashira;
 import thKaguyaMod.item.ItemPendulum;
+import thKaguyaMod.item.ItemRemorseRod;
 import thKaguyaMod.item.ItemSakuyaStopWatch;
 import thKaguyaMod.item.ItemSakuyaWatch;
+import thKaguyaMod.item.ItemSoulTorch;
 import thKaguyaMod.item.ItemShipGhostDipper;
 import thKaguyaMod.item.ItemSilverKnife;
 import thKaguyaMod.item.ItemSpearTheGungnir;
@@ -29,6 +36,8 @@ import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
 import thKaguyaMod.item.ItemSukima;
 import thKaguyaMod.item.ItemTHSpellCard;
 import thKaguyaMod.item.ItemTenguFan;
+import thKaguyaMod.item.ItemWallPassingChisel;
+import thKaguyaMod.item.ItemYuyukoFan;
 import thKaguyaMod.item.ItemYuukaParasol;
 
 /**
@@ -47,7 +56,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> HOURAI_JEWELED_BRANCH = register("hourai_jeweled_branch");
 
     /** 龍の頸の玉 */
-    public static final RegistryObject<Item> DRAGON_NECK_JEWEL = register("dragon_neck_jewel");
+    public static final RegistryObject<Item> DRAGON_NECK_JEWEL = register("dragon_neck_jewel", () -> new ItemDragonNeckJewel());
 
     /** 仏の御石の鉢 */
     public static final RegistryObject<Item> BUDDHA_STONE_BOWL = register("buddha_stone_bowl");
@@ -62,7 +71,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> KINKAKUJI = register("kinkakuji", () -> new ItemKinkakuzi());
 
     /** エイジャの赤石 */
-    public static final RegistryObject<Item> AJA_RED_STONE = register("aja_red_stone");
+    public static final RegistryObject<Item> AJA_RED_STONE = register("aja_red_stone", () -> new ItemAjaRedStone());
 
     /** 博麗のお祓い棒 */
     public static final RegistryObject<Item> HAKUREI_MIKO_STICK = register("hakurei_miko_stick");
@@ -109,7 +118,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> CURSED_DECOY_DOLL = register("cursed_decoy_doll", () -> new ItemCursedDecoyDoll());
 
     /** 白楼剣 */
-    public static final RegistryObject<Item> HAKUROUKEN = register("hakurouken");
+    public static final RegistryObject<Item> HAKUROUKEN = register("hakurouken", () -> new ItemHakurouken());
 
     /** 楼観剣 */
     public static final RegistryObject<Item> ROUKANKEN = register("roukanken");
@@ -118,10 +127,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> ROUKAN_SENPUUZIN = register("roukan_senpuuzin");
 
     /** 幽々子の扇 */
-    public static final RegistryObject<Item> YUYUKO_FAN = register("yuyuko_fan");
+    public static final RegistryObject<Item> YUYUKO_FAN = register("yuyuko_fan", () -> new ItemYuyukoFan());
 
     /** 人魂灯 */
-    public static final RegistryObject<Item> SOUL_TORCH = register("soul_torch");
+    public static final RegistryObject<Item> SOUL_TORCH = register("soul_torch", () -> new ItemSoulTorch());
 
     /** スキマ */
     public static final RegistryObject<Item> GAP = register("gap", () -> new ItemSukima());
@@ -136,10 +145,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> YUUKA_PARASOL = register("yuuka_parasol", () -> new ItemYuukaParasol());
 
     /** 死神の大鎌 */
-    public static final RegistryObject<Item> DEATH_SCYTHE = register("death_scythe");
+    public static final RegistryObject<Item> DEATH_SCYTHE = register("death_scythe", () -> new ItemDeathScythe());
 
     /** 悔悟の棒 */
-    public static final RegistryObject<Item> REMORSE_ROD = register("remorse_rod");
+    public static final RegistryObject<Item> REMORSE_ROD = register("remorse_rod", () -> new ItemRemorseRod());
 
     /** 天狗の団扇 */
     public static final RegistryObject<Item> TENGU_FAN = register("tengu_fan", () -> new ItemTenguFan());
@@ -172,7 +181,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> THIRD_EYE = register("third_eye");
 
     /** 制御棒 */
-    public static final RegistryObject<Item> NUCLEAR_CONTROL_ROD = register("nuclear_control_rod");
+    public static final RegistryObject<Item> NUCLEAR_CONTROL_ROD = register("nuclear_control_rod", () -> new ItemNuclearControlRod());
 
     /** 閉じた第三の眼 */
     public static final RegistryObject<Item> CLOSED_THIRD_EYE = register("closed_third_eye", () -> new ItemClosedThirdEye());
@@ -190,7 +199,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> SORCERER_SUTRA_SCROLL = register("sorcerer_sutra_scroll", () -> new ItemMazinKyoukan());
 
     /** 壁抜けの鑿 */
-    public static final RegistryObject<Item> WALL_PASSING_CHISEL = register("wall_passing_chisel");
+    public static final RegistryObject<Item> WALL_PASSING_CHISEL = register("wall_passing_chisel", () -> new ItemWallPassingChisel());
 
     /** 豊聡耳の宝剣 */
     public static final RegistryObject<Item> TOYOSATOMIMI_SWORD = register("toyosatomimi_sword");

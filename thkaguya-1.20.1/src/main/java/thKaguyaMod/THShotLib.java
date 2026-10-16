@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.entity.shot.EntityNuclearShot;
 import thKaguyaMod.entity.shot.EntityTHLaser;
 import thKaguyaMod.entity.shot.EntityTHShot;
 
@@ -1841,6 +1842,32 @@ public static void playShotSound(Entity entity)
 	 *   entity.setDead()                          -> entity.discard()
 	 *   entityTHShot.user instanceof EntityPlayer -> user instanceof Player
 	 */
+	/**
+	 * 核弾を生成する基礎処理（原版 THShotLib.createNuclearShot）
+	 *
+	 * <p>通常の弾と違い EntityNuclearShot は使用者がアイテムを使い続けている間
+	 * チャージされ、離した瞬間に飛ぶ（EntityNuclearShot.tick が player.isUsingItem() を見る）。
+	 *
+	 * <p>注意：原版は加速度の位置に firstSpeed を渡している（原版のコピペミス）。
+	 * 呼び出し側（制御棒）は firstSpeed = acceleration = 0.0D なので実害はないが、
+	 * 忠実移植のため原版どおり firstSpeed を渡す。
+	 */
+	public static final EntityNuclearShot createNuclearShot(LivingEntity user, Entity source,
+			Vec3 pos, Vec3 angle, float slope,
+			Vec3 rotate, float rotationSpeed, int rotationEnd,
+			double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
+			ShotData shot)
+	{
+		EntityNuclearShot nuclearShot = new EntityNuclearShot(source.level(), user, source,
+				pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+				firstSpeed, limitSpeed, firstSpeed, gravity, shot);
+		if(!source.level().isClientSide)
+		{
+			source.level().addFreshEntity(nuclearShot);
+		}
+		return nuclearShot;
+	}
+
 	public static int danmakuRemove(Entity centerEntity, double range, String target, boolean isDropBonus)
 	{
 		int count = 0;
