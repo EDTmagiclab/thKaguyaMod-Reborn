@@ -54,6 +54,14 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 - **`getLightEmission` ≠ `getBlockLightValue`**：`Level#getLightEmission(BlockPos)` 是「该位置方块自身的发光值」（萤石 15、普通方块 0）；原版 `worldObj.getBlockLightValue` 是「该位置接收到的方块光照等级」→ 1.20.1 对应 **`level.getBrightness(LightLayer.BLOCK, pos)`**。用错会让依赖光照的实体（`EntityAjaRedStoneEffect` 蓄光）永远读到 0。
 - **「追踪弹」改 `angle` 不够，必须重定向速度**：`EntityTHShot.tick()` 每 tick 先 `setDeltaMovement(lastShotMotion)` 恢复速度，`shotAcceleration()` 只在 `getSpeed() < shotLimitSpeed` 时沿 angle 加速 → 一旦到达限速，改 `angle` 完全无效（弹体直线飞）。修法：改 angle 后按当前速率重定向速度，**并同步 `lastShotMotionX/Y/Z`**，否则下一 tick 被恢复逻辑覆盖。（`EntityTHShot.homing`，commit cd723f7）
 - **1.20.1 实体射线选择看 `isPickable()`**（原版 `canBeCollidedWith()`）：特效实体若不重写为 false，会被玩家视线持续命中 → Jade 等 MOD 一直显示它。同类的 `EntityTHShot` 命中检测也用 `isPickable()` 过滤。
+- **禁止在运行期 new Item / Block 实例**：1.20.1 Forge 会留下未注册的 intrusive holder，导致
+  `Failed to start the minecraft server: Some intrusive holders were not registered`。
+  后果：原版「`Item implements ISpecialShot` + 分发侧每 tick 反射 `newInstance()`」的机制**必然失败**。
+  解法：注册表改存**实例**（`SpecialShotRegistry.registerSpecialShotInstance`），分发时优先取实例
+  （`EntityTHShot.resolveSpecialShot`）。同理 **`RegistryObject#get()` 不能在 `commonSetup` 里调用**。
+  （commit 1e9815d；踩坑时长：两轮排查，元凶被空 `catch` 掩盖）
+- **反射调用一律 `catch (Throwable)` + 打日志**：空 `catch (ReflectiveOperationException) {}` 会让
+  「必然抛异常的调用」表现成「什么都没发生」，是排查中最贵的陷阱。
 - `ticksExisted`→`tickCount`（递增时机不同，`tickCount<=X` 时停判断会死锁）
 - `canBeCollidedWith()`→投射物命中用 `isPickable()`
 - `ignoreFrustumCheck=true`→构造里 `this.noCulling=true` 字段赋值（自定义 public 字段不同步，客户端逻辑只能用 entityData 同步字段）
