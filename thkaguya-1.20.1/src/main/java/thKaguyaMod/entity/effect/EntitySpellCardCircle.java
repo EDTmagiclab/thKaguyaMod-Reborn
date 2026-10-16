@@ -35,6 +35,12 @@ public class EntitySpellCardCircle extends Entity
     public EntitySpellCardCircle(EntityType<?> type, Level level)
     {
         super(type, level);
+        // 原版：ignoreFrustumCheck = true;//中心が画面から外れても描画される
+        // 1.20.1 等价物是 Entity.noCulling 字段（构造里直接赋值即可，客户端同样生效）。
+        // 【必须】魔法阵实体的碰撞箱只有 0.5×0.5，而渲染出来的阵宽达 7 格；玩家宣言时阵在
+        // 自己脚下（比视线低 1.6 格），bbox 中心几乎必然落在视锥外 → 不设此项就整片被剔除，
+        // 表现为「魔法阵完全看不到」（实测：移植时漏抄这一行）。
+        this.noCulling = true;
         lastTime = 0;
         setAnimationCount(0);
     }

@@ -71,14 +71,28 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
 
         poseStack.pushPose();
 
-        // 激光朝向：1.20.1 dispatcher.render 传入的 entityYaw = lerp(entity.yRotO, entity.getYRot(), partialTick)
-        // 即 entity 世界 yaw（不再像 1.7.10 是相机相对 yaw），pitch 也用 entity 世界 xRot
-        // 原 dispatcher 参数 yaw 实际上与 entity.getYRot() 等价，统一从 entity 读更直观且与 RenderTHShot 中
-        // renderCrystalShot 等方法保持一致（180 - entity.getYRot()）。
-        // 激光从 +Z 方向延伸，先绕 Y 转 (180 - entityYaw) 抵消 cameraYaw+180 偏移，
-        // 再绕 X 转 -entityPitch 得到视线方向。
-        float entityYaw = entity.getYRot();
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
+        // ============================================================
+        // 激光朝向（原版 renderTHLaser）：
+        //     GL11.glRotatef(yaw,   0F, 1F, 0F);
+        //     GL11.glRotatef(-pitch, 1F, 0F, 0F);
+        // 即 Axis.YP(yaw) + Axis.XP(-pitch)，**没有任何 180 偏移**。
+        //
+        // 【为什么不能写 180 - yaw】弹体/激光实体的 yaw 是由
+        //   THShotLib.getYawFromVector(angle.x, angle.z) = atan2(vx, vz)
+        // 得到的（自定义 (sinθ, cosθ) 参数化；同一方向向量在此约定下的 yaw 恰为 MC 原版
+        // yaw 的相反数）。于是 Axis.YP(180 - yaw) 不是「绕 Y 再转 180°」而是**把方向以 X 轴
+        // 镜像**：光束方向变成 (sin yaw, 0, -cos yaw)，而真实方向是 (sin yaw, 0, cos yaw)。
+        //   → 正东/正西射击时两者恰好相同（yaw=±90），正南/正北时相差 180°（朝身后射）。
+        //   实测症状：魔炮光柱不穿过迷你八卦炉模型上那两枚同心圆环（= 炮口轴）的中心。
+        // 这个 180 是 commit a3c5366 依据「GameRenderer 施加 cameraYaw+180」的假设加的，而
+        // javap 实测 EntityRenderDispatcher.render 只做 pushPose + translate，并无相机旋转
+        // → 假设不成立，该偏移是纯粹的错误。
+        //
+        // 【为什么用 yaw/xRot 而不是 entity.angle】angle 是普通字段（未经 entityData 同步，
+        // 客户端上恒为 (0,0,0)），只有 yaw/xRot 会在生成包与随后的旋转同步中到达客户端。
+        // 原版渲染器同样只用 dispatcher 传入的 yaw/pitch。
+        // ============================================================
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(-entity.getXRot()));
 
         if(entity.getAnimationCount() < 0 && !(entity instanceof EntityTHSetLaser))
