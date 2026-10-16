@@ -1,0 +1,146 @@
+package thKaguyaMod.item;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.init.THKaguyaItems;
+
+/**
+ * 舟幽霊の柄杓（船幽灵的长勺）
+ *
+ * 原版 ItemHisyaku（一个类，subID 区分两态）：
+ * - 0 = FILL（水入り）：水源を有限回設置できる。設置ごとに耐久 -2
+ * - 1 = EMPTY（空）：水源を無限に取り除ける
+ * - 潜行 + 右クリック：モード切替（もう片方のアイテムに入れ替わる、耐久は引き継ぐ）
+ * - 何もブロックがないところで使うと足元が水源になる
+ * - ネザーでは水源が置けず、代わりに消える音と煙が出る
+ *
+ * 1.20.1 迁移要点：
+ * - metadata 変体は 1.20.1 で廃止されたため、2 登録項（ship_ghost_dipper / _empty）に分割し
+ *   このクラスを subID 付きコンストラクタで共用する
+ * - getMovingObjectPositionFromPlayer → level.clip(ClipContext)
+ * - Blocks.water + metadata 0 → Blocks.WATER + fluidState.isSource()
+ * - world.setBlockToAir → level.removeBlock、world.setBlock(..., water) → level.setBlock(..., 3)
+ * - world.provider.isHellWorld → level.dimension() == Level.NETHER
+ */
+public class ItemShipGhostDipper extends Item
+{
+	/** 水入り（設置モード） */
+	public static final int FILL = 0;
+	/** 空（除去モード） */
+	public static final int EMPTY = 1;
+
+	private final int mode;
+
+	public ItemShipGhostDipper(int mode)
+	{
+		super(new Item.Properties().stacksTo(1).durability(60));
+		this.mode = mode;
+	}
+
+	@Override
+	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand)
+	{
+		ItemStack itemStack = player.getItemInHand(hand);
+
+		// モード切り替え：もう片方の柄杓に入れ替える（耐久は引き継ぐ）
+		if(player.isShiftKeyDown())
+		{
+			ItemStack switched = new ItemStack(mode == FILL
+					? THKaguyaItems.SHIP_GHOST_DIPPER_EMPTY.get()
+					: THKaguyaItems.SHIP_GHOST_DIPPER.get(), 1);
+			switched.setDamageValue(itemStack.getDamageValue());
+			return InteractionResultHolder.success(switched);
+		}
+
+		// 原版 flag = (mode == EMPTY)：除去モードのみ液体をレイに含める
+		boolean useLiquids = (mode == EMPTY);
+		BlockHitResult hit = rayTrace(level, player, useLiquids);
+
+		if(mode == EMPTY)
+		{
+			// 水源を除去する
+			if(hit != null)
+			{
+				BlockPos pos = hit.getBlockPos();
+				BlockState state = level.getBlockState(pos);
+				if(state.is(Blocks.WATER) && state.getFluidState().isSource())
+				{
+					level.removeBlock(pos, false);
+				}
+			}
+		}
+		else
+		{
+			// 水源を設置する
+			BlockPos place;
+			if(hit == null)
+			{
+				// 何も当たっていないなら足元
+				place = BlockPos.containing(player.getX() - 0.5D, player.getY() - 0.5D, player.getZ() - 0.5D);
+			}
+			else
+			{
+				Direction side = hit.getDirection();
+				place = hit.getBlockPos().relative(side);
+			}
+
+			BlockState state = level.getBlockState(place);
+			if(state.isAir() || state.canBeReplaced() || state.getFluidState().is(Fluids.WATER))
+			{
+				if(level.dimension() == Level.NETHER)
+				{
+					// ネザーでは水が蒸発する
+					level.playSound(null, player.getX(), player.getEyeY() + 0.5D, player.getZ(),
+							SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.5F,
+							2.6F + (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
+					if(level.isClientSide)
+					{
+						for(int l = 0; l < 8; l++)
+						{
+							level.addParticle(ParticleTypes.LARGE_SMOKE,
+									place.getX() + level.random.nextDouble(),
+									place.getY() + level.random.nextDouble(),
+									place.getZ() + level.random.nextDouble(),
+									0.0D, 0.0D, 0.0D);
+						}
+					}
+				}
+				else
+				{
+					level.setBlock(place, Blocks.WATER.defaultBlockState(), 3);
+					itemStack.hurtAndBreak(2, player,
+							(p) -> p.broadcastBreakEvent(hand));
+				}
+			}
+		}
+
+		return InteractionResultHolder.success(itemStack);
+	}
+
+	/** 原版 getMovingObjectPositionFromPlayer(world, player, flag) */
+	private static BlockHitResult rayTrace(Level level, Player player, boolean includeLiquids)
+	{
+		Vec3 eye = player.getEyePosition(1.0F);
+		Vec3 look = player.getViewVector(1.0F);
+		Vec3 end = eye.add(look.x * 5.0D, look.y * 5.0D, look.z * 5.0D);
+		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE,
+				includeLiquids ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE, player));
+		return hit.getType() == HitResult.Type.BLOCK ? hit : null;
+	}
+}

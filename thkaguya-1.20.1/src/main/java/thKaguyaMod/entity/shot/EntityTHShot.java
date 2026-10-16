@@ -11,9 +11,13 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.DanmakuConstants;
@@ -362,7 +366,157 @@ public class EntityTHShot extends Entity
                     iSpecialShot.specialShot_move(level(), shotSpecial, this);
                 } catch (ReflectiveOperationException e) {
                 }
+                return;
             }
+
+            // 原版 990-1004 行：注册表查不到时的硬编码基础特殊弹（阶段 7 哑物品批次1 补回）
+            //   注意原版在注册表命中时直接 return，所以这段只在未注册时执行
+            switch(shotSpecial)
+            {
+                case DanmakuConstants.HOMING01:
+                    // ホーミング弾（ホーミングアミュレット / 人魂灯）
+                    homing(4.0F);
+                    break;
+                case DanmakuConstants.DIFFUSION01:
+                    // 拡散アミュレット：消滅時に扇状弾へ分裂
+                    diffusion(ShotData.shot(DanmakuConstants.FORM_AMULET, DanmakuConstants.BLUE,
+                            0.4F, 5.0F, 0, 60), 0.09D);
+                    break;
+                case DanmakuConstants.FALL01:
+                    // 落下弾
+                    setDeltaMovement(getDeltaMovement().add(0.0D, -0.02D, 0.0D));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /**
+     * ホーミング（原版 1472 行）。
+     *
+     * <p>24 格内最近的「有效目标」（LivingEntity，排除动物/村民/使用者/发射源，且视线无方块遮挡）
+     * 与本弹飞行方向的夹角若在 homingLevel 度以内，则每 tick 最多转向 homingLevel 度。
+     * 目标评估用的是「距离 × sin(夹角)」—— 即目标偏离当前飞行轴线的横向距离，取最小者。
+     *
+     * @param homingLevel 每 tick 最大转向角（度）
+     */
+    public void homing(float homingLevel)
+    {
+        AABB searchBox = getBoundingBox()
+                .expandTowards(getDeltaMovement())
+                .inflate(24.0D, 24.0D, 24.0D);
+        List<Entity> list = level().getEntities(this, searchBox);
+
+        LivingEntity nearEntity = null;
+        double nearDistance = 999.9D;
+        float nearAngle = 180F;
+        double nearValue = nearDistance * THShotLib.halfAbsSin(nearAngle / 180F * (float)Math.PI);
+        Vec3 shotVec = this.getShotVector();
+
+        for(Entity entitys : list)
+        {
+            // 生物でない、または動物・村人・使用者・発射源は対象外
+            if(!(entitys instanceof LivingEntity entity1)
+                    || entitys instanceof Animal
+                    || entitys instanceof Villager
+                    || entitys == source
+                    || entitys == user)
+            {
+                continue;
+            }
+            if(entity1.isDeadOrDying())
+            {
+                continue;
+            }
+
+            Vec3 from = position();
+            Vec3 to = new Vec3(entity1.getX(), entity1.getEyeY(), entity1.getZ());
+            // ブロックに遮られているなら対象外（原版 worldObj.func_147447_a(..., false, true, false)）
+            BlockHitResult blockHit = level().clip(new ClipContext(from, to,
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            if(blockHit.getType() != HitResult.Type.MISS)
+            {
+                continue;
+            }
+
+            Vec3 targetVec = THShotLib.getVectorNomalize(
+                    new Vec3(entity1.getX() - getX(), entity1.getEyeY() - getY(), entity1.getZ() - getZ()));
+            float angleSpan = Math.abs(THShotLib.getVectorAndVectorAngle(shotVec, targetVec));
+            double toEntity1Distance = Math.sqrt(distanceToSqr(entity1.getX(), entity1.getEyeY(), entity1.getZ()));
+            double value = toEntity1Distance * THShotLib.halfAbsSin(angleSpan / 180F * (float)Math.PI);
+            if(nearValue > value)
+            {
+                nearEntity = entity1;
+                nearAngle = angleSpan;
+                nearValue = value;
+                nearDistance = toEntity1Distance;
+            }
+        }
+
+        // 追尾対象がいるならば向きを最大 homingLevel 度だけ回す
+        if(nearEntity != null)
+        {
+            Vec3 targetVec = THShotLib.getVectorNomalize(new Vec3(
+                    nearEntity.getX() - getX(),
+                    nearEntity.getEyeY() - getY(),
+                    nearEntity.getZ() - getZ()));
+            Vec3 rotate = THShotLib.getOuterProduct(this.getShotVector(), targetVec);
+            float rotateAngle = THShotLib.getVectorAndVectorAngle(shotVec, targetVec);
+            if(rotateAngle > homingLevel)
+            {
+                rotateAngle = homingLevel;
+            }
+            else if(rotateAngle < -homingLevel)
+            {
+                rotateAngle = -homingLevel;
+            }
+            Vec3 newVec = THShotLib.getVectorFromRotation(rotate, angle, rotateAngle);
+            angle = newVec;
+            if(!level().isClientSide)
+            {
+                shotAcceleration();
+            }
+        }
+    }
+
+    /**
+     * 拡散アミュレット（原版 1659 行）：自身の消滅 tick に、
+     * 使用者の視線方向へ 20/16/8 発の扇状弾を撒いて消える。
+     *
+     * @param shot         撒く弾のデータ
+     * @param gravityLevel 使用者の視線方向の重力（弾が広がる向き）
+     */
+    public void diffusion(ShotData shot, double gravityLevel)
+    {
+        if(!isShotEndTime())
+        {
+            return;
+        }
+
+        if(user != null)
+        {
+            double vectorXG = -Math.sin(user.getYRot() / 180F * 3.141593F)
+                    * Math.cos(user.getXRot() / 180F * 3.141593F) * gravityLevel;
+            double vectorYG = -Math.sin(user.getXRot() / 180F * 3.141593F) * gravityLevel;
+            double vectorZG = Math.cos(user.getYRot() / 180F * 3.141593F)
+                    * Math.cos(user.getXRot() / 180F * 3.141593F) * gravityLevel;
+            Vec3 gravity = THShotLib.gravity(vectorXG, vectorYG, vectorZG);
+
+            THShotLib.createSphereShot(user, user, THShotLib.pos_Entity(this), angle, 0F,
+                    THShotLib.rotate_Default(), 0F, 9999, 0.6D, 0.6D, 0.00D, gravity,
+                    shot, 20, 0.0D, this.random.nextFloat() * 360F);
+            THShotLib.createSphereShot(user, user, THShotLib.pos_Entity(this), angle, 0F,
+                    THShotLib.rotate_Default(), 0F, 9999, 0.4D, 0.6D, 0.01D, gravity,
+                    shot, 16, 0.0D, this.random.nextFloat() * 360F);
+            THShotLib.createSphereShot(user, user, THShotLib.pos_Entity(this), angle, 0F,
+                    THShotLib.rotate_Default(), 0F, 9999, 0.2D, 0.6D, 0.01D, gravity,
+                    shot, 8, 0.0D, this.random.nextFloat() * 360F);
+        }
+
+        if(!level().isClientSide)
+        {
+            discard();
         }
     }
 

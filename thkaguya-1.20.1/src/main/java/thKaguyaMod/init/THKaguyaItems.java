@@ -6,22 +6,29 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.item.ItemByoukiheiyuMamori;
+import thKaguyaMod.item.ItemClosedThirdEye;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemHisou;
+import thKaguyaMod.item.ItemHomingAmulet;
 import thKaguyaMod.item.ItemIcicleSword;
+import thKaguyaMod.item.ItemKappaWaterPistol;
 import thKaguyaMod.item.ItemKinkakuzi;
 import thKaguyaMod.item.ItemLaevateinn;
 import thKaguyaMod.item.ItemMarisaBroom;
 import thKaguyaMod.item.ItemMazinKyoukan;
 import thKaguyaMod.item.ItemMiniHakkero;
+import thKaguyaMod.item.ItemOnbashira;
 import thKaguyaMod.item.ItemPendulum;
 import thKaguyaMod.item.ItemSakuyaStopWatch;
 import thKaguyaMod.item.ItemSakuyaWatch;
+import thKaguyaMod.item.ItemShipGhostDipper;
 import thKaguyaMod.item.ItemSilverKnife;
 import thKaguyaMod.item.ItemSpearTheGungnir;
 import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
 import thKaguyaMod.item.ItemSukima;
 import thKaguyaMod.item.ItemTHSpellCard;
+import thKaguyaMod.item.ItemTenguFan;
 import thKaguyaMod.item.ItemYuukaParasol;
 
 /**
@@ -60,8 +67,13 @@ public class THKaguyaItems
     /** 博麗のお祓い棒 */
     public static final RegistryObject<Item> HAKUREI_MIKO_STICK = register("hakurei_miko_stick");
 
-    /** ホーミングアミュレット */
-    public static final RegistryObject<Item> HOMING_AMULET = register("homing_amulet");
+    /** ホーミングアミュレット（原版 damage 0） */
+    public static final RegistryObject<Item> HOMING_AMULET = register("homing_amulet",
+            () -> new ItemHomingAmulet(ItemHomingAmulet.TYPE_HOMING));
+
+    /** 拡散アミュレット（原版 damage 1、1.20.1 で独立登録項に分割） */
+    public static final RegistryObject<Item> DIFFUSION_AMULET = register("diffusion_amulet",
+            () -> new ItemHomingAmulet(ItemHomingAmulet.TYPE_DIFFUSION));
 
     /** 陰陽玉 */
     public static final RegistryObject<Item> YIN_YANG_ORB = register("yin_yang_orb");
@@ -130,22 +142,22 @@ public class THKaguyaItems
     public static final RegistryObject<Item> REMORSE_ROD = register("remorse_rod");
 
     /** 天狗の団扇 */
-    public static final RegistryObject<Item> TENGU_FAN = register("tengu_fan");
+    public static final RegistryObject<Item> TENGU_FAN = register("tengu_fan", () -> new ItemTenguFan());
 
     /** 河童の帽子 */
     public static final RegistryObject<Item> KAPPA_CAP = register("kappa_cap");
 
     /** 河童の水鉄砲 */
-    public static final RegistryObject<Item> KAPPA_WATER_PISTOL = register("kappa_water_pistol");
+    public static final RegistryObject<Item> KAPPA_WATER_PISTOL = register("kappa_water_pistol", () -> new ItemKappaWaterPistol());
 
     /** 風祝のお祓い棒 */
     public static final RegistryObject<Item> WIND_MIKO_STICK = register("wind_miko_stick");
 
     /** 病気平癒守 */
-    public static final RegistryObject<Item> ILLNESS_RECOVERY_CHARM = register("illness_recovery_charm");
+    public static final RegistryObject<Item> ILLNESS_RECOVERY_CHARM = register("illness_recovery_charm", () -> new ItemByoukiheiyuMamori());
 
     /** 御柱 */
-    public static final RegistryObject<Item> ONBASHIRA = register("onbashira");
+    public static final RegistryObject<Item> ONBASHIRA = register("onbashira", () -> new ItemOnbashira());
 
     /** 諏訪子の帽子 */
     public static final RegistryObject<Item> SUWAKO_HAT = register("suwako_hat");
@@ -163,16 +175,16 @@ public class THKaguyaItems
     public static final RegistryObject<Item> NUCLEAR_CONTROL_ROD = register("nuclear_control_rod");
 
     /** 閉じた第三の眼 */
-    public static final RegistryObject<Item> CLOSED_THIRD_EYE = register("closed_third_eye");
+    public static final RegistryObject<Item> CLOSED_THIRD_EYE = register("closed_third_eye", () -> new ItemClosedThirdEye());
 
     /** ナズーリンペンデュラム */
     public static final RegistryObject<Item> NAZRIN_PENDULUM = register("nazrin_pendulum", () -> new ItemPendulum());
 
     /** 舟幽霊の柄杓（空） */
-    public static final RegistryObject<Item> SHIP_GHOST_DIPPER_EMPTY = register("ship_ghost_dipper_empty");
+    public static final RegistryObject<Item> SHIP_GHOST_DIPPER_EMPTY = register("ship_ghost_dipper_empty", () -> new ItemShipGhostDipper(ItemShipGhostDipper.EMPTY));
 
     /** 舟幽霊の柄杓（水入り） */
-    public static final RegistryObject<Item> SHIP_GHOST_DIPPER = register("ship_ghost_dipper");
+    public static final RegistryObject<Item> SHIP_GHOST_DIPPER = register("ship_ghost_dipper", () -> new ItemShipGhostDipper(ItemShipGhostDipper.FILL));
 
     /** 魔人経巻 */
     public static final RegistryObject<Item> SORCERER_SUTRA_SCROLL = register("sorcerer_sutra_scroll", () -> new ItemMazinKyoukan());
