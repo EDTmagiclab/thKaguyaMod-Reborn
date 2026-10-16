@@ -37,11 +37,14 @@ public class EntityYuukaParasol extends Entity
 	public int mode;
 
 	/** ワールド読み込み時に呼び出されるコンストラクト */
-    public EntityYuukaParasol(EntityType<?> type, Level level)
+public EntityYuukaParasol(EntityType<?> type, Level level)
     {
         super(type, level);
         // 原版：setSize(0.1F, 0.1F)（注册设定）、ignoreFrustumCheck = true（渲染阶段处理）
-    	mode = getParasolMode();
+        // 1.20.1 noCulling = true 等价于 ignoreFrustumCheck：阳伞紧贴玩家头顶，bbox 中心可能在视锥外，
+        // 不开 noCulling 会在某些视角（玩家看脚下时）导致"有时候看不到"
+        this.noCulling = true;
+        mode = getParasolMode();
     }
 
     public EntityYuukaParasol(Level level)

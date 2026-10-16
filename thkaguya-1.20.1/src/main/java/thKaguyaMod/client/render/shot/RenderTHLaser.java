@@ -69,8 +69,14 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
 
         poseStack.pushPose();
 
-        // 激光朝向：原版 glRotatef(yaw,0,1,0) + glRotatef(-pitch,1,0,0)，沿 +Z 延伸
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        // 激光朝向：1.20.1 dispatcher.render 传入的 entityYaw = lerp(entity.yRotO, entity.getYRot(), partialTick)
+        // 即 entity 世界 yaw（不再像 1.7.10 是相机相对 yaw），pitch 也用 entity 世界 xRot
+        // 原 dispatcher 参数 yaw 实际上与 entity.getYRot() 等价，统一从 entity 读更直观且与 RenderTHShot 中
+        // renderCrystalShot 等方法保持一致（180 - entity.getYRot()）。
+        // 激光从 +Z 方向延伸，先绕 Y 转 (180 - entityYaw) 抵消 cameraYaw+180 偏移，
+        // 再绕 X 转 -entityPitch 得到视线方向。
+        float entityYaw = entity.getYRot();
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(-entity.getXRot()));
 
         if(entity.getAnimationCount() < 0 && !(entity instanceof EntityTHSetLaser))

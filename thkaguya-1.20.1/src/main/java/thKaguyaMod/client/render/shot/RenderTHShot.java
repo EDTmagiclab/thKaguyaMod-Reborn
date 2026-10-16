@@ -339,12 +339,17 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         float uMin = (frame * 32F) / 64F;
         float uMax = (frame * 32F + 32F) / 64F;
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_LIGHT));
+        // 原版 renderKishituShot 用 glBlendFunc(GL_SRC_ALPHA, GL_ONE) 加性混合
+        // 1.20.1 RenderType.entityTranslucent 是标准半透明混合（GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA），
+        // 不是加性，但配合双层（彩色外层 + 白心内层）已可见"白芯红晕"效果。
+        // 若要完全还原原版加性效果需要自定义 RenderType（RenderStateShard.LIGHTNING_TRANSPARENCY
+        // 在 1.20.1 是 protected），此处用现有 RenderType 兼顾可见性。
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX_LIGHT));
 
         // 外层（彩色 alpha 0.5）
         quadBillboard(consumer, matrix, normal, packedLight, r, g, b, 128, uMin, uMax);
 
-        // 内层白心（width=1.6，alpha 0.8）
+        // 内层白心（width=1.6，alpha 0.8，z 偏移避免 z-fighting）
         poseStack.translate(0, 0, 0.01F);
         poseStack.scale(0.8F, 0.8F, 1.0F);
         pose = poseStack.last();
