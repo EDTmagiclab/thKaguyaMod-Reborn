@@ -37,13 +37,16 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 ### 5. 版本管理（用户约定）
 每完成一批改动就 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 是独立历史上游仓库不纳入；`.gitattributes` `* -text`。
 
-## 进度快照
-- ✅ 阶段 0/1/2：工程骨架 + 注册（91 物品/3 方块/1 TE/77 配方/5 语言/94 模型）+ 资源
-- ✅ 阶段 3 实体层全完成（M5 达标）：3a/3b/3c 最小链路 + 3d-1 激光 + 3d-2 符卡框架 + 3d-3 shot 10 + 3d-4 item 实体13+物品类13 + 3d-5 符卡36 + 3d-6 living 12 + 3d-7 effect 5
-- ✅ 阶段 4 渲染：4-1 弹幕 form ✅ / 4-2 激光 ✅ / 4-3 妖精形态 ✅ / 4-4 魔法阵 ✅ / 4-5 符卡 ✅ / 4-6 effect ✅ + **item 实体 3D 模型 ✅**（7 模型 + 10 渲染器）/ 4-7 boss ✅
+## 进度快照（2026-10-16 实测复核后更新）
+- ✅ 阶段 0/1/2：工程骨架 + 注册（物品注册 106 / 方块 3 / TE 1 / 配方 77 / 语言 5 / 物品模型 109 / 贴图 199）+ 资源
+- ✅ 阶段 3 实体层全完成（M5 达标）：3a/3b/3c 最小链路 + 3d-1 激光 + 3d-2 符卡框架 + 3d-3 shot 10 + 3d-4 item 实体13+物品类13 + 3d-5 符卡36 + 3d-6 living 12 + 3d-7 effect 5（EntityType 44 / 实体类文件 45）
+- ✅ 阶段 4 渲染：4-1 弹幕 form / 4-2 激光 / 4-3 妖精形态 / 4-4 魔法阵 / 4-5 符卡 / 4-6 effect + item 实体 3D 模型（7 模型 + 10 渲染器）/ 4-7 boss（渲染器 29，`EntityRenderersEvent` 注册）
 - ✅ 阶段 5 GUI：4 套（弹幕/激光工作台 + 奇迹小槌 + 早苗商店）MenuType + AbstractContainerMenu + Screen + Slot + 方块 openScreen。早苗商店为简化骨架（原版 IMerchant 半成品，交易留阶段 7）
-- ⬜ 阶段 6/7：客户端泄漏、配置/事件、村民交易、掉落 EntityTHItem、触发物品类 ItemAjaRedStone/Hakurouken/OharaibouS
+- 🔶 阶段 6 客户端泄漏：**代码就绪**（非 client 包 `import net.minecraft.client.*` 已清零），**剩专用服务器实测验收**
+- 🔶 阶段 7 配置/事件/杂项：**配置已完成**（THKaguyaConfig 已迁 `ForgeConfigSpec`，30+ 开关生效）；剩 `LivingDeathEvent` 死亡掉落、村民霖之助交易（EntityRinnosuke/VillagerRinnosuke）、箱子战利品 loot table、音效 4 事件核对、触发物品类 ItemAjaRedStone/Hakurouken/OharaibouS
+
+**M1–M6 里程碑全部达成**；M7（全功能交付）剩余项明细见任务书 `移植任务书.md` §0「剩余工作明细」。
 
 ## 结构决策
-- 弹幕工作台拆 2 方块 `danmaku_crafting_table`+`laser_crafting_table`；物品 snake_case（91=55+36 变体）；lang 用 JSON；32 符卡配方暂缓（依赖符卡系统）
-- 延后项：EntityRinnosuke/VillagerRinnosuke（阶段7 交易）、掉落 EntityTHItem、ItemAjaRedStone/Hakurouken/OharaibouS 触发物品（阶段6/7）、Fafurotskies 换回 EntityDanmakuCreeper、KappaPororoca 反弹
+- 弹幕工作台拆 2 方块 `danmaku_crafting_table`+`laser_crafting_table`；物品 snake_case；lang 用 JSON；32 符卡配方暂缓（依赖符卡系统）
+- 延后项：EntityRinnosuke/VillagerRinnosuke（阶段7 交易）、掉落 EntityTHItem、ItemAjaRedStone/Hakurouken/OharaibouS 触发物品、Fafurotskies 换回 EntityDanmakuCreeper、KappaPororoca 反弹、SHOT_MATERIAL 动态贴图
