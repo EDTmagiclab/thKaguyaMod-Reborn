@@ -103,6 +103,14 @@ public class THKaguyaCore
             // 弹幕图案注册表初始化（依赖 danmakuLevel 配置，须在配置加载后调用）
             DanmakuPatternRegistry.setDanmakuPattern();
 
+            // 【一時診断】特殊弾レジストリの状態（原因特定後削除）
+            com.mojang.logging.LogUtils.getLogger().info(
+                    "[TH] SpecialShotRegistry size={} has351(aja)={} has352(soulTorch)={} soulTorchItem={}",
+                    thKaguyaMod.registry.SpecialShotRegistry.getNumberOfSpecialShot(),
+                    thKaguyaMod.registry.SpecialShotRegistry.getSpecialShotClass(351) != null,
+                    thKaguyaMod.registry.SpecialShotRegistry.getSpecialShotClass(352) != null,
+                    thKaguyaMod.init.THKaguyaItems.SOUL_TORCH.get());
+
             // 符卡注册（阶段 3d-5，对齐原版 CommonProxy.registerSpellCards）
             thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MusouFuuin.class, "thkaguyamod", "MusouFuuin", 0);
             thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MasterSpark.class, "thkaguyamod", "MasterSpark", 1);

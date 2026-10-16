@@ -94,6 +94,8 @@ public class EntityTHShot extends Entity
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private boolean homingCalledLogged;
     private boolean homingPickedLogged;
+    private boolean specialDiagLogged;
+    private boolean tickDiagLogged;
 
     /** 回転軸ベクトル */
     public Vec3 rotate = THShotLib.rotate_Default();
@@ -238,6 +240,19 @@ public class EntityTHShot extends Entity
         // 先递增弹体年龄（tickCount），并执行 Entity 基础逻辑（原版依赖 ticksExisted 递增）
         super.tick();
 
+        // ===== 一時診断（原因特定後削除）：tick が動いているか / special が載っているか =====
+        if(!tickDiagLogged)
+        {
+            tickDiagLogged = true;
+            String msg = "[TH] tick alive: special=" + shotSpecial + " anim=" + getAnimationCount()
+                    + " dmg=" + shotDamage + " client=" + level().isClientSide;
+            LOGGER.info(msg);
+            if(!level().isClientSide && user instanceof Player p)
+            {
+                p.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
+            }
+        }
+
         // 弹主不存在则消失
         if(!level().isClientSide && user == null)
         {
@@ -360,6 +375,20 @@ public class EntityTHShot extends Entity
     /** 特殊弹的每 tick 处理（子类重写） */
     protected void specialMotion()
     {
+        // ===== 一時診断（原因特定後削除）=====
+        if(!specialDiagLogged)
+        {
+            specialDiagLogged = true;
+            Class<? extends ISpecialShot> c = SpecialShotRegistry.getSpecialShotClass(shotSpecial);
+            String msg = "[TH] special=" + shotSpecial + " -> " + (c == null ? "NOT REGISTERED" : c.getSimpleName())
+                    + " (client=" + level().isClientSide + ")";
+            LOGGER.info(msg);
+            if(!level().isClientSide && user instanceof Player p)
+            {
+                p.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
+            }
+        }
+
         // 原版 977 行：shotSpecial 查 SpecialShotRegistry 分发到 ISpecialShot.specialShot_move
         if(shotSpecial != 0)
         {

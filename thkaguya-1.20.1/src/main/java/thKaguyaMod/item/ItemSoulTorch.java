@@ -70,6 +70,9 @@ public class ItemSoulTorch extends Item implements ISpecialShot
 
 	private void emitSouls(ItemStack itemStack, Level level, Player player)
 	{
+		// 【一時診断】原因特定後削除
+		com.mojang.logging.LogUtils.getLogger().info("[TH] soulTorch emitSouls (client={})", level.isClientSide);
+
 		ShotData shot = ShotData.shot(DanmakuConstants.FORM_PHANTOM, DanmakuConstants.PURPLE,
 				0.4F, 7.0F, 0, 480, SPECIAL_SOULTORCH);
 		Vec3 angle = THShotLib.angle(player.getYRot(), -90F);
