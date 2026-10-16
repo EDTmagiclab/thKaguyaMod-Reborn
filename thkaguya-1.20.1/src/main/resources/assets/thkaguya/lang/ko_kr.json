@@ -101,5 +101,8 @@
   "item.thkaguya.short_laser": "짧은 레이저",
   "item.thkaguya.long_laser": "긴 레이저",
   "item.thkaguya.th_fairy_spawn_egg": "妖精刷怪蛋",
-  "entity.thkaguya.th_fairy": "妖精"
+  "entity.thkaguya.th_fairy": "妖精",
+  "thKaguya.msg.pendulum1": "펜듈럼이",
+  "thKaguya.msg.pendulum2": "를(을) 찾기 시작했다!",
+  "thKaguya.msg.pendulum3": "를(을) 고감도 모드로 찾기 시작했다!"
 }

@@ -125,5 +125,8 @@
   "item.thkaguya.toziko_spawn_egg": "苏我屠自古刷怪蛋",
   "entity.thkaguya.toziko": "苏我屠自古",
   "item.thkaguya.wriggle_spawn_egg": "莉格露刷怪蛋",
-  "entity.thkaguya.wriggle": "莉格露"
+  "entity.thkaguya.wriggle": "莉格露",
+  "thKaguya.msg.pendulum1": "灵摆开始寻找",
+  "thKaguya.msg.pendulum2": "了！",
+  "thKaguya.msg.pendulum3": "，以高敏感度模式！"
 }

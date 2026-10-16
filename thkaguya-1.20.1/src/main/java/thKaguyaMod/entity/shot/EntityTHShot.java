@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaConfig;
@@ -375,6 +376,34 @@ public class EntityTHShot extends Entity
                 } catch (ReflectiveOperationException e) {
                 }
             }
+            // 原版 EntityTHShot.entityHitSpecialProcess 的硬编码基础特效 switch（阶段 4 补回）
+            switch(shotSpecial)
+            {
+                case DanmakuConstants.FIRE:
+                    hitEntity.setSecondsOnFire((int)shotDamage);
+                    return false;
+                case DanmakuConstants.EXPLOSION01:
+                    if(!level().isClientSide)
+                    {
+                        Level.ExplosionInteraction interaction = THKaguyaConfig.MasterSparkDestroysBlocks
+                                ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE;
+                        level().explode(user, hitEntity.getX(), hitEntity.getY(), hitEntity.getZ(), 3.0F, false, interaction);
+                    }
+                    return false;
+                case DanmakuConstants.WIND01:
+                {
+                    Vec3 m = hitEntity.getDeltaMovement();
+                    Vec3 d = this.getDeltaMovement();
+                    hitEntity.setDeltaMovement(m.x + d.x * 1.7D, m.y + d.y * 1.7D + 2.0D, m.z + d.z * 1.7D);
+                    if(!hitEntity.onGround())
+                    {
+                        damageRate *= 2.0F;
+                    }
+                    return false;
+                }
+                default:
+                    return false;
+            }
         }
         return false;
     }
@@ -422,6 +451,22 @@ public class EntityTHShot extends Entity
                     return iSpecialShot.specialShot_hitBlock(level(), shotSpecial, this, result);
                 } catch (ReflectiveOperationException e) {
                 }
+            }
+            // 原版 EntityTHShot.blockHitSpecialProcess 的硬编码基础特效 switch（阶段 4 补回）
+            // BOUND01~04 的反弹方法（bound）尚未迁移，暂保持消弹（已知延后项）
+            switch(shotSpecial)
+            {
+                case DanmakuConstants.EXPLOSION01:
+                    if(!level().isClientSide && result.getLocation() != null)
+                    {
+                        Vec3 hit = result.getLocation();
+                        Level.ExplosionInteraction interaction = THKaguyaConfig.MasterSparkDestroysBlocks
+                                ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE;
+                        level().explode(user, hit.x, hit.y, hit.z, 5.0F, false, interaction);
+                    }
+                    return false;
+                default:
+                    return false;
             }
         }
         return false;

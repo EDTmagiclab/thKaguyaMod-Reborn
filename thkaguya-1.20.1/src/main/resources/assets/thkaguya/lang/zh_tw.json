@@ -100,5 +100,8 @@
   "item.thkaguya.short_laser": "短激光",
   "item.thkaguya.long_laser": "長激光",
   "item.thkaguya.th_fairy_spawn_egg": "妖精刷怪蛋",
-  "entity.thkaguya.th_fairy": "妖精"
+  "entity.thkaguya.th_fairy": "妖精",
+  "thKaguya.msg.pendulum1": "靈擺開始尋找",
+  "thKaguya.msg.pendulum2": "了！",
+  "thKaguya.msg.pendulum3": "，以高敏感度模式！"
 }

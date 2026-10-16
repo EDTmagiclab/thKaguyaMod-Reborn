@@ -140,5 +140,8 @@
   "danmakuCrafting.copy": "Copy",
   "laserCrafting.name": "Laser Crafting Table",
   "miracleMallet.material": "Material",
-  "miracleMallet.result": "Result"
+  "miracleMallet.result": "Result",
+  "thKaguya.msg.pendulum1": "Pendulum started searching for ",
+  "thKaguya.msg.pendulum2": "!",
+  "thKaguya.msg.pendulum3": " by High sensitivity mode!"
 }

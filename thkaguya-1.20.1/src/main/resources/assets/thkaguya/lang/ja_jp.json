@@ -101,5 +101,8 @@
   "item.thkaguya.short_laser": "ショートレーザー",
   "item.thkaguya.long_laser": "ロングレーザー",
   "item.thkaguya.th_fairy_spawn_egg": "妖精刷怪蛋",
-  "entity.thkaguya.th_fairy": "妖精"
+  "entity.thkaguya.th_fairy": "妖精",
+  "thKaguya.msg.pendulum1": "ペンデュラムは",
+  "thKaguya.msg.pendulum2": "を探し始めた！",
+  "thKaguya.msg.pendulum3": "を高感度モードで探し始めた！"
 }

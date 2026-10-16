@@ -180,6 +180,8 @@ public class EntityTHLaser extends EntityTHShot
                 net.minecraft.world.level.ClipContext.Fluid.NONE, this));
         if(blockHit != null && blockHit.getType() == HitResult.Type.BLOCK)
         {
+            // 原版 onImpact 358 行：方块命中先做特殊处理（EXPLOSION01 爆炸等）
+            blockHitSpecialProcess(blockHit);
             double hitDistance = this.position().distanceTo(blockHit.getLocation());
             if(hitDistance > 0.3D)
             {
@@ -223,6 +225,8 @@ public class EntityTHLaser extends EntityTHShot
             }
             else
             {
+                // 原版 onImpact 278 行：实体命中先做特殊处理（EXPLOSION01 爆炸等）
+                entityHitSpecialProcess(hit);
                 // 魔法伤害（持续，受无敌帧限制）
                 damageRate = 1.0F;
                 float dmg = getShotDamageWithDifficulty() * damageRate;
