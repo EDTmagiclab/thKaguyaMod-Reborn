@@ -79,6 +79,9 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 - `ticksExisted`→`tickCount`（递增时机不同，`tickCount<=X` 时停判断会死锁）
 - `canBeCollidedWith()`→投射物命中用 `isPickable()`
 - `ignoreFrustumCheck=true`→构造里 `this.noCulling=true` 字段赋值（自定义 public 字段不同步，客户端逻辑只能用 entityData 同步字段）
+- **`Properties.durability(N)` 优先于 `Tier.getUses()`**：`TieredItem(Tier, Properties)` 走的是 `Properties.defaultDurability(tier.getUses())`，而 `defaultDurability(int)` **只在 `maxDamage == 0`** 时才调 `durability(int)`（此前「TieredItem 会覆盖 durability、耐久一律 250」的说法是错的）
+- **`releaseUsing(stack, level, entity, timeLeft)` 的 `timeLeft` 是「剩余 tick」**：1.7.10 `onPlayerStoppedUsing` 的第 4 参是**已按住 tick 数**，故「按住时长」= `getUseDuration(stack) - timeLeft`（原版写 `getMaxItemUseDuration - usedTime` 即对应此式；原版若写 `72000 - usedTime` 则等于 `timeLeft`）
+- **`Entity.setSize` 在 1.20.1 不存在** → 碰撞箱尺寸由 `EntityType.Builder.sized(w, h)` 决定；`isInRangeToRenderDist` → 覆写 `shouldRenderAtSqrDistance(double)`（`getAverageEdgeLength()` → `AABB.getSize()`）；`getCollisionBorderSize` 无对应
 - 调试日志用 `LogUtils.getLogger()`+slf4j；`System.out` 不落盘
 - 伤害 `causeIndirectMagicDamage`→`level().damageSources().indirectMagic`
 - 配置 `Configuration`→`ForgeConfigSpec`（静态字段须显式 `load()`，监听 ModConfigEvent）
@@ -88,16 +91,17 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 ### 5. 版本管理（用户约定）
 每完成一批改动就 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 是独立历史上游仓库不纳入；`.gitattributes` `* -text`。
 
-## 进度快照（2026-10-16 实测复核后更新）
+## 进度快照（2026-10-17 实测复核后更新）
 - ✅ 阶段 0/1/2：工程骨架 + 注册（物品注册 106 / 方块 3 / TE 1 / 配方 77 / 语言 5 / 物品模型 109 / 贴图 199）+ 资源
 - ✅ 阶段 3 实体层全完成（M5 达标）：3a/3b/3c 最小链路 + 3d-1 激光 + 3d-2 符卡框架 + 3d-3 shot 10 + 3d-4 item 实体13+物品类13 + 3d-5 符卡36 + 3d-6 living 12 + 3d-7 effect 5（EntityType 44 / 实体类文件 45）
 - ✅ 阶段 4 渲染：4-1 弹幕 form / 4-2 激光 / 4-3 妖精形态 / 4-4 魔法阵 / 4-5 符卡 / 4-6 effect + item 实体 3D 模型（7 模型 + 10 渲染器）/ 4-7 boss（渲染器 29，`EntityRenderersEvent` 注册）
 - ✅ 阶段 5 GUI：4 套（弹幕/激光工作台 + 奇迹小槌 + 早苗商店）MenuType + AbstractContainerMenu + Screen + Slot + 方块 openScreen。早苗商店为简化骨架（原版 IMerchant 半成品，交易留阶段 7）
-- 🔶 阶段 6 客户端泄漏：**代码就绪**（非 client 包 `import net.minecraft.client.*` 已清零），**剩专用服务器实测验收**
-- 🔶 阶段 7 配置/事件/杂项：**配置已完成**（THKaguyaConfig 已迁 `ForgeConfigSpec`，30+ 开关生效）；剩 `LivingDeathEvent` 死亡掉落、村民霖之助交易（EntityRinnosuke/VillagerRinnosuke）、箱子战利品 loot table、音效 4 事件核对、触发物品类 ItemAjaRedStone/Hakurouken/OharaibouS
+- ✅ 阶段 6 客户端泄漏：代码就绪（非 client 包 `import net.minecraft.client.*` 已清零）+ 专用服务器启动与联机实测均已通过（`a88725d`/`8d22dc6`/`60842f8`）
+- 🔶 阶段 7 配置/事件/杂项：**配置已完成**（THKaguyaConfig 已迁 `ForgeConfigSpec`，30+ 开关生效）；触发物品类（ItemAjaRedStone/Hakurouken/OharaibouS/OharaibouR）✅ 已完成（`13aa278`、`f580315`）；剩 `LivingDeathEvent` 死亡掉落、村民霖之助交易（EntityRinnosuke/VillagerRinnosuke）、箱子战利品 loot table、音效 4 事件核对
+- ✅ **哑物品批次 1（22 项）已全部完成**（`f580315` 五项 + `395a03b` `toyosatomimi_sword`）；注册项 107（自定义类 42 + 纯 `new Item()` 50 + 刷怪蛋等 15）；剩余真哑 31 项（批次 2 的 24 + 批次 3 的 7），清单见 `哑物品清理任务书.md`（v1.3）
 
-**M1–M6 里程碑全部达成**；M7（全功能交付）剩余项明细见任务书 `移植任务书.md` §0「剩余工作明细」。
+**M1–M6 里程碑全部达成**；M7（全功能交付）剩余项明细见任务书 `移植任务书.md` §0「剩余工作明细」；哑物品剩余批次见 `哑物品清理任务书.md` §2.2/§2.3。
 
 ## 结构决策
 - 弹幕工作台拆 2 方块 `danmaku_crafting_table`+`laser_crafting_table`；物品 snake_case；lang 用 JSON；32 符卡配方暂缓（依赖符卡系统）
-- 延后项：EntityRinnosuke/VillagerRinnosuke（阶段7 交易）、掉落 EntityTHItem、ItemAjaRedStone/Hakurouken/OharaibouS 触发物品、Fafurotskies 换回 EntityDanmakuCreeper、KappaPororoca 反弹、SHOT_MATERIAL 动态贴图
+- 延后项：EntityRinnosuke/VillagerRinnosuke（阶段7 交易）、掉落 EntityTHItem、Fafurotskies 换回 EntityDanmakuCreeper、KappaPororoca 反弹、SHOT_MATERIAL 动态贴图、哑物品批次 2（24 项弹/激光素材，只剩动态贴图 + 符卡模式 GUI）、哑物品批次 3（7 项重活）
