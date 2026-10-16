@@ -36,7 +36,9 @@ public static LayerDefinition createBodyLayer()
         CubeListBuilder.create().texOffs(32, 16).addBox(-2, -20, 0, 12, 12, 0),
         PartPose.offset(0, 0, 0));
 
-    return LayerDefinition.create(mesh, 64, 64);
+    // 原版 HisouTexture.png 64×32（Techne 默认尺寸），LayerDefinition 必须 64×32
+    // 否则贴图 UV 纵向拉伸导致模型显示错乱（剑刃与把手错位）
+    return LayerDefinition.create(mesh, 64, 32);
 }
 
     @Override

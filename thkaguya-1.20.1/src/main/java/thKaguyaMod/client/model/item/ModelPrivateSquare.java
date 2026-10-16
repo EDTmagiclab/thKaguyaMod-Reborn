@@ -39,7 +39,9 @@ public static LayerDefinition createBodyLayer()
         CubeListBuilder.create().texOffs(48, 16).addBox(-8, -8, 0, 16, 16, 0),
         PartPose.offsetAndRotation(0, -16, -4, 0.523599F, 0, 0));
 
-    return LayerDefinition.create(mesh, 64, 64);
+    // 原版 SakuyaStopWatchTexture.png / SakuyaWatchTexture.png 都是 64×32（Techne 默认）
+    // LayerDefinition 必须 64×32，否则钟表表面 UV 错位出现\"破碎\"感
+    return LayerDefinition.create(mesh, 64, 32);
 }
 
     @Override
