@@ -21,6 +21,7 @@ import thKaguyaMod.item.ItemSilverKnife;
 import thKaguyaMod.item.ItemSpearTheGungnir;
 import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
 import thKaguyaMod.item.ItemSukima;
+import thKaguyaMod.item.ItemTHSpellCard;
 import thKaguyaMod.item.ItemYuukaParasol;
 
 /**
@@ -203,8 +204,8 @@ public class THKaguyaItems
     /** エクステンドアイテム */
     public static final RegistryObject<Item> EXTEND_ITEM = register("extend_item");
 
-    /** スペルカード */
-    public static final RegistryObject<Item> SPELL_CARD = register("spell_card");
+    /** スペルカード（damage 値 = 符卡 No。符卡専用クリエイティブタブに並ぶ） */
+    public static final RegistryObject<Item> SPELL_CARD = register("spell_card", () -> new ItemTHSpellCard());
 
     /* ==================== 刷怪蛋 ==================== */
     /** 妖精刷怪蛋（原版 eggColor 0xFFFF80 / 0xC0C000） */

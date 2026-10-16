@@ -5,6 +5,7 @@ import java.util.Random;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.entity.shot.EntityTHLaser;
 import thKaguyaMod.entity.shot.EntityTHShot;
@@ -1820,5 +1821,71 @@ public static void playShotSound(Entity entity)
 	 * @param setYOffset
 	 * @return
 	 */
+
+	/* ==================== 弾消し（原版 THShotLib.danmakuRemove 移植 / 阶段 7-③）==================== */
+
+	/**
+	 * 周囲の弾幕を消去する（プレイヤーのスペルカード宣言時に呼ばれる）
+	 *
+	 * @param centerEntity 中心となるEntity
+	 * @param range        有効範囲
+	 * @param target       消去対象 "ALL" / "Enemy" / "Player" / "Other"
+	 * @param isDropBonus  原版 true なら shotFinishBonus() で EntityShotMaterial を出現させていた。
+	 *                     1.20.1 では EntityShotMaterial 未移植のため true でも discard に降格
+	 *                     （ドロップ報酬は同エンティティ移植時に復元）。
+	 * @return 消去した弾数
+	 *
+	 * 1.7.10 -> 1.20.1:
+	 *   worldObj.getEntitiesWithinAABBExcludingEntity(e, box.expand(r,r,r))
+	 *       -> level().getEntities(e, e.getBoundingBox().inflate(r,r,r))
+	 *   entity.setDead()                          -> entity.discard()
+	 *   entityTHShot.user instanceof EntityPlayer -> user instanceof Player
+	 */
+	public static int danmakuRemove(Entity centerEntity, double range, String target, boolean isDropBonus)
+	{
+		int count = 0;
+		java.util.List<Entity> list = centerEntity.level().getEntities(centerEntity,
+				centerEntity.getBoundingBox().inflate(range, range, range));
+
+		for (Entity entity : list)
+		{
+			if (!(entity instanceof EntityTHShot))
+			{
+				continue;
+			}
+
+			EntityTHShot shot = (EntityTHShot)entity;
+			boolean match;
+
+			if ("ALL".equals(target))
+			{
+				match = true;
+			}
+			else if ("Enemy".equals(target))
+			{
+				match = !(shot.user instanceof Player);
+			}
+			else if ("Player".equals(target))
+			{
+				match = shot.user instanceof Player;
+			}
+			else if ("Other".equals(target))
+			{
+				match = shot.user != centerEntity;
+			}
+			else
+			{
+				match = false;
+			}
+
+			if (match)
+			{
+				shot.discard();
+				count++;
+			}
+		}
+
+		return count;
+	}
 
 }

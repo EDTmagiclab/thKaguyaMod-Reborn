@@ -10,6 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.item.ItemProperties;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.client.gui.GuiDanmakuCrafting;
 import thKaguyaMod.client.gui.GuiDanmakuCraftingLaser;
@@ -214,6 +215,15 @@ public class ClientRenderRegistry
             MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.DANMAKU_CRAFTING_LASER.get(), GuiDanmakuCraftingLaser::new);
             MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.MERCHANT_SANAE.get(), GuiMerchantSanae::new);
             MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.MIRACLE_MALLET.get(), GuiMiracleMallet::new);
+
+            // 符卡アイテムのアイコン切り替え（阶段 7-③）
+            // 原版は metadata（damage 値）でアイコンを選んでいた（getIconFromDamage）。
+            // 1.20.1 はアイテムモデルの overrides で切り替えるため、
+            // damage 値を返す独自プロパティ "thkaguya:spellcard_id" を登録する。
+            ItemProperties.register(
+                    thKaguyaMod.init.THKaguyaItems.SPELL_CARD.get(),
+                    new ResourceLocation(THKaguyaCore.MODID, "spellcard_id"),
+                    (stack, level, entity, seed) -> stack.getDamageValue());
         });
     }
 }

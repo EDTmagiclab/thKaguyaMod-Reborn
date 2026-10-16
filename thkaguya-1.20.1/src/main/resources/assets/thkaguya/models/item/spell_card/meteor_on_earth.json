@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "thkaguya:items/spellcard/meteor_on_earth",
+    "layer1": "thkaguya:items/spellcard/spellcard_lv1"
+  }
+}

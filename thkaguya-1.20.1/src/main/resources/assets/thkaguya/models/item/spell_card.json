@@ -2,5 +2,217 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "thkaguya:item/spell_card"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 0
+      },
+      "model": "thkaguya:item/spell_card/musoufuuin"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 1
+      },
+      "model": "thkaguya:item/spell_card/masterspark"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 2
+      },
+      "model": "thkaguya:item/spell_card/kasho_no_eimin"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 3
+      },
+      "model": "thkaguya:item/spell_card/meteonicshower"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 4
+      },
+      "model": "thkaguya:item/spell_card/nami_to_tubu_no_kyoukai"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 5
+      },
+      "model": "thkaguya:item/spell_card/nijuukokushichou"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 6
+      },
+      "model": "thkaguya:item/spell_card/scarletshoot"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 7
+      },
+      "model": "thkaguya:item/spell_card/zenzinrui_no_hisouten"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 8
+      },
+      "model": "thkaguya:item/spell_card/satuzindoll"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 9
+      },
+      "model": "thkaguya:item/spell_card/perfectfreeze"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 10
+      },
+      "model": "thkaguya:item/spell_card/hikouchuunest"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 11
+      },
+      "model": "thkaguya:item/spell_card/kappaspororoca"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 12
+      },
+      "model": "thkaguya:item/spell_card/stardustreverie"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 13
+      },
+      "model": "thkaguya:item/spell_card/kerochan_fuuu_ni_makezu"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 14
+      },
+      "model": "thkaguya:item/spell_card/miraclefruit"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 15
+      },
+      "model": "thkaguya:item/spell_card/fafrotskies_no_kiseki"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 16
+      },
+      "model": "thkaguya:item/spell_card/youryokuspoiler"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 17
+      },
+      "model": "thkaguya:item/spell_card/moses_no_kiseki"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 18
+      },
+      "model": "thkaguya:item/spell_card/yasaka_no_kamikaze"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 19
+      },
+      "model": "thkaguya:item/spell_card/iciclefall"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 20
+      },
+      "model": "thkaguya:item/spell_card/starbowbreak"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 21
+      },
+      "model": "thkaguya:item/spell_card/catadioptric"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 22
+      },
+      "model": "thkaguya:item/spell_card/mishagujisama"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 23
+      },
+      "model": "thkaguya:item/spell_card/redmagic"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 24
+      },
+      "model": "thkaguya:item/spell_card/eternalmeek"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 25
+      },
+      "model": "thkaguya:item/spell_card/non-directionallaser"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 26
+      },
+      "model": "thkaguya:item/spell_card/kachoufuugetushoufuurougetu"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 27
+      },
+      "model": "thkaguya:item/spell_card/spear_the_gungnir"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 28
+      },
+      "model": "thkaguya:item/spell_card/moonlightray"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 29
+      },
+      "model": "thkaguya:item/spell_card/houkakenran"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 30
+      },
+      "model": "thkaguya:item/spell_card/saikouranbu"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 33
+      },
+      "model": "thkaguya:item/spell_card/fujiyamavolcano"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 34
+      },
+      "model": "thkaguya:item/spell_card/littlebugstorm"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 35
+      },
+      "model": "thkaguya:item/spell_card/meteor_on_earth"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 40
+      },
+      "model": "thkaguya:item/spell_card/gagoujicyclone"
+    }
+  ]
 }
