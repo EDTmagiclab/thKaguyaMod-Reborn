@@ -27,6 +27,12 @@ import thKaguyaMod.init.THKaguyaItems;
 /** 魔法の箒 */
 public class EntityMarisaBroom extends Entity
 {
+    /**
+     * 1.7.10 原版の「箒が空かどうか」フラグ。
+     * ただし setter（原版 func_70270_d / 本移植版 setIsEmpty）は原版・移植版ともに
+     * どこからも呼ばれず、常に true。現在は lerpTo() の補間ステップ数の決定にのみ使う。
+     * 分岐判定（旧: level().isClientSide && isEmpty）は isControlledByLocalInstance() に置き換えた。
+     */
     private boolean isEmpty;
     private double speedMultiplier;
     private int boatPosRotationIncrements;
@@ -203,6 +209,19 @@ public class EntityMarisaBroom extends Entity
     @Override
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
     {
+        // ローカルクライアントが操縦している箒は自分が位置の権威なので、
+        // サーバからの通常の位置補正は無視する。
+        // （ここで受けてしまうと、毎 tick キー入力から算出した移動が
+        //   サーバの古い位置で上書きされ、さらに setDeltaMovement(velocityX..)=0 で
+        //   移動量そのものがゼロに潰される）
+        // 強制テレポート（teleport=true）は対象外。
+        // なお handleMoveVehicle の巻き戻しは ClientboundMoveVehiclePacket →
+        // ClientPacketListener.handleMoveVehicle → absMoveTo 経由なので、この return では止まらない。
+        if (this.isControlledByLocalInstance() && !teleport)
+        {
+            return;
+        }
+
         if (this.isEmpty)
         {
             this.boatPosRotationIncrements = steps + 5;
@@ -334,7 +353,18 @@ public class EntityMarisaBroom extends Entity
         double d10;
         double d11;
 
-        if (this.level().isClientSide && this.isEmpty)
+        // 1.20.1: 「補間してよいか」＝「このインスタンスが操縦権威ではないか」。
+        //
+        // 原版 1.7.10 はこの判定に isEmpty を使っていたが、isEmpty の setter
+        // （func_70270_d / 本移植版の setIsEmpty）は どこからも呼ばれず常に true のまま。
+        // その結果クライアントは常にこの補間分岐へ入り、else 側にある
+        // isPushKeyUp() 等のキー入力読み取り（クライアント専用コード）へ
+        // 到達できない＝WASD が完全に無反応になっていた。
+        //
+        // isControlledByLocalInstance() は「getControllingPassenger() が LocalPlayer か」を返すので、
+        // ローカルプレイヤーが操縦しているときだけ else 側（キー入力＋自走）へ入る。
+        // 他人の箒・無人時・サーバ側は従来どおり補間／非権威として扱われる。
+        if (this.level().isClientSide && !this.isControlledByLocalInstance())
         {
         	//箒の回転増加量が０より大きいなら
             if (this.boatPosRotationIncrements > 0)
