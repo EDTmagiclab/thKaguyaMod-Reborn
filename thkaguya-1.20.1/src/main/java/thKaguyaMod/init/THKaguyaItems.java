@@ -12,6 +12,7 @@ import thKaguyaMod.item.ItemClosedThirdEye;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemDeathScythe;
 import thKaguyaMod.item.ItemDragonNeckJewel;
+import thKaguyaMod.item.ItemGapFoldingUmbrella;
 import thKaguyaMod.item.ItemHakurouken;
 import thKaguyaMod.item.ItemHisou;
 import thKaguyaMod.item.ItemHomingAmulet;
@@ -22,10 +23,14 @@ import thKaguyaMod.item.ItemLaevateinn;
 import thKaguyaMod.item.ItemMarisaBroom;
 import thKaguyaMod.item.ItemMazinKyoukan;
 import thKaguyaMod.item.ItemNuclearControlRod;
+import thKaguyaMod.item.ItemOharaibouR;
+import thKaguyaMod.item.ItemOharaibouS;
 import thKaguyaMod.item.ItemMiniHakkero;
 import thKaguyaMod.item.ItemOnbashira;
 import thKaguyaMod.item.ItemPendulum;
 import thKaguyaMod.item.ItemRemorseRod;
+import thKaguyaMod.item.ItemRoukanken;
+import thKaguyaMod.item.ItemRoukanSenpuuzin;
 import thKaguyaMod.item.ItemSakuyaStopWatch;
 import thKaguyaMod.item.ItemSakuyaWatch;
 import thKaguyaMod.item.ItemSoulTorch;
@@ -74,7 +79,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> AJA_RED_STONE = register("aja_red_stone", () -> new ItemAjaRedStone());
 
     /** 博麗のお祓い棒 */
-    public static final RegistryObject<Item> HAKUREI_MIKO_STICK = register("hakurei_miko_stick");
+    public static final RegistryObject<Item> HAKUREI_MIKO_STICK = register("hakurei_miko_stick", () -> new ItemOharaibouR());
 
     /** ホーミングアミュレット（原版 damage 0） */
     public static final RegistryObject<Item> HOMING_AMULET = register("homing_amulet",
@@ -121,10 +126,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> HAKUROUKEN = register("hakurouken", () -> new ItemHakurouken());
 
     /** 楼観剣 */
-    public static final RegistryObject<Item> ROUKANKEN = register("roukanken");
+    public static final RegistryObject<Item> ROUKANKEN = register("roukanken", () -> new ItemRoukanken());
 
     /** 楼観旋風刃（原版 roukanSenpuuzin，阶段 5 奇迹小槌产物） */
-    public static final RegistryObject<Item> ROUKAN_SENPUUZIN = register("roukan_senpuuzin");
+    public static final RegistryObject<Item> ROUKAN_SENPUUZIN = register("roukan_senpuuzin", () -> new ItemRoukanSenpuuzin());
 
     /** 幽々子の扇 */
     public static final RegistryObject<Item> YUYUKO_FAN = register("yuyuko_fan", () -> new ItemYuyukoFan());
@@ -136,7 +141,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> GAP = register("gap", () -> new ItemSukima());
 
     /** 隙間の折りたたみ傘 */
-    public static final RegistryObject<Item> GAP_FOLDING_UMBRELLA = register("gap_folding_umbrella");
+    public static final RegistryObject<Item> GAP_FOLDING_UMBRELLA = register("gap_folding_umbrella", () -> new ItemGapFoldingUmbrella());
 
     /** 伊吹瓢 */
     public static final RegistryObject<Item> IBUKI_GOURD = register("ibuki_gourd");
@@ -160,7 +165,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> KAPPA_WATER_PISTOL = register("kappa_water_pistol", () -> new ItemKappaWaterPistol());
 
     /** 風祝のお祓い棒 */
-    public static final RegistryObject<Item> WIND_MIKO_STICK = register("wind_miko_stick");
+    public static final RegistryObject<Item> WIND_MIKO_STICK = register("wind_miko_stick", () -> new ItemOharaibouS());
 
     /** 病気平癒守 */
     public static final RegistryObject<Item> ILLNESS_RECOVERY_CHARM = register("illness_recovery_charm", () -> new ItemByoukiheiyuMamori());
