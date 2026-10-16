@@ -33,10 +33,16 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 子类完整参数构造若落到父类硬编码某 type 的 `Xxx(Level)` 构造，`getType()` 全错——服务端是正确子类、客户端按错 type 实例化父类（视觉/行为错乱，激光渲染成圆弹）。每个子类构造显式传自己 EntityType。
 
 ### 4. API 迁移高频坑
+- **固定管线 GL 状态 → 自定义 RenderType（弹幕/激光/魔法阵保真度的关键）**：原版弹幕几乎全部用**加性/发光**混合 + `glDepthMask(false)` + `glDisable(GL_LIGHTING)`，1.20.1 直接用 `entityTranslucent`（标准半透明）观感完全不同。统一走 `client/render/THRenderTypes.java`：
+  - `BLEND_ADDITIVE` = `(SRC_ALPHA, ONE)`（最常见）；`BLEND_GLOW` = `(ONE, ONE_MINUS_SRC_COLOR)`（使い魔/風弾/御札/苦無·矢外層/激光外層/魔法陣/結界/遅延光效）；`BLEND_DOUBLE_ADD` = `(ONE, ONE)`（幽霊弾）
+  - `depthWrite` 参数 = `glDepthMask`；全亮 = 顶点 `uv2(LightTexture.FULL_BRIGHT)`；`cutout(tex,cull)` = 原版 `glDisable(GL_BLEND)` 的白芯層
+  - **关键事实**：`RenderStateShard` 的**静态字段**是 protected，但其**内部 shard 类及其构造函数全部 public**（javap 实测），配 public 的 `RenderType.create(...)` 即可自建 → **不需要 AccessTransformer/Mixin**
+- **尺寸/贴图逐 form 核对**：原版顶点多为 `±width`（normal 1.0 / light 2.0 / familiar 1.0），移植时若用固定 `half=0.5` 的 quad 必须补 ×2，否则整体只有原版一半大；RICE/OVAL/SCALE 三类椭球弹原版都贴 `laser.png`。`animationCount < 0`（delayTime）阶段原版**只画光效不画弹体**。
 - **面向相机的 billboard 必须用 NoCull 系 RenderType**：手工构造的 camera-facing quad（`mulPose(entityRenderDispatcher.cameraOrientation())` + 左下→右下→右上→左上 的顶点序）在该坐标系下被判为「裏面」，用 `entityTranslucentCull` / `entityCutout` 会被整片剔除 → **完全不可见**（实体存在、伤害正常，但看不到）。必须用 `entityTranslucent` / `entityCutoutNoCull`。
   - 实测踩坑：`RenderTHShot` 的光弾（FORM_LIGHT，导致「波与粒的境界」等 5 类来源全不可见）、気質弾、星弾、幻弾、使い魔、FORM_BIG；此前只修了 KISHITU 一次（commit a3c5366），未举一反三（commit f337d40 补齐）。
   - **原版判据**：1.7.10 原版只在 3D 形状（renderScaleShot / ButterflyShot / KunaiShot / ArrowShot / TalismanShot）里显式 `glDisable(GL_CULL_FACE) 両面描画` / `glEnable(GL_CULL_FACE) 表面描画`；**面向相机的 billboard 完全不碰剔除状态** → 移植时一律用 NoCull。
   - 3D 手工几何（`quadQuad` / `tri3`，如 kunai / arrow 外层、crystal 八面体）原版即单面剔除，保持 Cull 正确。
+- **激光/結晶の 180° 回転は意図的**：`RenderTHLaser` 与 `renderCrystalShot` 用 `Axis.YP.rotationDegrees(180 - yaw)`（不像 kunai/arrow 用裸 yaw）。来历：commit a3c5366 依用户实测「魔炮指向身后」修正，**勿凭「原版是 glRotatef(yaw)」的推理回退**（原版 yaw 与本工程 entity yaw 同为 `atan2(vx,vz)` 约定，但实测 180 是对的）。
 - **覆写 `rideTick()` 必须自己驱动 `tick()`**：1.20.1 中乘客实体**不走** `tick()` —— `ServerLevel/ClientLevel.tickPassenger()` 调 `rideTick()`，`Entity.rideTick()` 内部才负责 `setDeltaMovement(ZERO)` + `tick()` + `positionRider()`。覆写后不调 `super.rideTick()` 或 `this.tick()` → 该实体 `tick()` 永不执行 → 消灭判定/计时器全失效。踩坑记录：`EntityHisou` 主剑不消失 + 使用者永久减速、`EntityYuukaParasol` 同症（commit e3a08eb）。注意 `super.rideTick()` 会附带 `positionRider()`，若 `tick()` 内已用 `itemEffectFollowUser` 自行定位，应只调 `if(this.canUpdate()) this.tick();`
 - `ticksExisted`→`tickCount`（递增时机不同，`tickCount<=X` 时停判断会死锁）
 - `canBeCollidedWith()`→投射物命中用 `isPickable()`
