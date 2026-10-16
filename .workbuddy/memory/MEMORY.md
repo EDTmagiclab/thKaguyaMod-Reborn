@@ -62,6 +62,20 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
   （commit 1e9815d；踩坑时长：两轮排查，元凶被空 `catch` 掩盖）
 - **反射调用一律 `catch (Throwable)` + 打日志**：空 `catch (ReflectiveOperationException) {}` 会让
   「必然抛异常的调用」表现成「什么都没发生」，是排查中最贵的陷阱。
+- **流体的「静止 / 流动」不由 setBlock 的 flag 决定**：`LevelChunk.setBlockState` 调
+  `BlockState.onPlace` 时只被 `level.isClientSide` / `level.captureBlockSnapshots` 拦，
+  **与 flag 无关**；而 `LiquidBlock.onPlace` 无条件 `scheduleTick(pos, WATER, tickDelay)`。
+  1.20.1 的 `Block.UPDATE_*` 也没有「跳过 onPlace」的高位 flag（`UPDATE_LIMIT=512`）。
+  → 想让水「像 1.7.10 那样放着不流、有更新才流」，必须放置后撤销预约：
+  `((ServerLevel)level).getFluidTicks().clearArea(BoundingBox.fromCorners(pos, pos))`
+  （实测：仅把 flag 从 3 改成 2，60 tick 后水仍铺成 10 格；加 clearArea 后恒为 1 格）
+- **`Level.removeBlock(pos, false)` 对流体是空操作**：其实现是
+  `setBlock(pos, fluidState.createLegacyBlock(), 3)`，水源的 `createLegacyBlock` 又是
+  `Blocks.WATER[level=0]` → 原地重设。移除流体要学バニラ `LiquidBlock.pickupBlock`：
+  **`setBlock(pos, AIR, Block.UPDATE_ALL_IMMEDIATE(11))`**（实测 removeBlock 后仍是 `water[level=0]`，setAir 后是 `air`）。
+- **别用「大范围扫描」清测试残留**：定位用的自检若按坐标清扫，务必只清自己放的那些坐标。
+  实测教训：清扫范围开到 y0-250 / ±48，把 (-134,128) 一带的**天然水域**也清掉了 141309 个方块
+  （只影响 `run/` 下的开发世界，且会被周围水源回填，但依然是不该发生的事故）。
 - `ticksExisted`→`tickCount`（递增时机不同，`tickCount<=X` 时停判断会死锁）
 - `canBeCollidedWith()`→投射物命中用 `isPickable()`
 - `ignoreFrustumCheck=true`→构造里 `this.noCulling=true` 字段赋值（自定义 public 字段不同步，客户端逻辑只能用 entityData 同步字段）
