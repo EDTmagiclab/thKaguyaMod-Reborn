@@ -18,6 +18,14 @@
 ### 1. 资源标识符全小写
 ResourceLocation 路径只允许 `[a-z0-9/._-]`，**文件名+目录名都要小写**。`static final ResourceLocation` 类加载即校验，含大写→资源重载崩溃（启动不了）。Windows 批量重命名两步（先 `*.tmp`）；git 大小写用 `git -c core.ignorecase=false`。
 
+### 1b. 贴图目录必须是 `textures/item/` 与 `textures/block/`（单数）
+1.7.10 的 `textures/items/`、`textures/blocks/`（复数）**必须**改名为 `item/`、`block/`。
+1.20.1 物品/方块模型走 **blocks 图集**，图集目录源只收录 `textures/block/` 与 `textures/item/`；
+放在 `items/`（复数）里 **实体渲染正常**（`getTextureLocation` 独立加载 PNG，不走图集）**但物品模型缺材质**。
+这一「实体好、物品坏」的分裂现象就是该坑的指纹。
+**排查方法**：看客户端 `logs/latest.log` 的 `Missing textures in model X#inventory:`（会列出 `atlas: sprite` 全限定对）。
+实测案例：符卡 35 张卡面 + 5 边框因放在 `textures/items/spellcard/` 而全部缺材质（commit d983d32 修复）。
+
 ### 2. 实体三大注册缺一不可
 EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩。runServer 验不了渲染缺失。
 
