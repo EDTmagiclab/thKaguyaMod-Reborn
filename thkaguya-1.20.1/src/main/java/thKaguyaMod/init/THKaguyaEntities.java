@@ -6,6 +6,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.entity.EntityDivineSpirit;
 import thKaguyaMod.entity.effect.EntityAjaRedStoneEffect;
 import thKaguyaMod.entity.effect.EntityCirnoIceBox;
 import thKaguyaMod.entity.effect.EntityHakureiShield;
@@ -236,6 +237,14 @@ public class THKaguyaEntities
                                     (EntityType.EntityFactory<EntityMiracleCircle>) (type, level) -> new EntityMiracleCircle(type, level),
                                     MobCategory.MISC)
                             .sized(2.0F, 0.1F).clientTrackingRange(64).updateInterval(1).build("miracle_circle"));
+
+    /** 小神霊（豊聡耳の宝剣）　原版 EntityDivineSpirit の setSize(1.2F, 1.2F) に合わせる */
+    public static final RegistryObject<EntityType<EntityDivineSpirit>> DIVINE_SPIRIT =
+            ENTITIES.register("divine_spirit",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityDivineSpirit>) (type, level) -> new EntityDivineSpirit(type, level),
+                                    MobCategory.MISC)
+                            .sized(1.2F, 1.2F).clientTrackingRange(64).updateInterval(1).build("divine_spirit"));
 
     /* ==================== 特殊弹体（阶段 3d-3）==================== */
 

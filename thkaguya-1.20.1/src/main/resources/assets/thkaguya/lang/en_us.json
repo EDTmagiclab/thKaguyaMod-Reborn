@@ -1,4 +1,4 @@
-{
+﻿{
   "block.thkaguya.danmaku_crafting_table": "Danmaku Crafting Table",
   "block.thkaguya.divine_spirit": "Divine Spirit",
   "block.thkaguya.laser_crafting_table": "Laser Crafting Table",
@@ -184,5 +184,11 @@
   "thKaguya.msg.sneSc2": "Levels & Drawing",
   "thKaguya.msg.sneSc3": "Stars",
   "thKaguya.msg.sneSc4": "MiraclePower :",
+  "thKaguya.front": "Front ",
+  "thKaguya.back": "Back ",
+  "thKaguya.right": "Right ",
+  "thKaguya.left": "Left ",
+  "thKaguya.up": "Up ",
+  "thKaguya.down": "Down ",
   "entity.thkaguya.aja_red_stone_effect": "Aja Red Stone Light"
 }

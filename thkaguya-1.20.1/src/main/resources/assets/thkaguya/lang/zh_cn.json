@@ -1,4 +1,4 @@
-{
+﻿{
   "block.thkaguya.danmaku_crafting_table": "弹幕工作台",
   "block.thkaguya.divine_spirit": "小神霊",
   "block.thkaguya.laser_crafting_table": "激光弹幕工作台",
@@ -169,5 +169,11 @@
   "thKaguya.msg.sneSc2": "且画",
   "thKaguya.msg.sneSc3": "个星星",
   "thKaguya.msg.sneSc4": "奇迹之力 :",
+  "thKaguya.front": "前",
+  "thKaguya.back": "后",
+  "thKaguya.right": "右",
+  "thKaguya.left": "左",
+  "thKaguya.up": "上",
+  "thKaguya.down": "下",
   "entity.thkaguya.aja_red_stone_effect": "艾哲红石之光"
 }

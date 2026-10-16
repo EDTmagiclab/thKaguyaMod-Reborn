@@ -1,4 +1,4 @@
-{
+﻿{
   "block.thkaguya.danmaku_crafting_table": "탄막 작업대",
   "block.thkaguya.divine_spirit": "소신령",
   "block.thkaguya.laser_crafting_table": "레이저 작업대",
@@ -145,5 +145,11 @@
   "thKaguya.msg.sneSc2": "만큼 필요하고, 별을",
   "thKaguya.msg.sneSc3": "개 그려야 합니다.",
   "thKaguya.msg.sneSc4": "기적의 힘 :",
+  "thKaguya.front": "앞",
+  "thKaguya.back": "뒤",
+  "thKaguya.right": "오른쪽",
+  "thKaguya.left": "왼쪽",
+  "thKaguya.up": "위",
+  "thKaguya.down": "아래",
   "entity.thkaguya.aja_red_stone_effect": "아자 홍석의 빛"
 }

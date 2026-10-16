@@ -34,6 +34,7 @@ import thKaguyaMod.client.model.item.ModelMiniHakkero2;
 import thKaguyaMod.client.model.item.ModelPrivateSquare;
 import thKaguyaMod.client.model.item.ModelYuukaParasol;
 import thKaguyaMod.client.model.shot.ModelSilverKnife;
+import thKaguyaMod.client.render.RenderDivineSpirit;
 import thKaguyaMod.client.render.effect.RenderAjaRedStoneEffect;
 import thKaguyaMod.client.render.effect.RenderCirnoIceBox;
 import thKaguyaMod.client.render.effect.RenderHakureiShield;
@@ -144,6 +145,8 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.HAKUREI_SHIELD.get(), RenderHakureiShield::new);
         event.registerEntityRenderer(THKaguyaEntities.HAKUROU_REFLECTER.get(), RenderHakurouReflecter::new);
         event.registerEntityRenderer(THKaguyaEntities.MIRACLE_CIRCLE.get(), RenderMiracleCircle::new);
+        // 小神霊（豊聡耳の宝剣）: 原版 RenderDivineSpirit の 3 枚重ね板
+        event.registerEntityRenderer(THKaguyaEntities.DIVINE_SPIRIT.get(), RenderDivineSpirit::new);
 
         // living boss（阶段 3d-6）：用原版模型 + 贴图，替换妖精占位
         event.registerEntityRenderer(THKaguyaEntities.CIRNO.get(),

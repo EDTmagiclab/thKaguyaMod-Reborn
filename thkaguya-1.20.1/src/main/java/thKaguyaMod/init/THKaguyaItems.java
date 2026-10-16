@@ -22,6 +22,7 @@ import thKaguyaMod.item.ItemKinkakuzi;
 import thKaguyaMod.item.ItemLaevateinn;
 import thKaguyaMod.item.ItemMarisaBroom;
 import thKaguyaMod.item.ItemMazinKyoukan;
+import thKaguyaMod.item.ItemMikoSword;
 import thKaguyaMod.item.ItemNuclearControlRod;
 import thKaguyaMod.item.ItemOharaibouR;
 import thKaguyaMod.item.ItemOharaibouS;
@@ -207,7 +208,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> WALL_PASSING_CHISEL = register("wall_passing_chisel", () -> new ItemWallPassingChisel());
 
     /** 豊聡耳の宝剣 */
-    public static final RegistryObject<Item> TOYOSATOMIMI_SWORD = register("toyosatomimi_sword");
+    public static final RegistryObject<Item> TOYOSATOMIMI_SWORD = register("toyosatomimi_sword", () -> new ItemMikoSword());
 
     /** 打ち出の小槌 */
     public static final RegistryObject<Item> MIRACLE_MALLET = register("miracle_mallet");

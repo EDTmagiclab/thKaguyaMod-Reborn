@@ -1,4 +1,4 @@
-{
+﻿{
   "block.thkaguya.danmaku_crafting_table": "弾幕作業台",
   "block.thkaguya.divine_spirit": "小神霊",
   "block.thkaguya.laser_crafting_table": "レーザー弾幕作業台",
@@ -145,5 +145,11 @@
   "thKaguya.msg.sneSc2": "必要で、星を",
   "thKaguya.msg.sneSc3": "つ描く必要がある",
   "thKaguya.msg.sneSc4": "奇跡の力 :",
+  "thKaguya.front": "前",
+  "thKaguya.back": "後ろ",
+  "thKaguya.right": "右",
+  "thKaguya.left": "左",
+  "thKaguya.up": "上",
+  "thKaguya.down": "下",
   "entity.thkaguya.aja_red_stone_effect": "エイジャの赤石の光"
 }
