@@ -231,6 +231,16 @@ public EntityYuukaParasol(EntityType<?> type, Level level)
 				THKaguyaLib.itemEffectFinish(this, user, THKaguyaItems.YUUKA_PARASOL.get(), damage);
 			}
 		}
+
+		// EntityHisou と同じ理由（1.20.1 では乗客は rideTick() 経由でしか tick() が呼ばれない）：
+		// ここで tick() を駆動しないと、tick() 内の終了処理（discard）と
+		// 追従処理（itemEffectFollowUser）が一切走らず、傘が消えずに残留する。
+		// Entity.rideTick() が行う positionRider() は、tick() 内の追従配置を
+		// 上書きしないよう意図的に通していない。
+		if(this.canUpdate())
+		{
+			this.tick();
+		}
 	}
 
 	protected void easyFalling()

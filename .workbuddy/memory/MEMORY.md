@@ -33,6 +33,7 @@ EntityType + EntityAttributeCreationEvent + EntityRenderer，缺一生成即崩�
 子类完整参数构造若落到父类硬编码某 type 的 `Xxx(Level)` 构造，`getType()` 全错——服务端是正确子类、客户端按错 type 实例化父类（视觉/行为错乱，激光渲染成圆弹）。每个子类构造显式传自己 EntityType。
 
 ### 4. API 迁移高频坑
+- **覆写 `rideTick()` 必须自己驱动 `tick()`**：1.20.1 中乘客实体**不走** `tick()` —— `ServerLevel/ClientLevel.tickPassenger()` 调 `rideTick()`，`Entity.rideTick()` 内部才负责 `setDeltaMovement(ZERO)` + `tick()` + `positionRider()`。覆写后不调 `super.rideTick()` 或 `this.tick()` → 该实体 `tick()` 永不执行 → 消灭判定/计时器全失效。踩坑记录：`EntityHisou` 主剑不消失 + 使用者永久减速、`EntityYuukaParasol` 同症（commit 待记）。注意 `super.rideTick()` 会附带 `positionRider()`，若 `tick()` 内已用 `itemEffectFollowUser` 自行定位，应只调 `if(this.canUpdate()) this.tick();`
 - `ticksExisted`→`tickCount`（递增时机不同，`tickCount<=X` 时停判断会死锁）
 - `canBeCollidedWith()`→投射物命中用 `isPickable()`
 - `ignoreFrustumCheck=true`→构造里 `this.noCulling=true` 字段赋值（自定义 public 字段不同步，客户端逻辑只能用 entityData 同步字段）

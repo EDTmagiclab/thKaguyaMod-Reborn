@@ -164,12 +164,34 @@ public class EntityHisou extends Entity
 	@Override
 	public void rideTick()
 	{
+		// 原版 1.7.10 の流れ：Entity.onUpdate() の内部で this.updateRidden()（＝この減速処理）が
+		// 呼ばれ、その後に EntityHisou.onUpdate() 本体が走る。つまり
+		//   「減速処理 → 本体（消滅判定・気質弾の発射）」
+		// の順で、騎乗中でも本体は毎 tick 実行されていた。
+		//
+		// 1.20.1 では乗客は tick() ではなく rideTick() 経由でしか駆動されない
+		// （Entity.rideTick() が tick() を呼ぶ）。ここで覆写したうえで tick() を
+		// 駆動しないと本体が一切走らず、次の 2 つが同時に壊れる（実測で発生）：
+		//   1) tickCount >= 100 の消滅判定が発火せず主剣（num==8）が残留する
+		//   2) その結果、下の使用者減速（motion *= 0.1）が永久に掛かり続け、
+		//      プレイヤーの移動速度と落下速度が戻らなくなる
+		//   3) tickCount > spellCardUsedTime の気質弾も発射されない
+		//
+		// なお Entity.rideTick() が行う positionRider() は意図的に通していない：
+		// tick() 内の itemEffectFollowUser(this, userEntity, 1.2D, 0F) が
+		// 使用者の 1.2 ブロック前方へ配置するため、既定の騎乗位置で上書きさせない。
 		if(getVehicle() != null && getNum() == 8)
 		{
 			Entity ridden = getVehicle();
 			ridden.setYRot(ridden.yRotO + (ridden.getYRot() - ridden.yRotO) * 0.3F);
 			ridden.setXRot(ridden.xRotO + (ridden.getXRot() - ridden.xRotO) * 0.3F);
 			ridden.setDeltaMovement(ridden.getDeltaMovement().scale(0.1D));
+		}
+
+		// 本体（消滅判定・気質弾・追尾）を走らせる。これが 1.7.10 の「onUpdate が毎 tick 走る」相当。
+		if(this.canUpdate())
+		{
+			this.tick();
 		}
 	}
 
