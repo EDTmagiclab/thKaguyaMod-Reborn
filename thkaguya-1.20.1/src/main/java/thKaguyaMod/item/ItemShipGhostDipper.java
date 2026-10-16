@@ -131,7 +131,11 @@ public class ItemShipGhostDipper extends Item
 				}
 				else
 				{
-					level.setBlock(place, Blocks.WATER.defaultBlockState(), 3);
+					// 原版（1.7.10）の水源は「置いただけでは隣接更新を起こさず、水が流れ出さない」。
+					// 1.20.1 の流体は UPDATE_NEIGHBORS(1) を立てると設置と同時に再計算され、
+					// 周囲が空気だとすぐ流れ出して「普通の流水」に見えてしまう。
+					// そこで UPDATE_CLIENTS(2) のみで設置し、原版と同じ「静止した水源」の挙動にする。
+					level.setBlock(place, Blocks.WATER.defaultBlockState(), 2);
 					itemStack.hurtAndBreak(2, player,
 							(p) -> p.broadcastBreakEvent(hand));
 				}

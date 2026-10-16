@@ -41,6 +41,9 @@ public class ItemSoulTorch extends Item implements ISpecialShot
 	{
 		super(new Item.Properties().stacksTo(16));
 		SpecialShotRegistry.registerSpecialShot(ItemSoulTorch.class, SPECIAL_SOULTORCH);
+		// 1.20.1 では Item インスタンスを実行時に new すると Forge の intrusive holder 検査で
+		// 例外になるため、登録済みのこの実体を特殊弾処理にも使い回す（原版は毎回 newInstance していた）
+		SpecialShotRegistry.registerSpecialShotInstance(this, SPECIAL_SOULTORCH);
 	}
 
 	@Override

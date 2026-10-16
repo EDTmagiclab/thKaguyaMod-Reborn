@@ -45,6 +45,9 @@ public class ItemAjaRedStone extends Item implements ISpecialShot
 	{
 		super(new Item.Properties().stacksTo(1));
 		SpecialShotRegistry.registerSpecialShot(ItemAjaRedStone.class, DanmakuConstants.SPECIAL_AJA_REDSTONE);
+		// 1.20.1 では Item インスタンスを実行時に new すると Forge の intrusive holder 検査で
+		// 例外になるため、登録済みのこの実体を特殊弾処理にも使い回す
+		SpecialShotRegistry.registerSpecialShotInstance(this, DanmakuConstants.SPECIAL_AJA_REDSTONE);
 	}
 
 	@Override

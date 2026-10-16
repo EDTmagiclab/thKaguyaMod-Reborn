@@ -367,6 +367,26 @@ public class EntityTHShot extends Entity
         return 1.0D;
     }
 
+    /**
+     * 特殊弾インスタンスを解決する。
+     *
+     * <p>登録済みの実体（{@link thKaguyaMod.registry.SpecialShotRegistry#registerSpecialShotInstance}）
+     * があればそれを返す。1.20.1 では Item / Block のインスタンスを実行時に new すると
+     * Forge の intrusive holder 検査に引っかかるため、人魂灯・エイジャの赤石のような
+     * 「Item が ISpecialShot を実装する」パターンは実体を登録しておく必要がある。
+     * 実体が無い場合のみ、原版同様にリフレクションで生成する。
+     */
+    private static ISpecialShot resolveSpecialShot(Class<? extends ISpecialShot> specialShotClass, int id)
+            throws ReflectiveOperationException
+    {
+        ISpecialShot instance = SpecialShotRegistry.getSpecialShotInstance(id);
+        if(instance != null)
+        {
+            return instance;
+        }
+        return specialShotClass.getDeclaredConstructor().newInstance();
+    }
+
     /** 特殊弹的每 tick 处理（子类重写） */
     protected void specialMotion()
     {
@@ -386,9 +406,25 @@ public class EntityTHShot extends Entity
             if(specialShotClass != null)
             {
                 try {
-                    ISpecialShot iSpecialShot = specialShotClass.getDeclaredConstructor().newInstance();
+                    ISpecialShot iSpecialShot = resolveSpecialShot(specialShotClass, shotSpecial);
                     iSpecialShot.specialShot_move(level(), shotSpecial, this);
-                } catch (ReflectiveOperationException e) {
+                } catch (Throwable e) {
+                    // 以前ここは ReflectiveOperationException を無言で握り潰していたため、
+                    // 特殊弾クラスのインスタンス化・呼び出しに失敗しても何も起きず原因が追えなかった。
+                    LOGGER.error("[TH] special shot dispatch failed: id={} class={}",
+                            shotSpecial, specialShotClass.getName(), e);
+                    // 保険：レジストリ経由が失敗しても、ハードコード分だけは動かす
+                    switch(shotSpecial)
+                    {
+                        case DanmakuConstants.HOMING01:
+                            homing(4.0F);
+                            break;
+                        case 352:// 人魂灯 ItemSoulTorch（強追尾）
+                            homing(16.0F);
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 return;
             }
@@ -605,7 +641,7 @@ public class EntityTHShot extends Entity
             if(specialShotClass != null)
             {
                 try {
-                    ISpecialShot iSpecialShot = specialShotClass.getDeclaredConstructor().newInstance();
+                    ISpecialShot iSpecialShot = resolveSpecialShot(specialShotClass, shotSpecial);
                     return iSpecialShot.specialShot_hitEntity(level(), shotSpecial, this, hitEntity);
                 } catch (ReflectiveOperationException e) {
                 }
@@ -681,7 +717,7 @@ public class EntityTHShot extends Entity
             if(specialShotClass != null)
             {
                 try {
-                    ISpecialShot iSpecialShot = specialShotClass.getDeclaredConstructor().newInstance();
+                    ISpecialShot iSpecialShot = resolveSpecialShot(specialShotClass, shotSpecial);
                     return iSpecialShot.specialShot_hitBlock(level(), shotSpecial, this, result);
                 } catch (ReflectiveOperationException e) {
                 }
