@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -12,8 +13,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -35,7 +38,10 @@ import thKaguyaMod.init.THKaguyaItems;
  *   このクラスを subID 付きコンストラクタで共用する
  * - getMovingObjectPositionFromPlayer → level.clip(ClipContext)
  * - Blocks.water + metadata 0 → Blocks.WATER + fluidState.isSource()
- * - world.setBlockToAir → level.removeBlock、world.setBlock(..., water) → level.setBlock(..., 3)
+ * - world.setBlockToAir → level.setBlock(AIR, UPDATE_ALL_IMMEDIATE)
+ *   （Level.removeBlock は水源に対して no-op。理由は該当箇所のコメント参照）
+ * - world.setBlock(..., Blocks.water) → level.setBlock(WATER, UPDATE_CLIENTS) + 流体 tick の取消
+ *   （原版の「静止した水源」を再現。理由は該当箇所のコメント参照）
  * - world.provider.isHellWorld → level.dimension() == Level.NETHER
  */
 public class ItemShipGhostDipper extends Item
@@ -85,7 +91,12 @@ public class ItemShipGhostDipper extends Item
 				BlockState state = level.getBlockState(pos);
 				if(state.is(Blocks.WATER) && state.getFluidState().isSource())
 				{
-					level.removeBlock(pos, false);
+					// ※ Level.removeBlock(pos, false) は「その場の流体の legacy block を書き戻す」実装
+					//   （setBlock(pos, fluidState.createLegacyBlock(), 3)）なので、水源に対しては
+					//   まったく同じ Blocks.WATER[level=0] を置き直すだけ ＝ **除去されない**。
+					//   1.20.1 で水を正しく消すのはバニラの LiquidBlock.pickupBlock と同じ
+					//   「AIR を UPDATE_ALL_IMMEDIATE(11) で設置」。
+					level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
 				}
 			}
 		}
@@ -131,11 +142,24 @@ public class ItemShipGhostDipper extends Item
 				}
 				else
 				{
-					// 原版（1.7.10）の水源は「置いただけでは隣接更新を起こさず、水が流れ出さない」。
-					// 1.20.1 の流体は UPDATE_NEIGHBORS(1) を立てると設置と同時に再計算され、
-					// 周囲が空気だとすぐ流れ出して「普通の流水」に見えてしまう。
-					// そこで UPDATE_CLIENTS(2) のみで設置し、原版と同じ「静止した水源」の挙動にする。
-					level.setBlock(place, Blocks.WATER.defaultBlockState(), 2);
+					// 原版（1.7.10）の水源は「置いただけでは流体更新が積まれない」ため、
+					// その場に静止したまま留まる（隣接ブロックが更新された時にはじめて流れ出す）。
+					//
+					// 1.20.1 はそうならない：LevelChunk.setBlockState は flag に関係なく
+					// BlockState.onPlace を呼び（ガードは isClientSide と captureBlockSnapshots のみ）、
+					// LiquidBlock.onPlace が必ず level.scheduleTick(pos, WATER, tickDelay) する。
+					// → 設置した次の tick に流体が再計算され、周囲が空気だと即座に流れ出す
+					//   （実測：flag を UPDATE_CLIENTS(2) に絞っても「普通の流水」になった）。
+					//   1.20.1 の Block.UPDATE_* には「onPlace を飛ばす」高位フラグが存在しない。
+					//
+					// そこで設置直後にその予約を打ち消し、原版と同じ「静止した水源」を再現する。
+					// 以降は隣接ブロックが更新された時点で LiquidBlock.neighborChanged が
+					// 改めて tick を積むため、原版同様に「更新が入れば流れ出す」挙動になる。
+					level.setBlock(place, Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
+					if(level instanceof ServerLevel serverLevel)
+					{
+						serverLevel.getFluidTicks().clearArea(BoundingBox.fromCorners(place, place));
+					}
 					itemStack.hurtAndBreak(2, player,
 							(p) -> p.broadcastBreakEvent(hand));
 				}
