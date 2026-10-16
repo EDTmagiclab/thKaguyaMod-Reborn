@@ -20,6 +20,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
 
@@ -106,6 +107,30 @@ public class EntityMarisaBroom extends Entity
     public double getPassengersRidingOffset()
     {
         return  -0.15D;
+    }
+
+	/**
+	 * 操縦者を返す（1.20.1 追加実装）
+	 *
+	 * 1.7.10 では riddenByEntity が EntityPlayer なら「そのプレイヤーが操縦している」と
+	 * 暗黙に扱われていた（EntityTrackerEntry が操縦者への位置同期を抑制し、
+	 * クライアント側で入力から算出した motion がそのまま反映される）。
+	 * 1.20.1 ではその等価物が getControllingPassenger() であり、
+	 * Entity.isControlledByLocalInstance() と LocalPlayer.sendPosition() の
+	 * ServerboundMoveVehiclePacket 送信判定がこれに依存する。
+	 * 未実装のままだと、クライアントで計算した移動が
+	 * サーバからの位置同期で上書きされ、キー入力が反映されない。
+	 * AbstractMinecart / Boat と同じ実装方針。
+	 */
+    @Override
+    public net.minecraft.world.entity.LivingEntity getControllingPassenger()
+    {
+        Entity passenger = this.getFirstPassenger();
+        if (passenger instanceof Player player)
+        {
+            return player;
+        }
+        return null;
     }
 
 	//Entityに攻撃されたときに呼ばれる
@@ -217,39 +242,50 @@ public class EntityMarisaBroom extends Entity
         this.setDeltaMovement(x, y, z);
     }
 
-	@OnlyIn(Dist.CLIENT)
+	/**
+	 * キー入力の取得（1.20.1 移植版）
+	 *
+	 * 1.7.10 の実装は本体クラスから直接 Minecraft.getMinecraft() を参照していた（クライアント漏洩）。
+	 * 1.20.1 では実体を client パッケージの
+	 * {@link thKaguyaMod.client.input.ClientBroomInput} に隔離し、
+	 * DistExecutor.unsafeCallWhenOn 経由でのみ呼ぶ。
+	 * Dist が一致しない場合 DistExecutor は供給元を呼ばないので、
+	 * 専用サーバでは client クラスが一切ロードされない（NoClassDefFoundError 回避）。
+	 */
+	private static boolean clientKey(java.util.function.Supplier<java.util.concurrent.Callable<Boolean>> call)
+	{
+		// 誤った Dist では null が返るため Boolean.TRUE.equals で false に落とす
+		return Boolean.TRUE.equals(DistExecutor.unsafeCallWhenOn(Dist.CLIENT, call));
+	}
+
+	/** 前進（原版 keyBindForward） */
 	public boolean isPushKeyUp()
 	{
-    	// TODO(阶段6): クライアント漏洩。原文 Minecraft mc = Minecraft.getMinecraft(); return mc.gameSettings.keyBindForward.getIsKeyPressed();
-    	return false;
+		return clientKey(() -> thKaguyaMod.client.input.ClientBroomInput::isPushKeyUp);
 	}
 
-	@OnlyIn(Dist.CLIENT)
+	/** 後退（原版 keyBindBack） */
 	public boolean isPushKeyBack()
 	{
-    	// TODO(阶段6): クライアント漏洩。原文 Minecraft mc = Minecraft.getMinecraft(); return mc.gameSettings.keyBindBack.getIsKeyPressed();
-    	return false;
+		return clientKey(() -> thKaguyaMod.client.input.ClientBroomInput::isPushKeyBack);
 	}
 
-	@OnlyIn(Dist.CLIENT)
+	/** 右（原版 keyBindRight） */
 	public boolean isPushKeyRight()
 	{
-    	// TODO(阶段6): クライアント漏洩。原文 Minecraft mc = Minecraft.getMinecraft(); return mc.gameSettings.keyBindRight.getIsKeyPressed();
-    	return false;
+		return clientKey(() -> thKaguyaMod.client.input.ClientBroomInput::isPushKeyRight);
 	}
 
-	@OnlyIn(Dist.CLIENT)
+	/** 左（原版 keyBindLeft） */
 	public boolean isPushKeyLeft()
 	{
-    	// TODO(阶段6): クライアント漏洩。原文 Minecraft mc = Minecraft.getMinecraft(); return mc.gameSettings.keyBindLeft.getIsKeyPressed();
-    	return false;
+		return clientKey(() -> thKaguyaMod.client.input.ClientBroomInput::isPushKeyLeft);
 	}
 
-	@OnlyIn(Dist.CLIENT)
+	/** ジャンプ（原版 keyBindJump） */
 	public boolean isPushKeyJump()
 	{
-    	// TODO(阶段6): クライアント漏洩。原文 Minecraft mc = Minecraft.getMinecraft(); return mc.gameSettings.keyBindJump.getIsKeyPressed();
-    	return false;
+		return clientKey(() -> thKaguyaMod.client.input.ClientBroomInput::isPushKeyJump);
 	}
 
 	/** 毎tick呼ばれる処理 */
