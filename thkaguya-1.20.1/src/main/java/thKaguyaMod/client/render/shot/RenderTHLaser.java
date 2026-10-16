@@ -3,6 +3,7 @@ package thKaguyaMod.client.render.shot;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.client.render.THRenderTypes;
 import thKaguyaMod.entity.shot.EntityTHLaser;
 import thKaguyaMod.entity.shot.EntityTHSetLaser;
 
@@ -99,10 +101,10 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
             poseStack.mulPose(Axis.ZP.rotationDegrees(entity.getAngleZ()));
             poseStack.pushPose();
             poseStack.scale(1.0F, 1.0F, (float)(length / 20.8D));
-            VertexConsumer core = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
+            VertexConsumer core = buffer.getBuffer(THRenderTypes.blend(TEX_LASER, THRenderTypes.BLEND_ADDITIVE, false, true));
             renderLaevateinn(core, poseStack, packedLight, 7, 1.6F, 255, entity.tickCount + partialTicks);
             poseStack.scale(1.2F, 1.2F, 1.2F);
-            VertexConsumer glow = buffer.getBuffer(RenderType.entityTranslucent(TEX_LASER));
+            VertexConsumer glow = buffer.getBuffer(THRenderTypes.glow(TEX_LASER, false, false));
             renderLaevateinn(glow, poseStack, packedLight, color, 1.0F, 153, entity.tickCount + partialTicks);
             poseStack.popPose();
         }
@@ -115,10 +117,10 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
             poseStack.mulPose(Axis.ZP.rotationDegrees((entity.tickCount + partialTicks) * 30F));
             poseStack.pushPose();
             poseStack.scale(0.3F, 0.3F, (float)(0.5D * length / 10D));
-            VertexConsumer core = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
+            VertexConsumer core = buffer.getBuffer(THRenderTypes.blend(TEX_LASER, THRenderTypes.BLEND_ADDITIVE, false, true));
             renderSpearTheGungnir(core, poseStack, packedLight, 7, (float)(length * 0.1D), 255);
             poseStack.scale(1.2F, 1.2F, 1.2F);
-            VertexConsumer glow = buffer.getBuffer(RenderType.entityTranslucent(TEX_LASER));
+            VertexConsumer glow = buffer.getBuffer(THRenderTypes.glow(TEX_LASER, false, false));
             renderSpearTheGungnir(glow, poseStack, packedLight, color, -1.0F, 153);
             poseStack.popPose();
         }
@@ -144,11 +146,11 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         int b = COLOR_B[color];
 
         // 白色核心（不透明）
-        VertexConsumer core = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
+        VertexConsumer core = buffer.getBuffer(THRenderTypes.blend(TEX_LASER, THRenderTypes.BLEND_ADDITIVE, true, true));
         renderCylinder(core, poseStack, packedLight, length, width, 0.1D, 255, 255, 255, 255);
 
         // 彩色外层（半透明，1.2 倍，原版加色混合退化为半透明）
-        VertexConsumer glow = buffer.getBuffer(RenderType.entityTranslucent(TEX_LASER));
+        VertexConsumer glow = buffer.getBuffer(THRenderTypes.glow(TEX_LASER, true, false));
         renderCylinder(glow, poseStack, packedLight, length * 1.2D, width * 1.2F, 0.0D, r, g, b, 153);
     }
 
@@ -197,16 +199,16 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
 
                 // 侧面 quad（原版顶点顺序，双面渲染故 winding 不敏感）
                 consumer.vertex(matrix, xPosOld,  yPosOld,  (float)zPos   ).color(r, g, b, a)
-                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, xPos2Old, yPos2Old, (float)zPosOld).color(r, g, b, a)
-                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, xPos2,    yPos2,    (float)zPosOld).color(r, g, b, a)
-                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, xPos,     yPos,     (float)zPos   ).color(r, g, b, a)
-                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
 
                 xPosOld = xPos;
@@ -232,11 +234,11 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         float ticks = Math.abs((float)entity.getAnimationCount() * 10.0F);
 
         // 白色核心（16 边形）
-        VertexConsumer core = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_LASER));
+        VertexConsumer core = buffer.getBuffer(THRenderTypes.blend(TEX_LASER, THRenderTypes.BLEND_ADDITIVE, false, true));
         renderMasterSparkCylinder(core, poseStack, packedLight, length, width, 255, 255, 255, 255, false, ticks);
 
         // 彩虹外层（64 边形，1.2 倍）
-        VertexConsumer glow = buffer.getBuffer(RenderType.entityTranslucent(TEX_LASER));
+        VertexConsumer glow = buffer.getBuffer(THRenderTypes.glow(TEX_LASER, false, true));
         renderMasterSparkCylinder(glow, poseStack, packedLight, length, width * 1.2F, 0, 0, 0, 153, true, ticks);
     }
 
@@ -300,16 +302,16 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
 
                 // 原版 MasterSpark 顶点顺序（不同与普通激光）
                 consumer.vertex(matrix, xPosOld,  yPosOld,  (float)zPos   ).color(cr, cg, cb, a)
-                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, xPos,     yPos,     (float)zPos   ).color(cr, cg, cb, a)
-                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, xPos2,    yPos2,    (float)zPosOld).color(cr, cg, cb, a)
-                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, xPos2Old, yPos2Old, (float)zPosOld).color(cr, cg, cb, a)
-                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
 
                 colorAngle++;
@@ -353,20 +355,20 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX_LIGHT));
+        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.additive(TEX_LIGHT));
 
         // 原版 quad：(-0.5,-0.25) → (0.5,0.75)，alpha 0.5
         consumer.vertex(matrix, -0.5F, -0.25F, 0.0F).color(r, g, b, 128)
-                .uv(uMin, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(uMin, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix,  0.5F, -0.25F, 0.0F).color(r, g, b, 128)
-                .uv(uMax, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(uMax, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix,  0.5F,  0.75F, 0.0F).color(r, g, b, 128)
-                .uv(uMax, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(uMax, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix, -0.5F,  0.75F, 0.0F).color(r, g, b, 128)
-                .uv(uMin, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(uMin, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
 
         poseStack.popPose();
@@ -458,16 +460,16 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
                 float z3 = (float)V[Q[i][3] - 1][2] + zPos;
 
                 consumer.vertex(matrix, x0, y0, z0).color(r, g, b, alpha)
-                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, x1, y1, z1).color(r, g, b, alpha)
-                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, x2, y2, z2).color(r, g, b, alpha)
-                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, x3, y3, z3).color(r, g, b, alpha)
-                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
             }
         }
@@ -563,16 +565,16 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
                 float z3 = (float)V[Q[i][3] - 1][2] + zPos;
 
                 consumer.vertex(matrix, x0, y0, z0).color(r, g, b, alpha)
-                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, x1, y1, z1).color(r, g, b, alpha)
-                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, x2, y2, z2).color(r, g, b, alpha)
-                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
                 consumer.vertex(matrix, x3, y3, z3).color(r, g, b, alpha)
-                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                        .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                         .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
             }
         }

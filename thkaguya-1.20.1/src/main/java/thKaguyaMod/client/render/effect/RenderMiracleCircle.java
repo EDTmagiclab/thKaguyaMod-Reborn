@@ -3,6 +3,7 @@ package thKaguyaMod.client.render.effect;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.client.render.THRenderTypes;
 import thKaguyaMod.entity.effect.EntityMiracleCircle;
 
 /**
@@ -71,7 +73,7 @@ public class RenderMiracleCircle extends EntityRenderer<EntityMiracleCircle>
         float nextpy = py + Mth.sin(angle / 180F * (float)Math.PI) * length;
         int lastLine = entity.getNumberOfDrewLine() - 1;
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX));
+        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glow(TEX, false, true));
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
@@ -84,16 +86,16 @@ public class RenderMiracleCircle extends EntityRenderer<EntityMiracleCircle>
             float widthY = Mth.sin((angle + 90F) / 180F * (float)Math.PI) * width;
 
             consumer.vertex(matrix, px - widthX, py - widthY, zbuf).color(cr, cg, cb, ca)
-                    .uv(umin, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                    .uv(umin, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                     .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
             consumer.vertex(matrix, px + widthX, py + widthY, zbuf).color(cr, cg, cb, ca)
-                    .uv(umax, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                    .uv(umax, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                     .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
             consumer.vertex(matrix, nextpx + widthX, nextpy + widthY, zbuf).color(cr, cg, cb, ca)
-                    .uv(umax, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                    .uv(umax, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                     .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
             consumer.vertex(matrix, nextpx - widthX, nextpy - widthY, zbuf).color(cr, cg, cb, ca)
-                    .uv(umin, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                    .uv(umin, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                     .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
 
             angle += 144F;
@@ -112,16 +114,16 @@ public class RenderMiracleCircle extends EntityRenderer<EntityMiracleCircle>
         float widthY = Mth.sin((angle + 90F) / 180F * (float)Math.PI) * width;
 
         consumer.vertex(matrix, px - widthX, py - widthY, zbufLast).color(cr, cg, cb, ca)
-                .uv(umin, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(umin, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
         consumer.vertex(matrix, px + widthX, py + widthY, zbufLast).color(cr, cg, cb, ca)
-                .uv(umax, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(umax, vmax).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
         consumer.vertex(matrix, nextpx + widthX, nextpy + widthY, zbufLast).color(cr, cg, cb, ca)
-                .uv(umax, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(umax, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
         consumer.vertex(matrix, nextpx - widthX, nextpy - widthY, zbufLast).color(cr, cg, cb, ca)
-                .uv(umin, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(umin, vmin).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 0.0F, 1.0F).endVertex();
 
         poseStack.popPose();

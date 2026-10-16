@@ -33,6 +33,7 @@ import thKaguyaMod.client.model.item.ModelMiniHakkero;
 import thKaguyaMod.client.model.item.ModelMiniHakkero2;
 import thKaguyaMod.client.model.item.ModelPrivateSquare;
 import thKaguyaMod.client.model.item.ModelYuukaParasol;
+import thKaguyaMod.client.model.shot.ModelSilverKnife;
 import thKaguyaMod.client.render.effect.RenderAjaRedStoneEffect;
 import thKaguyaMod.client.render.effect.RenderCirnoIceBox;
 import thKaguyaMod.client.render.effect.RenderHakureiShield;
@@ -124,6 +125,8 @@ public class ClientRenderRegistry
         event.registerLayerDefinition(YUUKA_PARASOL_LAYER, ModelYuukaParasol::createBodyLayer);
         event.registerLayerDefinition(PRIVATE_SQUARE_LAYER, ModelPrivateSquare::createBodyLayer);
         event.registerLayerDefinition(DECOY_LAYER, ModelCursedDecoyDoll::createBodyLayer);
+        // 弾幕形状のモデル（FORM_KNIFE = 銀のナイフ弾）
+        event.registerLayerDefinition(ModelSilverKnife.LAYER_LOCATION, ModelSilverKnife::createBodyLayer);
     }
 
     @SubscribeEvent

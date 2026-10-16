@@ -3,6 +3,7 @@ package thKaguyaMod.client.render.effect;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.client.render.THRenderTypes;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
 
 /**
@@ -102,20 +104,20 @@ public class RenderSpellCardCircle extends EntityRenderer<EntitySpellCardCircle>
         Matrix3f normal = pose.normal();
 
         // 原版加色混合（GL_ONE, GL_ONE_MINUS_SRC_COLOR）→ entityTranslucent 半透明
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX));
+        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glow(TEX, false, true));
 
         // billboard quad：(-0.6,-0.6) → (0.6,0.6)，全图 UV，颜色 tint，alpha 1.0
         consumer.vertex(matrix, -0.6F, -0.6F, 0.0F).color(r, g, b, 255)
-                .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix,  0.6F, -0.6F, 0.0F).color(r, g, b, 255)
-                .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix,  0.6F,  0.6F, 0.0F).color(r, g, b, 255)
-                .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix, -0.6F,  0.6F, 0.0F).color(r, g, b, 255)
-                .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+                .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
 
         poseStack.popPose();
