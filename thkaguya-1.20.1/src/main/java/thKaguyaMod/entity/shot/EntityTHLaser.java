@@ -159,6 +159,17 @@ public class EntityTHLaser extends EntityTHShot
         }
     }
 
+    /**
+     * レーザーの当たり判定は「発射点から本体長まで」伸びるため、探索範囲もその長さぶん必要。
+     * 既定（1.0）のままだと発射点付近しか探索されず、**レーザーがまったくダメージを与えない**
+     * （実測：レーヴァテインの横薙ぎ・縦斬りが無ダメージ、魔炮も同様）。
+     */
+    @Override
+    protected double getHitCheckReach()
+    {
+        return Math.max(1.0D, getLaserLength() + getShotSize());
+    }
+
     /** 碰撞检测：激光射线（从发射点沿 angle 延伸到 laserLength） */
     @Override
     protected void hitCheck()
@@ -170,7 +181,6 @@ public class EntityTHLaser extends EntityTHShot
             length = 0.1D;
         }
         Vec3 motion = this.getDeltaMovement();
-
         Vec3 startPos = new Vec3(getX() + angle.x * width, getY() + angle.y * width, getZ() + angle.z * width);
         Vec3 endPos = new Vec3(getX() + motion.x + angle.x * length, getY() + motion.y + angle.y * length, getZ() + motion.z + angle.z * length);
 

@@ -337,6 +337,17 @@ public class EntityTHShot extends Entity
         return !entity.is(user);
     }
 
+    /**
+     * 当たり判定の探索範囲を angle 方向へ伸ばす距離。
+     *
+     * <p>通常弾は 1 tick の移動量（≒1 ブロック）で足りるので既定は 1.0。
+     * レーザー（EntityTHLaser）は当たり判定が本体長まで伸びるため必ず上書きすること。
+     */
+    protected double getHitCheckReach()
+    {
+        return 1.0D;
+    }
+
     /** 特殊弹的每 tick 处理（子类重写） */
     protected void specialMotion()
     {
@@ -550,7 +561,18 @@ public class EntityTHShot extends Entity
         double closest = Double.MAX_VALUE;
         float hitSize = getShotSize() * 0.5F;
 
-        AABB area = this.getBoundingBox().expandTowards(angle.x, angle.y, angle.z).inflate(hitSize);
+        // 【範囲は「弾の到達距離」ぶん伸ばす必要がある】
+        // 探索用 AABB を「自身の bbox + angle * 1.0」だけで作ると 1 ブロック程度しか覆わない。
+        // 通常弾は 1 tick の移動量 ≒ 1 ブロックなのでこれで足りるが、**レーザーは当たり判定が
+        // 最大 20～40 ブロック先まで伸びる**ため、この範囲では発射点の近くしか拾えず、
+        // 実質「レーザーはまったくダメージを与えない」状態になる。
+        // （実測：レーヴァテイン横薙ぎ/縦斬りともに無ダメージ、魔炮も同様に無ダメージ。
+        //   原版 1.7.10 は boundingBox.addCoord(dir * length) で length ぶん伸ばしていた。）
+        // そのため到達距離をサブクラスが供給できるようにし、既定は従来どおり 1.0 とする。
+        double reach = getHitCheckReach();
+        AABB area = this.getBoundingBox()
+                .expandTowards(angle.x * reach, angle.y * reach, angle.z * reach)
+                .inflate(hitSize);
         List<Entity> list = level().getEntities(this, area);
 
         for(Entity e : list)

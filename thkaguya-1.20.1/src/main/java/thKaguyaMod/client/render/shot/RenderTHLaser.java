@@ -95,6 +95,18 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(-entity.getXRot()));
 
+        // 原版：SetLaser 系が遅延中（animationCount < 0）の間は光束を 1/10 の太さで描く
+        //   float width = 1.0F;
+        //   if(thLaser.getAnimationCount() < 0 && thLaser instanceof EntityTHSetLaser) width = 0.1F;
+        //   …各分岐で GL11.glScalef(width, width, 1.0F);
+        // これが「溜め」の見た目（細い光条 → 本発射で一気に太くなる）を作っている。
+        // 移植版はこの倍率が抜けていたため、溜めの段階から最大級の太さで描かれていた。
+        float widthFactor = 1.0F;
+        if(entity.getAnimationCount() < 0 && entity instanceof EntityTHSetLaser)
+        {
+            widthFactor = 0.1F;
+        }
+
         if(entity.getAnimationCount() < 0 && !(entity instanceof EntityTHSetLaser))
         {
             // 蓄力阶段：光效（原版 renderLightEffect）
@@ -103,7 +115,10 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         else if(shotId >= 24)
         {
             // 魔理沙 MasterSpark：彩虹光柱（原版 renderMasterSparkLaser）
+            poseStack.pushPose();
+            poseStack.scale(widthFactor, widthFactor, 1.0F);
             renderMasterSpark(entity, length, width, poseStack, buffer, packedLight);
+            poseStack.popPose();
         }
         else if(shotId >= 16)
         {
@@ -141,7 +156,10 @@ public class RenderTHLaser extends EntityRenderer<EntityTHLaser>
         else
         {
             // 普通激光（shotId 0-7）
+            poseStack.pushPose();
+            poseStack.scale(widthFactor, widthFactor, 1.0F);
             renderNormalLaser(entity, length, width, color, poseStack, buffer, packedLight);
+            poseStack.popPose();
         }
 
         poseStack.popPose();
