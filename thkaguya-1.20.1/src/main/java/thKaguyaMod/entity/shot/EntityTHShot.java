@@ -90,6 +90,11 @@ public class EntityTHShot extends Entity
     public int delayTime;
     public float damageRate;
 
+    // ===== 追尾の診断用（1 個体につき 1 度だけ出す使い捨てログ）=====
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
+    private boolean homingCalledLogged;
+    private boolean homingPickedLogged;
+
     /** 回転軸ベクトル */
     public Vec3 rotate = THShotLib.rotate_Default();
     public float rotationYawSpeed;
@@ -403,6 +408,12 @@ public class EntityTHShot extends Entity
      */
     public void homing(float homingLevel)
     {
+        if(!level().isClientSide && !homingCalledLogged)
+        {
+            homingCalledLogged = true;
+            LOGGER.info("[thkaguya] homing() called (special={}, entity={})", shotSpecial, getId());
+        }
+
         AABB searchBox = getBoundingBox()
                 .expandTowards(getDeltaMovement())
                 .inflate(24.0D, 24.0D, 24.0D);
@@ -457,6 +468,11 @@ public class EntityTHShot extends Entity
         // 追尾対象がいるならば向きを最大 homingLevel 度だけ回す
         if(nearEntity != null)
         {
+            if(!level().isClientSide && !homingPickedLogged)
+            {
+                homingPickedLogged = true;
+                LOGGER.info("[thkaguya] homing() locked on target={} distance={}", nearEntity, nearDistance);
+            }
             Vec3 targetVec = THShotLib.getVectorNomalize(new Vec3(
                     nearEntity.getX() - getX(),
                     nearEntity.getEyeY() - getY(),
@@ -472,9 +488,33 @@ public class EntityTHShot extends Entity
                 rotateAngle = -homingLevel;
             }
             Vec3 newVec = THShotLib.getVectorFromRotation(rotate, angle, rotateAngle);
-            angle = newVec;
+            Vec3 dir = THShotLib.getVectorNomalize(newVec);
+            if(dir.lengthSqr() < 0.5D)
+            {
+                // 回転結果が退化（ゼロ／NaN）なら元の向きを維持
+                dir = this.getShotVector();
+            }
+            angle = dir;
             if(!level().isClientSide)
             {
+                // 速さはそのままに、速度ベクトルの向きも新しい angle へ張り替える。
+                //
+                // 原版はここで shotAcceleration() のみを呼び、setMotion() は
+                // コメントアウトされている。そのため速度が shotLimitSpeed に達すると
+                // shotAcceleration() の条件「getSpeed() < shotLimitSpeed」が偽になり、
+                // angle をどれだけ変えても進行方向が変わらない = 追尾しない。
+                // （実測：人魂灯の弾が真上に飛んだまま目標を追わなかった）
+                double speed = getSpeed();
+                if(speed <= 0.0D)
+                {
+                    speed = shotSpeed;
+                }
+                Vec3 redirected = dir.scale(speed);
+                this.setDeltaMovement(redirected);
+                // tick 冒頭で lastShotMotion から速度を復元するため、こちらも同時に更新する
+                lastShotMotionX = redirected.x;
+                lastShotMotionY = redirected.y;
+                lastShotMotionZ = redirected.z;
                 shotAcceleration();
             }
         }

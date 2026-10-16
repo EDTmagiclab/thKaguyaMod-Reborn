@@ -69,8 +69,8 @@
   "item.thkaguya.sakuya_stopwatch": "스톱워치",
   "item.thkaguya.sakuya_watch": "사쿠야의 회중시계",
   "item.thkaguya.scale_shot": "비늘탄",
-  "item.thkaguya.ship_ghost_dipper": "뱃유령의 국자",
-  "item.thkaguya.ship_ghost_dipper_empty": "뱃유령의 국자",
+  "item.thkaguya.ship_ghost_dipper": "뱃사공 유령의 국자 (물이 든 것)",
+  "item.thkaguya.ship_ghost_dipper_empty": "뱃사공 유령의 국자 (빈 것)",
   "item.thkaguya.short_laser": "짧은 레이저",
   "item.thkaguya.shot_item": "샷",
   "item.thkaguya.shot_material": "탄 재료",
@@ -144,5 +144,6 @@
   "thKaguya.msg.sneSc1": "레벨이",
   "thKaguya.msg.sneSc2": "만큼 필요하고, 별을",
   "thKaguya.msg.sneSc3": "개 그려야 합니다.",
-  "thKaguya.msg.sneSc4": "기적의 힘 :"
+  "thKaguya.msg.sneSc4": "기적의 힘 :",
+  "entity.thkaguya.aja_red_stone_effect": "아자 홍석의 빛"
 }

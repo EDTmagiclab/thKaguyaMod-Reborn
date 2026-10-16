@@ -69,8 +69,8 @@
   "item.thkaguya.sakuya_stopwatch": "ストップウォッチ",
   "item.thkaguya.sakuya_watch": "咲夜の懐中時計",
   "item.thkaguya.scale_shot": "鱗弾",
-  "item.thkaguya.ship_ghost_dipper": "船幽霊の柄杓",
-  "item.thkaguya.ship_ghost_dipper_empty": "船幽霊の柄杓",
+  "item.thkaguya.ship_ghost_dipper": "船幽霊の柄杓（水入り）",
+  "item.thkaguya.ship_ghost_dipper_empty": "船幽霊の柄杓（空）",
   "item.thkaguya.short_laser": "ショートレーザー",
   "item.thkaguya.shot_item": "ショット",
   "item.thkaguya.shot_material": "弾の素",
@@ -144,5 +144,6 @@
   "thKaguya.msg.sneSc1": "レベルが",
   "thKaguya.msg.sneSc2": "必要で、星を",
   "thKaguya.msg.sneSc3": "つ描く必要がある",
-  "thKaguya.msg.sneSc4": "奇跡の力 :"
+  "thKaguya.msg.sneSc4": "奇跡の力 :",
+  "entity.thkaguya.aja_red_stone_effect": "エイジャの赤石の光"
 }

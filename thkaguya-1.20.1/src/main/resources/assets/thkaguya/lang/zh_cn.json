@@ -89,8 +89,8 @@
   "item.thkaguya.sakuya_watch": "咲夜的怀表",
   "item.thkaguya.sanae_spawn_egg": "东风谷早苗刷怪蛋",
   "item.thkaguya.scale_shot": "鳞弹",
-  "item.thkaguya.ship_ghost_dipper": "船幽灵的长勺",
-  "item.thkaguya.ship_ghost_dipper_empty": "船幽灵的长勺",
+  "item.thkaguya.ship_ghost_dipper": "船幽灵的长勺（水入）",
+  "item.thkaguya.ship_ghost_dipper_empty": "船幽灵的长勺（空）",
   "item.thkaguya.short_laser": "短激光",
   "item.thkaguya.shot_item": "子弹",
   "item.thkaguya.shot_material": "子弹之素",
@@ -168,5 +168,6 @@
   "thKaguya.msg.sneSc1": "需要等级",
   "thKaguya.msg.sneSc2": "且画",
   "thKaguya.msg.sneSc3": "个星星",
-  "thKaguya.msg.sneSc4": "奇迹之力 :"
+  "thKaguya.msg.sneSc4": "奇迹之力 :",
+  "entity.thkaguya.aja_red_stone_effect": "艾哲红石之光"
 }

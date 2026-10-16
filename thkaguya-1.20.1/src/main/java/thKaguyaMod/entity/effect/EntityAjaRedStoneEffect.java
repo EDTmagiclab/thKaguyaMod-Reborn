@@ -1,6 +1,5 @@
 package thKaguyaMod.entity.effect;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -10,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.THShotLib;
@@ -51,6 +51,24 @@ public class EntityAjaRedStoneEffect extends Entity
         this.entityData.define(DATA_LIGHT, 0);
     }
 
+    /**
+     * 視線（エンティティレイトレース）で拾われないようにする。
+     *
+     * <p>原版は canBeCollidedWith() = false で「右クリック選択すらされない」状態だった。
+     * 1.20.1 のエンティティ選択は isPickable() で判定されるため、これを false にしないと
+     * 使用者の目の前に浮かぶ 2 格幅の当たり判定が常に視線にヒットし、
+     * Jade などのツールチップ MOD が「entity.thkaguya.aja_red_stone_effect を見ている」と
+     * 表示し続けてしまう（実測で発覚）。
+     */
+    @Override
+    public boolean isPickable()
+    {
+        return false;
+    }
+
+    /**
+     * 毎tick行う処理
+     */
     @Override
     public void tick()
     {
@@ -68,17 +86,26 @@ public class EntityAjaRedStoneEffect extends Entity
                 if(!userPlayer.isUsingItem())
                 {
                     int damage = (int)((double)lightLevel / 40.0);
-                    if(damage > 30)
+                    if(damage > 30)//最大ダメージはハート15個分。頑張ってもそこまで
                     {
                         damage = 30;
                     }
-                    if(damage > 0)
+                    // 原版は完全な暗闇（ブロック光照 0）だと lightLevel が増えず、
+                    // 離しても永久に発射されない＝エフェクトが消えずに残り続ける。
+                    // 移植版では最低 1 を保証して必ず発射されるようにする。
+                    if(damage <= 0)
                     {
+                        damage = 1;
+                    }
+
+                    if(damage > 0)//ダメージがあるなら
+                    {
+                        //レーザーを発射する
                         THShotLib.createLaserA(user, this, THShotLib.pos(getX(), getY(), getZ()), THShotLib.angle(user.getYRot(), user.getXRot()), 0.1D, 4.0D, 0.3D, THShotLib.gravity_Zero(),
                                 LaserData.laser(THShotLib.RED, (float)damage * 0.01F, (float)damage * 0.3F, damage, 0, 60, DanmakuConstants.SPECIAL_AJA_REDSTONE));
-                        if(!level().isClientSide)
+                        if(!level().isClientSide)//サーバーなら
                         {
-                            discard();
+                            discard();//光のエフェクトを消滅させる
                         }
                     }
                 }
@@ -92,7 +119,13 @@ public class EntityAjaRedStoneEffect extends Entity
             }
         }
 
-        setLightPower(level().getLightEmission(new BlockPos((int)getX(), (int)getY(), (int)getZ())));
+        // 今ある場所の光レベルに合わせて光の量を増やす
+        // 原版 worldObj.getBlockLightValue(x, y, z) は「その位置のブロック光照レベル」。
+        // 1.20.1 の Level#getLightEmission は「その位置のブロック自身の発光値」で意味が違うため、
+        // 正しくは getBrightness(LightLayer.BLOCK, pos)（0-15 の受けているブロック光照）を使う。
+        // ※ ここを getLightEmission にすると、発光ブロックの上以外では常に 0 になり
+        //   lightLevel が永久に増えず、レーザーが一切発射されなくなる（実測で発覚）。
+        setLightPower(level().getBrightness(LightLayer.BLOCK, blockPosition()));
         lightLevel += getLightPower();
 
         if(user != null)

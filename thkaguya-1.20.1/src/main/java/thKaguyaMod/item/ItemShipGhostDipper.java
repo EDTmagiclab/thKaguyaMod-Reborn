@@ -59,7 +59,11 @@ public class ItemShipGhostDipper extends Item
 		ItemStack itemStack = player.getItemInHand(hand);
 
 		// モード切り替え：もう片方の柄杓に入れ替える（耐久は引き継ぐ）
-		if(player.isShiftKeyDown())
+		//
+		// ※ 創造モードで飛行中は Shift が「降下」なので、そこで切り替わってしまうと
+		//   「放水したつもりが空の柄杓に変わった」という誤操作になる（実測で報告あり）。
+		//   飛行中は切り替えを無効化し、放水（または取水）を優先する。
+		if(player.isShiftKeyDown() && !player.getAbilities().flying)
 		{
 			ItemStack switched = new ItemStack(mode == FILL
 					? THKaguyaItems.SHIP_GHOST_DIPPER_EMPTY.get()
@@ -91,8 +95,12 @@ public class ItemShipGhostDipper extends Item
 			BlockPos place;
 			if(hit == null)
 			{
-				// 何も当たっていないなら足元
-				place = BlockPos.containing(player.getX() - 0.5D, player.getY() - 0.5D, player.getZ() - 0.5D);
+				// 原版「何もブロックがないところで使うと足元が水源になる」：
+				// 落とすのは「足元のブロック（プレイヤーが立っているマス）」。
+				// ※ 以前は getY() - 0.5 を使っていたため、足元ではなく
+				//   「立っている地面そのもの」を指してしまい、固体ブロックなので
+				//   置換判定に弾かれて水が出なかった（実測で発覚）。
+				place = player.blockPosition();
 			}
 			else
 			{

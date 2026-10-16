@@ -101,8 +101,8 @@
   "item.thkaguya.sakuya_watch": "Sakuya's Pocket Watch",
   "item.thkaguya.sanae_spawn_egg": "Sanae Spawn Egg",
   "item.thkaguya.scale_shot": "Scale Shot",
-  "item.thkaguya.ship_ghost_dipper": "Ship Ghost's Dipper",
-  "item.thkaguya.ship_ghost_dipper_empty": "Ship Ghost's Dipper",
+  "item.thkaguya.ship_ghost_dipper": "Ship Ghost's Dipper (Filled)",
+  "item.thkaguya.ship_ghost_dipper_empty": "Ship Ghost's Dipper (Empty)",
   "item.thkaguya.short_laser": "Short Laser",
   "item.thkaguya.shot_item": "Shot",
   "item.thkaguya.shot_material": "Shot Material",
@@ -183,5 +183,6 @@
   "thKaguya.msg.sneSc1": "Need",
   "thKaguya.msg.sneSc2": "Levels & Drawing",
   "thKaguya.msg.sneSc3": "Stars",
-  "thKaguya.msg.sneSc4": "MiraclePower :"
+  "thKaguya.msg.sneSc4": "MiraclePower :",
+  "entity.thkaguya.aja_red_stone_effect": "Aja Red Stone Light"
 }
