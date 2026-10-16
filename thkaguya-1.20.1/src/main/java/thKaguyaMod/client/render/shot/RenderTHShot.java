@@ -243,9 +243,11 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         Matrix3f normal = pose.normal();
 
         // FORM_BIG 原版是 renderNormalShot(size, color, blend=true) → 加性混合
+        // 注：此 quad 是「面向相机的 billboard」，必须用不带 CULL 的 RenderType。
+        //     entityTranslucentCull 会按背面把整个 quad 剔掉（详见 quadBillboard 的说明）。
         boolean bigBlend = form == DanmakuConstants.FORM_BIG;
         RenderType rt = bigBlend
-                ? RenderType.entityTranslucentCull(texture)
+                ? RenderType.entityTranslucent(texture)
                 : RenderType.entityCutoutNoCull(texture);
         VertexConsumer consumer = buffer.getBuffer(rt);
 
@@ -289,20 +291,24 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         poseStack.pushPose();
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
         poseStack.scale(size, size, size);
-        // 原版光弹 width=2.0F，billboard 大小放大到 2x
-        poseStack.scale(2.0F, 2.0F, 1.0F);
+        // 原版 vertex 座標は ±width（width=2.0F）なので、half=0.5 の quad では 4 倍して合わせる。
+        // （実測で 2.0 のままだと光弾が原版の半分の大きさになっていた）
+        poseStack.scale(4.0F, 4.0F, 1.0F);
 
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
 
-        // 光晕层（彩色 + alpha 0.8）
+        // 光暈層（彩色 + alpha 0.8）
         float uMin = (frame * 32F) / 64F;
         float uMax = (frame * 32F + 32F) / 64F;
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_LIGHT));
+        // 面向相机的 billboard 必须用不带 CULL 的 RenderType。
+        // 旧コードは entityTranslucentCull で、この quad が丸ごと背面剔除され
+        // 光弾が完全に不可視になっていた（绯想剣の KISHITU と同一の不具合）。
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX_LIGHT));
         quadBillboard(consumer, matrix, normal, packedLight, r, g, b, 204, uMin, uMax);
 
-        // 白色中心层（z 偏移 0.01 模拟原版顶点次序，原 1.7 不直接画颜色）
+        // 白色中心層（width=1.0，z オフセット 0.01 で z-fighting 回避）
         poseStack.translate(0, 0, 0.01F);
         poseStack.scale(0.5F, 0.5F, 1.0F);
         pose = poseStack.last();
@@ -331,7 +337,9 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         poseStack.pushPose();
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
         poseStack.scale(size, size, size);
-        poseStack.scale(2.0F, 2.0F, 1.0F);
+        // 原版 vertex 座標は ±width（renderKishituShot: 外層 width=2.0F, 内層 width=1.6F）なので、
+        // half=0.5 の quad では外層 4 倍・内層は追加 0.8 倍（=1.6/2.0）で合わせる。
+        poseStack.scale(4.0F, 4.0F, 1.0F);
 
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
@@ -379,7 +387,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         // 第一层（最大，固定 size）
         poseStack.scale(size, size, size);
         PoseStack.Pose pose = poseStack.last();
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_LIGHT));
+        // 面向相机的 billboard：必须不带 CULL（旧 entityTranslucentCull 会整片剔除）
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX_LIGHT));
         quadBillboard(consumer, pose.pose(), pose.normal(), packedLight,
                 COLOR_R[color], COLOR_G[color], COLOR_B[color], 178, uMin, uMax);
 
@@ -425,7 +434,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_STAR));
+        // 面向相机的三角形扇面：必须不带 CULL
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX_STAR));
 
         // 生成 5 角星 10 点坐标：outer=2.0, inner=1.2，角度 36°
         float[] xPos = new float[11];
@@ -596,7 +606,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         Matrix3f normal = pose.normal();
 
         // 半透明 + 加性混合 → entityTranslucentCull（无加性但保留半透明）
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_FAMILIAR));
+        // 面向相机的 billboard + 半透明：必须不带 CULL
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityTranslucent(TEX_FAMILIAR));
         quadBillboard(consumer, matrix, normal, packedLight,
                 COLOR_R[color], COLOR_G[color], COLOR_B[color], 128, 0.0F, 1.0F);
 
@@ -692,6 +703,7 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         poseStack.translate(0.0F, 0.001F, 0.0F);
         poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(0.0F));
         // 切到 entityTranslucentCull 做加性半透明
+        // 外层辉光：原版此处为 表面描画（glEnable(GL_CULL_FACE)），3D 形状保持单面剔除
         VertexConsumer rEnc = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_KUNAI));
         width = 1.0F;
         flont = 1.4F;
@@ -817,6 +829,7 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
                 -width, 0.0F, back, 0.50F, 1.0F);
 
         // 彩色外层
+        // 外层辉光：原版此处为 表面描画（glEnable(GL_CULL_FACE)），3D 形状保持单面剔除
         VertexConsumer rEnc = buffer.getBuffer(RenderType.entityTranslucentCull(TEX_ARROW));
         width = 1.0F;
         flont = 1.4F;
@@ -948,6 +961,21 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
     // ============================================================
 
     /** billboard 四边形（CCW 顺序），贴图覆盖整个 0..1，u1/u2 选定 sheet 子图 */
+    /**
+     * カメラ正面向き billboard 用の 4 頂点 quad（左下→右下→右上→左上、Z=0 平面）。
+     *
+     * 【重要な不変条件】呼び出し側は **CULL なしの RenderType** を使うこと。
+     * この quad は {@code posestack.mulPose(cameraOrientation())} でカメラに正対させるが、
+     * その座標系では本頂点順は「裏面」と判定される。したがって
+     * {@code RenderType.entityTranslucentCull} 等の背面剔除付き RenderType を渡すと
+     * quad 全体が剔除されて**完全に不可視**になる（実測：FORM_LIGHT の光弾が全く見えない、
+     * 以前は FORM_KISHITU の気質弾が同症状）。
+     * 使用可：entityTranslucent / entityCutoutNoCull など NoCull 系。
+     *
+     * 一方、3D 形状（kunai / arrow / crystal 等）は原版も
+     * glEnable(GL_CULL_FACE)（表面描画）で描いており、そちらは quadQuad / tri3 を使うため
+     * この制約は当てはまらない。
+     */
     private static void quadBillboard(VertexConsumer consumer, Matrix4f matrix, Matrix3f normal,
                                        int light, int r, int g, int b, int a, float u1, float u2)
     {
