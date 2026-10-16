@@ -555,7 +555,19 @@ public class EntityMarisaBroom extends Entity
             		mz *= moveSpeed;
             	}
 
-            	this.setDeltaMovement(mx, my, mz);
+            	// 1.20.1: プレイヤーが操縦している間は「操縦しているクライアント」が
+            	// 位置と速度の権威を持つ（ServerboundMoveVehiclePacket 経由）。
+            	// サーバ側で独自に deltaMovement を書くと
+            	//   (a) ServerEntity が ClientboundSetEntityMotionPacket を送り、
+            	//       クライアントの lerpMotion が操縦入力を上書きしてしまう
+            	//   (b) サーバの自走とクライアントの報告位置が乖離し、
+            	//       handleMoveVehicle の位置検証（0.0625² ≒ 0.25 ブロックのトレランス）に
+            	//       引っかかって "moved wrongly!" の rubber-band が発生する
+            	// → ローカルインスタンスのみが書き込む（原版 Boat/Minecart と同じ扱い）。
+            	if (this.isControlledByLocalInstance())
+            	{
+            		this.setDeltaMovement(mx, my, mz);
+            	}
             }
 
 
@@ -600,8 +612,17 @@ public class EntityMarisaBroom extends Entity
             	this.setDeltaMovement(m.x * 0.5D, m.y * 0.5D, m.z * 0.5D);
             }
 
-            Vec3 motion3 = this.getDeltaMovement();
-            this.move(MoverType.SELF, new Vec3(motion3.x, motion3.y, motion3.z));
+            // 1.20.1: 自分で移動してよいかの判定。
+            //   - プレイヤーが乗っていない         → 両サイドとも通常どおり自走（従来挙動を維持）
+            //   - ローカルクライアントが操縦中   → 自分で move() する（操縦入力がそのまま反映される）
+            //   - サーバ／他人のクライアント     → 自走させない。位置は
+            //     handleMoveVehicle(absMoveTo + MoverType.PLAYER の move) で反映される
+            boolean playerControlled = this.getFirstPassenger() instanceof Player;
+            if (!playerControlled || this.isControlledByLocalInstance())
+            {
+                Vec3 motion3 = this.getDeltaMovement();
+                this.move(MoverType.SELF, new Vec3(motion3.x, motion3.y, motion3.z));
+            }
 
             /*if (this.isCollidedHorizontally && motionXZ > 0.2D)
             {
