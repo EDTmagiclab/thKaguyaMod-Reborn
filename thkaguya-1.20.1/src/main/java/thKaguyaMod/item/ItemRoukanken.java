@@ -287,6 +287,19 @@ public class ItemRoukanken extends SwordItem
 		}
 	}
 
+	/**
+	 * 使用時間（原版 getMaxItemUseDuration は Item のデフォルト = 72000）
+	 *
+	 * 1.20.1 の Item#getUseDuration のデフォルトは 0 のため、明示的に上書きしないと
+	 * startUsingItem が即座に終了してしまい、releaseUsing の溜め時間が常に 0 になる
+	 * （＝ダッシュが一切出なくなる）。
+	 */
+	@Override
+	public int getUseDuration(ItemStack itemStack)
+	{
+		return 72000;
+	}
+
 	/** 右クリックを長押しした際の動作：弓の構え */
 	@Override
 	public UseAnim getUseAnimation(ItemStack itemStack)

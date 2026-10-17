@@ -53,7 +53,7 @@ public class EntityOnmyoudama extends EntityTHShot
 				{
 					setShotSize(getShotSize() + 0.06F);
 				}
-				if(player.getUseItem().getItem() != THKaguyaItems.HAKUREI_MIKO_STICK.get())
+				if(!isHoldingMikoStick(player))
 				{
 					if(!level().isClientSide)
 					{
@@ -65,7 +65,7 @@ public class EntityOnmyoudama extends EntityTHShot
 			}
 			else if(!shootingFlag)
 			{
-				if(player.getUseItem().getItem() != THKaguyaItems.HAKUREI_MIKO_STICK.get())
+				if(!isHoldingMikoStick(player))
 				{
 					if(!level().isClientSide)
 					{
@@ -73,6 +73,8 @@ public class EntityOnmyoudama extends EntityTHShot
 					}
 					return;
 				}
+				// 原版: ticksExisted = 1（発射時に弾の寿命をリセット）
+				tickCount = 1;
 				shotSpeed = 0.5D;
 				setVector();
 				shotAcceleration = 1.0D;
@@ -119,5 +121,18 @@ public class EntityOnmyoudama extends EntityTHShot
 	public boolean hitCheckEx(Entity entity)
 	{
 		return false;
+	}
+
+	/**
+	 * 手に御幣を持っているか（原版 player.inventory.getCurrentItem() の判定）
+	 *
+	 * 1.20.1 の player.getUseItem() は「使用中でなければ空」を返すため、
+	 * 右クリックを離した瞬間に御幣ではないと誤判定し、弾が射出されずに消えてしまっていた。
+	 * 原版同様「今持っているアイテム」で判定する。
+	 */
+	private static boolean isHoldingMikoStick(Player player)
+	{
+		return player.getMainHandItem().getItem() == THKaguyaItems.HAKUREI_MIKO_STICK.get()
+				|| player.getOffhandItem().getItem() == THKaguyaItems.HAKUREI_MIKO_STICK.get();
 	}
 }
