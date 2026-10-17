@@ -32,6 +32,7 @@ import thKaguyaMod.item.ItemIcicleSword;
 import thKaguyaMod.item.ItemKappaWaterPistol;
 import thKaguyaMod.item.ItemKinkakuzi;
 import thKaguyaMod.item.ItemLaevateinn;
+import thKaguyaMod.item.ItemLaserMaterial;
 import thKaguyaMod.item.ItemMarisaBroom;
 import thKaguyaMod.item.ItemMazinKyoukan;
 import thKaguyaMod.item.ItemMikoSword;
@@ -235,8 +236,8 @@ public class THKaguyaItems
     /** 弾幕の素（右键试射极小白弹，原版 ItemShotMaterial） */
     public static final RegistryObject<Item> SHOT_MATERIAL = register("shot_material", () -> new ItemShotMaterial());
 
-    /** レーザーの素（原版 laser_item，阶段 5 激光工作台素材） */
-    public static final RegistryObject<Item> LASER_MATERIAL = register("laser_material");
+    /** レーザーの素（1.20.1 追加物品。右クリックで試射できる） */
+    public static final RegistryObject<Item> LASER_MATERIAL = register("laser_material", ItemLaserMaterial::new);
 
     /** 点符アイテム */
     public static final RegistryObject<Item> POINT_ITEM = register("point_item");

@@ -247,12 +247,22 @@ public abstract class EntityDanmakuMob extends Mob
     private static final EntityDataAccessor<Integer> DATA_PATTERN =
             SynchedEntityData.defineId(EntityDanmakuMob.class, EntityDataSerializers.INT);
 
+    /** 符卡宣言モーション（原版 dataWatcher 18。モデルが腕を振り上げるのに使う） */
+    private static final EntityDataAccessor<Byte> DATA_SPELLCARD_MOTION =
+            SynchedEntityData.defineId(EntityDanmakuMob.class, EntityDataSerializers.BYTE);
+
+    /** 飛ぶ高さ（原版 dataWatcher 19。当たり判定ではなく姿勢の目安） */
+    private static final EntityDataAccessor<Byte> DATA_FLYING_HEIGHT =
+            SynchedEntityData.defineId(EntityDanmakuMob.class, EntityDataSerializers.BYTE);
+
     @Override
     protected void defineSynchedData()
     {
         super.defineSynchedData();
         this.entityData.define(DATA_FORM, (byte)0);
         this.entityData.define(DATA_PATTERN, NOT_ATTACK);
+        this.entityData.define(DATA_SPELLCARD_MOTION, (byte)0);
+        this.entityData.define(DATA_FLYING_HEIGHT, (byte)0);
     }
 
     /** 英名 */
@@ -261,7 +271,7 @@ public abstract class EntityDanmakuMob extends Mob
     protected EntityDanmakuMob(EntityType<? extends EntityDanmakuMob> type, Level level)
     {
         super(type, level);
-        isFlyingMode = true;
+        this.setFlyingHeight(3);
         this.stop = false;
         this.setSpecies(this.SPECIES_OTHERS);
     }
@@ -391,14 +401,27 @@ public abstract class EntityDanmakuMob extends Mob
         return THShotLib.gravity_Zero();
     }
 
+    /** 飛ぶ高さ（原版 EntityDanmakuMob#getFlyingHeight。dataWatcher 19 相当＝同期値） */
     public byte getFlyingHeight()
     {
-        return (byte)(this.isFlyingMode ? 3 : 0);
+        return this.entityData.get(DATA_FLYING_HEIGHT);
     }
 
     public void setFlyingHeight(int height)
     {
+        this.entityData.set(DATA_FLYING_HEIGHT, (byte)height);
         this.isFlyingMode = height > 0;
+    }
+
+    /** 符卡宣言モーション（原版 #getSpellCardMotion。負値の間が「腕を振り上げ中」） */
+    public byte getSpellCardMotion()
+    {
+        return this.entityData.get(DATA_SPELLCARD_MOTION);
+    }
+
+    public void setSpellCardMotion(byte motion)
+    {
+        this.entityData.set(DATA_SPELLCARD_MOTION, motion);
     }
 
     protected void setSpecies(int species1, int species2)
@@ -512,6 +535,8 @@ public abstract class EntityDanmakuMob extends Mob
         if(!isSpellCardMode)
         {
             isSpellCardMode = true;
+            // 原版：符卡宣言モーション開始（dataWatcher 18 を -30 にして毎 tick +2 で 0 まで戻す）
+            setSpellCardMotion((byte)-30);
             // スペルカードの魔法陣を出現させる
             circle = new EntitySpellCardCircle(this.level(), this, 16 + getSpellCardCircleColor(), -100);
             if(!this.level().isClientSide)
@@ -716,6 +741,13 @@ public abstract class EntityDanmakuMob extends Mob
         super.tick();
 
         tickBossBar();
+
+        // 原版：符卡宣言モーション中（負値）は毎 tick +2 で 0 まで戻す。
+        // モデル側は同期値を見て腕を振り上げる（クライアントでは進めない）。
+        if(!this.level().isClientSide && this.getSpellCardMotion() < 0)
+        {
+            this.setSpellCardMotion((byte)(this.getSpellCardMotion() + 2));
+        }
 
         if(this.getHealth() <= 0.0F)
         {

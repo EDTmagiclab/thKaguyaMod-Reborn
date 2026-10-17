@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -100,24 +101,89 @@ public class ItemTHLaser extends Item
 	}
 
 	/**
+	 * 1.20.1 の DyeColor（WHITE=0 … BLACK=15）→ 1.7.10 染料 metadata → 8 色レーザー色。
+	 * 原版は「右隣のスロットに染料があればその色で撃つ」なので、同じ並びの表を用意する。
+	 */
+	private static final int[] DYE_COLOR_TO_LASER =
+	{
+		7,	// WHITE      -> meta 15 -> 7
+		6,	// ORANGE     -> meta 14 -> 6
+		4,	// MAGENTA    -> meta 13 -> 4
+		5,	// LIGHT_BLUE -> meta 12 -> 5
+		3,	// YELLOW     -> meta 11 -> 3
+		2,	// LIME       -> meta 10 -> 2
+		4,	// PINK       -> meta  9 -> 4
+		7,	// GRAY       -> meta  8 -> 7
+		7,	// LIGHT_GRAY -> meta  7 -> 7
+		5,	// CYAN       -> meta  6 -> 5
+		4,	// PURPLE     -> meta  5 -> 4
+		1,	// BLUE       -> meta  4 -> 1
+		0,	// BROWN      -> meta  3 -> 0
+		2,	// GREEN      -> meta  2 -> 2
+		0,	// RED        -> meta  1 -> 0
+		7	// BLACK      -> meta  0 -> 7
+	};
+
+	/**
+	 * 原版「右隣のスロットの染料で色を決める」処理。
+	 *
+	 * @return 8 色レーザー色。隣が染料でなければ -1（呼び出し側は乱数のまま）
+	 */
+	public static int adjacentDyeColor(Player player)
+	{
+		int selected = player.getInventory().selected;
+		if(selected >= 8)
+		{
+			return -1;
+		}
+		ItemStack beside = player.getInventory().items.get(selected + 1);
+		if(beside.getItem() instanceof DyeItem dye)
+		{
+			int id = dye.getDyeColor().getId();
+			if(id >= 0 && id < DYE_COLOR_TO_LASER.length)
+			{
+				return DYE_COLOR_TO_LASER[id];
+			}
+		}
+		return -1;
+	}
+
+	/**
 	 * 原版 ItemTHLaser.onItemRightClick の移植。
 	 * NBT の Number / DanmakuForm / Speed / Color を読み、形状ごとの THShotLib ヘルパーで発射する。
 	 */
 	public void shootLaser(ItemStack itemStack, Player player)
 	{
+		shootLaser(itemStack, player, laserType);
+	}
+
+	/**
+	 * レーザーの種類を明示して発射する。激光の素（damage で種類が変わる）用。
+	 *
+	 * @param type {@link #MIDDLE} / {@link #SHORT} / {@link #LONG}
+	 */
+	public void shootLaser(ItemStack itemStack, Player player, int type)
+	{
 		net.minecraft.util.RandomSource rand = player.level().random;
 		int color = rand.nextInt(7);
-		float length = LENGTH[laserType];
+		float length = LENGTH[type];
 		int way = 1;
-		double shotSpeed = SPEED[laserType];
+		double shotSpeed = SPEED[type];
 		int danmakuForm = 0;
+
+		// 原版：右隣の染料 > NBT の Color の順で上書きされる（染料は NBT より先に読む）
+		int dyeColor = adjacentDyeColor(player);
+		if(dyeColor >= 0)
+		{
+			color = dyeColor;
+		}
 
 		CompoundTag nbt = itemStack.getTag();
 		if(nbt != null)
 		{
 			way = nbt.getShort("Number");
 			danmakuForm = nbt.getByte("DanmakuForm");
-			shotSpeed = SPEED[laserType] * (1.0D + (double)nbt.getByte("Speed") * 0.03D);
+			shotSpeed = SPEED[type] * (1.0D + (double)nbt.getByte("Speed") * 0.03D);
 
 			int setColor = nbt.getByte("Color");
 			if(setColor != 9)

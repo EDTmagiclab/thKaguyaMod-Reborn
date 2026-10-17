@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "MPM",
+    "BBB"
+  ],
+  "key": {
+    "B": { "item": "thkaguya:big_shot" },
+    "M": { "item": "thkaguya:medium_shot" },
+    "P": { "item": "minecraft:paper" },
+    "S": { "item": "thkaguya:small_shot" }
+  },
+  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 21 } }
+}

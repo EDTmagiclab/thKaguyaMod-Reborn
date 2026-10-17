@@ -36,7 +36,6 @@ public class THKaguyaConfig
     public static boolean canUseWallPassingChisel;
     public static int shotMaxNumber;
     public static int laserMaxNumber;
-    public static boolean recipelessItemsRecipe;
 
     public static final ForgeConfigSpec SPEC;
 
@@ -60,7 +59,6 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.BooleanValue SPAWN_HANABEEPER;
     private static final ForgeConfigSpec.IntValue DANMAKU_LEVEL;
     private static final ForgeConfigSpec.IntValue DANMAKU_ACCURACY;
-    private static final ForgeConfigSpec.BooleanValue RECIPELESS_ITEMS_RECIPE;
 
     static
     {
@@ -99,7 +97,6 @@ public class THKaguyaConfig
 
         builder.push("Other");
         SPAWN_HANABEEPER = builder.define("Spawn Hanabeeper", false);
-        RECIPELESS_ITEMS_RECIPE = builder.define("Add Recipeless Items Recipe", false);
         builder.pop();
 
         SPEC = builder.build();
@@ -174,6 +171,5 @@ public class THKaguyaConfig
         spawnHanabeeper = SPAWN_HANABEEPER.get();
         danmakuLevel = DANMAKU_LEVEL.get();
         danmakuAccuracy = 360F * (1F - (DANMAKU_ACCURACY.get() / 100F));
-        recipelessItemsRecipe = RECIPELESS_ITEMS_RECIPE.get();
     }
 }

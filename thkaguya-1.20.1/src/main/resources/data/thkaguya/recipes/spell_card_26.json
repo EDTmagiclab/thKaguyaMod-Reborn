@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RYR",
+    "YPY",
+    "RYR"
+  ],
+  "key": {
+    "P": { "item": "minecraft:paper" },
+    "R": { "item": "minecraft:poppy" },
+    "Y": { "item": "minecraft:dandelion" }
+  },
+  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 26 } }
+}
