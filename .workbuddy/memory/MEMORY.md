@@ -6,12 +6,12 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 进度快照（2026-10-17；HEAD `e6a18d5`；jar md5 每次构建都变，版本标识只认 HEAD）
-- 阶段 1–7 全结清 + 哑物品三批全清 + 批次 A `72db034`（配方/战利品表/一行级修复）+ 批次 B `1264ebe`（掉落链）+ 实测三修 `5231247`（ServerBossEvent/出膛 +1.0D/刷怪蛋模型）+ 符卡掉落编号 `62b121f`；**待用户复测**：发射器、boss 血条、霖之助刷怪蛋材质。
-- 符卡 35 张已注册（BrilliantDragonBullet 原版即注释）；核验报告 `符卡弹幕形状核验报告.md` 34/36 一致（2 卡片+4 框架级偏差待确认）；Review ≈85–88%（`移植实现度核验报告.md`），用户批复顺序 B→A→C1；符卡配方/盔甲层接受；时停已可用（报告 §4.12 是误判）。
+## 进度快照（2026-10-17；HEAD `e895344`；jar md5 每次构建都变，版本标识只认 HEAD）
+- 阶段 1–7 全结清 + 哑物品三批全清 + 批次 A `72db034`（配方/战利品表/一行级修复）+ 批次 B `1264ebe`（掉落链）+ 实测三修 `5231247` + 符卡掉落编号 `62b121f` + 幽香伞开花 `e6a18d5` 全部验收；**批次 C1 自然生成 ✅ + 批次 D 五件物品 ✅（`e895344`）**，待用户实测（新世界看刷怪 / 五件物品手感）。
+- 符卡 35 张已注册（BrilliantDragonBullet 原版即注释）；核验报告 34/36 一致；Review ≈85–88%；用户批复顺序 A→B→C1，符卡配方/盔甲层接受；时停已可用（报告 §4.12 是误判，已在 `f51a746` 勘误）。
 - 时停天空反色 ✅；小神霊 BER+8 色 ✅；音效核查：原版无语音资源（0 .ogg），实体音效靠蝙蝠×1.95 拟声（早苗/咲夜）与村民音（霖之助，原版如此），移植版音效三件套未搬，待用户定。
 
-## 铁律索引（53 条；完整论述见 `移植任务书.md`「关键迁移约定」1–68）
+## 铁律索引（55 条；完整论述见 `移植任务书.md`「关键迁移约定」1–69）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/`/`textures/block/`（单数）**；复数→物品模型缺材质（latest.log `Missing textures in model`）。
 3. **实体三大注册缺一不可**：EntityType+EntityAttributeCreationEvent+EntityRenderer。
@@ -65,6 +65,8 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 51. **boss 血条改用原版 `ServerBossEvent`（铁律 45 作废）；发射器打弹幕要 `SIZE+1.0D`；刷怪蛋必须有 model json**（5231247）：① 渲染器里画头顶血条实机崩坏，改为 `EntityDanmakuMob` 里 `ServerBossEvent(PINK, PROGRESS)`+`hasBossBar()` 钩子（8 个 boss 子类 true）+`startSeenByPlayer`/`stopSeenByPlayer`+`tick` 里 `setProgress`/`setVisible`+`remove` 里 `removeAllPlayers()`。② **刷怪蛋必须有 `models/item/<id>.json`（`template_spawn_egg` 父模型）**，缺了就是紫黑块。③ 发射器 `shootDanmaku` 距离必须 `SIZE[...]+1.0D`（原版 `CommonProxy.java:640`），只给 `SIZE` 会在方块内部生成被吃掉。
 52. **符卡类物品的变体在 damage 里，新建成就不带 damage 等于 0 号**（62b121f）：符卡用 `ItemStack#setDamageValue(符卡No)` 区分（`getDescriptionId` → `item.thkaguya.spell_card.<damage>`）；`new ItemStack(SPELL_CARD.get(), 1)` 直出必是 0 号梦想封印；`dropCustomDeathLoot` 必须抄原版 `new ItemStack(spell_card, 1, getUsingSpellCardNo())`。排查：所有 `new ItemStack(...SPELL_CARD` 后要么跟 `setDamageValue`，要么就是 bug。
 53. **`ISpecialShot` 必须同时登记类与实例；只登记实例 = 分发被跳过**（e6a18d5，幽香伞开花不生效）：`EntityTHShot.blockHitSpecialProcess`/`specialMotion` 先 `SpecialShotRegistry.getSpecialShotClass(id)`，为 null 直接 return（连硬编码 switch 都不走）→ 弹照飞、什么也不发生。Item 实现 ISpecialShot 要两条：`registerSpecialShot(类.class, id)` + `registerSpecialShotInstance(this, id)`（1.20.1 不能 new Item）。判断命中方块用 `BlockHitResult#getBlockPos()`，别用 `shot.blockPosition()`（贴面时仍在空气格）。
+54. **自然生成 = 数据文件 + `SpawnPlacements` 两半，且配置门控只能落在 `checkSpawnRules`**（`e895344`）：`data/<ns>/forge/biome_modifier/*.json` 的 `forge:add_spawns` 负责注入刷怪表，`SpawnPlacements.register` 负责「能不能生成」，少任一半都不刷；1.7.10 群系名要映射（`*Hills`→基群系、`hell`→`nether_wastes`、`mesaPlateau_F`→`badlands`），写不存在的 id（如 `badlands_plateau`）会让整个注册表加载失败、服务器起不来。原版包在 `addSpawn` 外的配置 `if`，数据驱动读不到 → 改在 `EntityDanmakuMob#checkSpawnRules` 里按 `MobSpawnType.NATURAL`/`CHUNK_GENERATION` 查 `THKaguyaConfig.allowNaturalSpawn(type)`。
+55. **把哑物品改成真物品时的两个 1.20.1 命名坑**（`e895344`）：① 在 `ArmorItem`/`Item` 子类里写 `new Item.Properties()` 会报 `package Item does not exist`（简单名 `Item` 不解析成类型）→ 写全限定 `new net.minecraft.world.item.Item.Properties()`；② `Player#isWet()` 在 1.20.1 不存在 → 用 `Entity#isInWaterRainOrBubble()`（水/雨/气泡柱皆算）。另 `ArmorItem` 的 `onArmorTick` 已被标 `removal`，仍可用但会告警。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
