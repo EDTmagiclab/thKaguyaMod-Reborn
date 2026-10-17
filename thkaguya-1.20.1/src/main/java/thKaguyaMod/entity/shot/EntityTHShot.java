@@ -90,12 +90,7 @@ public class EntityTHShot extends Entity
     public int delayTime;
     public float damageRate;
 
-    // ===== 追尾の診断用（1 個体につき 1 度だけ出す使い捨てログ）=====
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
-    private boolean homingCalledLogged;
-    private boolean homingPickedLogged;
-    private boolean specialDiagLogged;
-    private boolean tickDiagLogged;
 
     /** 回転軸ベクトル */
     public Vec3 rotate = THShotLib.rotate_Default();
@@ -240,14 +235,6 @@ public class EntityTHShot extends Entity
         // 先递增弹体年龄（tickCount），并执行 Entity 基础逻辑（原版依赖 ticksExisted 递增）
         super.tick();
 
-        // ===== 一時診断（原因特定後削除）：tick が動いているか / special が載っているか =====
-        if(!tickDiagLogged)
-        {
-            tickDiagLogged = true;
-            LOGGER.info("[TH] tick alive: special={} anim={} dmg={} client={}",
-                    shotSpecial, getAnimationCount(), shotDamage, level().isClientSide);
-        }
-
         // 弹主不存在则消失
         if(!level().isClientSide && user == null)
         {
@@ -390,15 +377,6 @@ public class EntityTHShot extends Entity
     /** 特殊弹的每 tick 处理（子类重写） */
     protected void specialMotion()
     {
-        // ===== 一時診断（原因特定後削除）=====
-        if(!specialDiagLogged)
-        {
-            specialDiagLogged = true;
-            Class<? extends ISpecialShot> c = SpecialShotRegistry.getSpecialShotClass(shotSpecial);
-            LOGGER.info("[TH] special={} -> {} (client={})", shotSpecial,
-                    c == null ? "NOT REGISTERED" : c.getSimpleName(), level().isClientSide);
-        }
-
         // 原版 977 行：shotSpecial 查 SpecialShotRegistry 分发到 ISpecialShot.specialShot_move
         if(shotSpecial != 0)
         {
@@ -463,17 +441,6 @@ public class EntityTHShot extends Entity
      */
     public void homing(float homingLevel)
     {
-        if(!level().isClientSide && !homingCalledLogged)
-        {
-            homingCalledLogged = true;
-            LOGGER.info("[thkaguya] homing() called (special={}, entity={})", shotSpecial, getId());
-            if(user instanceof Player p)
-            {
-                p.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                        "[TH] homing() called (special=" + shotSpecial + ")"), false);
-            }
-        }
-
         AABB searchBox = getBoundingBox()
                 .expandTowards(getDeltaMovement())
                 .inflate(24.0D, 24.0D, 24.0D);
@@ -528,16 +495,6 @@ public class EntityTHShot extends Entity
         // 追尾対象がいるならば向きを最大 homingLevel 度だけ回す
         if(nearEntity != null)
         {
-            if(!level().isClientSide && !homingPickedLogged)
-            {
-                homingPickedLogged = true;
-                LOGGER.info("[thkaguya] homing() locked on target={} distance={}", nearEntity, nearDistance);
-                if(user instanceof Player p)
-                {
-                    p.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                            "[TH] homing locked on " + nearEntity.getType().toShortString()), false);
-                }
-            }
             Vec3 targetVec = THShotLib.getVectorNomalize(new Vec3(
                     nearEntity.getX() - getX(),
                     nearEntity.getEyeY() - getY(),
@@ -722,10 +679,25 @@ public class EntityTHShot extends Entity
                 } catch (ReflectiveOperationException e) {
                 }
             }
-            // 原版 EntityTHShot.blockHitSpecialProcess 的硬编码基础特效 switch（阶段 4 补回）
-            // BOUND01~04 的反弹方法（bound）尚未迁移，暂保持消弹（已知延后项）
+            // 原版 EntityTHShot.blockHitSpecialProcess 的硬编码基础特效 switch（原版 1254-1282 行）
             switch(shotSpecial)
             {
+                case DanmakuConstants.BOUND01:
+                    bound(result, 0.9D, 2);
+                    shotSpecial = 0;
+                    return true;
+                case DanmakuConstants.BOUND02:
+                    bound(result, 0.9D, 3);
+                    shotSpecial = DanmakuConstants.BOUND01;
+                    return true;
+                case DanmakuConstants.BOUND03:
+                    bound(result, 0.9D, 4);
+                    shotSpecial = DanmakuConstants.BOUND02;
+                    return true;
+                case DanmakuConstants.BOUND04:
+                    bound(result, 0.9D, 9999);
+                    // 原版では shotSpecial = BOUND03 がコメントアウトされている（BOUND04 は無限反射）
+                    return true;
                 case DanmakuConstants.EXPLOSION01:
                     if(!level().isClientSide && result.getLocation() != null)
                     {
@@ -740,6 +712,95 @@ public class EntityTHShot extends Entity
             }
         }
         return false;
+    }
+
+    /**
+     * 跳ね返り弾（原版 EntityTHShot.bound、1.7.10 1378-1467 行）
+     *
+     * <p>原版は {@code motionX/Y/Z} を直接反転させ、次の tick 以降の移動に反映させる。
+     * 1.20.1 の本移植版では移動が {@link #getDeltaMovement()} と {@code lastShotMotion*}
+     * で駆動されるため、反転結果を両方に書き戻す。{@code angle} は変更しない（原版も変更しない）。
+     *
+     * <p>原版の第 1 引数はメソッド冒頭でレイトレースし直すため未使用（移植版も同じ）。
+     * 反射ごとに 0.99 倍で衝突点へ寄せ、再トレースして「反射後に別の面へ当たる」ケースも処理する。
+     *
+     * @param returnRate  反射時の速度倍率（原版呼び出しは 0.9D）
+     * @param returnCount 反射可能回数（尽きたら消滅。BOUND01=2 / BOUND02=3 / BOUND03=4 / BOUND04=9999）
+     */
+    public void bound(HitResult hitResult, double returnRate, int returnCount)
+    {
+        Vec3 mv = this.getDeltaMovement();
+        double motionX = mv.x;
+        double motionY = mv.y;
+        double motionZ = mv.z;
+
+        double supPosX1 = getX();
+        double supPosX2 = getX() + motionX;
+        double supPosY1 = getY();
+        double supPosY2 = getY() + motionY;
+        double supPosZ1 = getZ();
+        double supPosZ2 = getZ() + motionZ;
+
+        net.minecraft.world.phys.BlockHitResult mop
+                = clipBlocks(supPosX1, supPosY1, supPosZ1, supPosX2, supPosY2, supPosZ2);
+
+        while(mop != null)
+        {
+            // 1.7.10 sideHit → 1.20.1 Direction（0=-Y 1=+Y 2=-Z 3=+Z 4=-X 5=+X）
+            switch(mop.getDirection())
+            {
+                case DOWN:
+                case UP:
+                    motionY *= -returnRate;
+                    break;
+                case NORTH:
+                case SOUTH:
+                    motionZ *= -returnRate;
+                    break;
+                case WEST:
+                case EAST:
+                    motionX *= -returnRate;
+                    break;
+                default:
+                    return;
+            }
+
+            Vec3 hitVec = mop.getLocation();
+            supPosX1 = supPosX1 + (hitVec.x - supPosX1) * 0.99D;
+            supPosX2 = supPosX1 + motionX;
+            supPosY1 = supPosY1 + (hitVec.y - supPosY1) * 0.99D;
+            supPosY2 = supPosY1 + motionY;
+            supPosZ1 = supPosZ1 + (hitVec.z - supPosZ1) * 0.99D;
+            supPosZ2 = supPosZ1 + motionZ;
+
+            mop = clipBlocks(supPosX1, supPosY1, supPosZ1, supPosX2, supPosY2, supPosZ2);
+
+            returnCount--;
+            if(returnCount <= 0)
+            {
+                this.setDeltaMovement(motionX, motionY, motionZ);
+                lastShotMotionX = motionX;
+                lastShotMotionY = motionY;
+                lastShotMotionZ = motionZ;
+                delete();
+                return;
+            }
+        }
+
+        this.setDeltaMovement(motionX, motionY, motionZ);
+        lastShotMotionX = motionX;
+        lastShotMotionY = motionY;
+        lastShotMotionZ = motionZ;
+    }
+
+    /** ブロックとのレイトレース（原版 worldObj.rayTraceBlocks(v1, v2, true) 相当） */
+    private net.minecraft.world.phys.BlockHitResult clipBlocks(double x1, double y1, double z1,
+                                                               double x2, double y2, double z2)
+    {
+        return level().clip(new net.minecraft.world.level.ClipContext(
+                new Vec3(x1, y1, z1), new Vec3(x2, y2, z2),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                net.minecraft.world.level.ClipContext.Fluid.NONE, this));
     }
 
     /** 特殊弾から普通の弾に戻す（原版 specialEnd） */

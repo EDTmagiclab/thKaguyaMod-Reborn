@@ -212,16 +212,33 @@ public class ItemRoukanken extends SwordItem
 			return;
 		}
 
+		// 1.20.1 の inventoryTick は Player.tick 内で LivingEntity.tick（＝移動処理）より先に呼ばれる
+		// （javap 実測：Player.tick の offset 113 が Inventory.tick、140 が LivingEntity.tick）。
+		// そのため getDeltaMovement() はまだ「前 tick の摩擦後」の値しか持たず、突進直後でも
+		// 6.0 * 0.546 ≒ 3.28 程度に落ちている。原版 1.7.10 は移動後に走る onUpdate から
+		// 移動前の motionX/Z を見ていたので、ここでは実際に前 tick で動いた距離（pos - xo）も見る。
+		double movedX = player.getX() - player.xo;
+		double movedY = player.getY() - player.yo;
+		double movedZ = player.getZ() - player.zo;
 		Vec3 motion = player.getDeltaMovement();
 
 		// 移動量（水平）が 3.0 を越しているなら体当たり判定を取る
-		if(Math.sqrt(motion.x * motion.x + motion.z * motion.z) <= 3.0D)
+		if(Math.sqrt(movedX * movedX + movedZ * movedZ) <= 3.0D
+				&& Math.sqrt(motion.x * motion.x + motion.z * motion.z) <= 3.0D)
 		{
 			return;
 		}
 
+		// 突進で通り抜けた範囲全体（前 tick の位置 → 現在位置 → 今 tick の移動先）を覆う。
+		// 原版は「移動前の位置 + motion」で判定していたため、1.20.1 では実際の変位ぶんを
+		// 両方向へ広げて同じ掃引範囲を作る（片方向だけだと突進中に置き去りにした敵を逃す）。
 		List<Entity> list = level.getEntities(player,
-				player.getBoundingBox().expandTowards(motion).inflate(1.0D), e -> true);
+				player.getBoundingBox()
+						.move(-movedX, -movedY, -movedZ)
+						.expandTowards(movedX * 2.0D, movedY * 2.0D, movedZ * 2.0D)
+						.expandTowards(motion)
+						.inflate(1.0D),
+				e -> true);
 
 		for(Entity target : list)
 		{

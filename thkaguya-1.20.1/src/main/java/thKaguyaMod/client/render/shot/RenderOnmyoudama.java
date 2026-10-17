@@ -74,11 +74,13 @@ public class RenderOnmyoudama extends EntityRenderer<EntityOnmyoudama>
         Matrix4f matrix = pose.pose();
         Matrix3f normal = pose.normal();
 
-        // 本体（原版は色指定なし = 白、alpha 1.0）
-        quad(consumer, matrix, normal, -0.5F, -0.5F, 0.5F, 0.5F, 0.01F,
-                0.0F, 0.5F, 0.0F, 1.0F, 255, 255, 255, 255);
-
         // 光エフェクト（原版 renderLightEffect(tessellator, 0, size + 0.2F, entity)）
+        //
+        // 原版は本体 → 光の順に描いていたが、本移植版では光を先（本体の背後）に描く。
+        // 理由：原版のブレンド式 GL_ONE, GL_ONE_MINUS_SRC_COLOR は RGB しか見ないため
+        // 頂点 alpha 0.5 は実質無視され、1.4 倍サイズの白円（光テクスチャの実体）を
+        // 本体の上に重ねると、ほぼ不透明な赤い円板になって陰陽玉が完全に隠れてしまう
+        // （ユーザー報告「巨大な橙色の弾」の正体）。裏に回すと陰陽玉の halo として機能する。
         int count = entity.getAnimationCount() % 2;
         float umin = (64F + count * 32F) / 128F;
         float umax = (64F + count * 32F + 32F) / 128F;
@@ -88,6 +90,10 @@ public class RenderOnmyoudama extends EntityRenderer<EntityOnmyoudama>
 
         quad(consumer, matrix, normal, -0.7F, -0.7F, 0.7F, 0.7F, 0.0F,
                 umin, umax, 0.0F, 0.5F, cr, cg, cb, (int)(0.5F * 255.0F));
+
+        // 本体（原版は色指定なし = 白、alpha 1.0）
+        quad(consumer, matrix, normal, -0.5F, -0.5F, 0.5F, 0.5F, 0.01F,
+                0.0F, 0.5F, 0.0F, 1.0F, 255, 255, 255, 255);
 
         poseStack.popPose();
         super.render(entity, yaw, partialTicks, poseStack, buffer, packedLight);

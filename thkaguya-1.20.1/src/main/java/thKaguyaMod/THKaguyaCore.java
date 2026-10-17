@@ -103,16 +103,9 @@ public class THKaguyaCore
             // 弹幕图案注册表初始化（依赖 danmakuLevel 配置，须在配置加载后调用）
             DanmakuPatternRegistry.setDanmakuPattern();
 
-            // 【一時診断】特殊弾レジストリの状態（原因特定後削除）
-            // ※ RegistryObject#get() は commonSetup では呼んではいけない
+            // 注意：RegistryObject#get() は commonSetup では呼んではいけない
             //   （「Some intrusive holders were not registered」で専用サーバーが起動失敗する）。
             //   Item インスタンスを実行時に new するのも同じ理由で禁止。
-            com.mojang.logging.LogUtils.getLogger().info(
-                    "[TH] SpecialShotRegistry classes={} instances={} has352class={} has352inst={}",
-                    thKaguyaMod.registry.SpecialShotRegistry.getNumberOfSpecialShot(),
-                    thKaguyaMod.registry.SpecialShotRegistry.specialShotInstance.size(),
-                    thKaguyaMod.registry.SpecialShotRegistry.getSpecialShotClass(352) != null,
-                    thKaguyaMod.registry.SpecialShotRegistry.getSpecialShotInstance(352) != null);
 
             // 符卡注册（阶段 3d-5，对齐原版 CommonProxy.registerSpellCards）
             thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MusouFuuin.class, "thkaguyamod", "MusouFuuin", 0);
