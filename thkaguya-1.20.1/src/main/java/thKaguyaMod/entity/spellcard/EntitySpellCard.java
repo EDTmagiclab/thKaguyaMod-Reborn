@@ -11,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
 import thKaguyaMod.entity.living.EntityDanmakuMob;
 import thKaguyaMod.init.THKaguyaEntities;
@@ -20,7 +21,7 @@ import thKaguyaMod.registry.SpellCardRegistry;
  * スペルカードのEntity（1.20.1 移植版）
  *
  * 阶段 3d-2：符卡实体。管理符卡生命周期，每 tick 调用 THSpellCard.onUpdate()。
- * 裁剪：THShotLib.danmakuRemove（弹消，依赖未迁移）。
+ * 阶段 7-P1：补回 `playerSpellCardDanmakuRemove`（玩家符卡宣言后 removeTime 窗口内持续弹消）。
  */
 public class EntitySpellCard extends Entity
 {
@@ -165,6 +166,20 @@ public class EntitySpellCard extends Entity
         }
     }
 
+    /**
+     * プレイヤーが符卡を宣言した直後の弾消し（原版 EntitySpellCard.playerSpellCardDanmakuRemove）。
+     * `ticksExisted < time` の間だけ、使用者を中心に半径 40 格の「他人の弾」を消す。
+     * 原版は両側で呼んでいたが、ここはサーバのみで消してクライアントへ削除パケットで伝える
+     * （見た目は同じで、クライアント側の每 tick 走査を省ける）。
+     */
+    private void playerSpellCardDanmakuRemove(int time)
+    {
+        if(!level().isClientSide && user instanceof Player && tickCount < time)
+        {
+            THShotLib.danmakuRemove(user, 40.0F, "Other", true);
+        }
+    }
+
     public void specialProcessInTimeStop()
     {
         if(useSpellCard != null)
@@ -204,6 +219,9 @@ public class EntitySpellCard extends Entity
             }
 
             useSpellCard.onUpdate();
+
+            // 原版：宣言后的 removeTime 窗口内，每 tick 消掉使用者周围 40 格的他人弹幕
+            playerSpellCardDanmakuRemove(useSpellCard.getRemoveTime());
 
             if(useSpellCard.time >= useSpellCard.getEndTime())
             {

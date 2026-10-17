@@ -1058,6 +1058,9 @@ public class EntityTHShot extends Entity
             {
                 if(!level().isClientSide)
                 {
+                    // 原版：shotFinishBonus()（弹→点道具，EntityShotMaterial 未移植）+ 击弹时
+                    // 消掉半径 shotSize*4 内的他人弹幕（"Other" 也包含自己这発）
+                    THShotLib.danmakuRemove(this, this.getShotSize() * 4.0F, "Other", true);
                     delete();
                 }
                 return true;

@@ -17,14 +17,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.entity.living.EntityDanmakuCreeper;
 import thKaguyaMod.entity.shot.EntityNuclearShot;
 import thKaguyaMod.entity.shot.EntityTHShot;
 import thKaguyaMod.entity.shot.ISpecialShot;
 import thKaguyaMod.registry.SpecialShotRegistry;
 
 /** 奇跡「ファフロッキーズの奇跡」（1.20.1 移植版）
- *  原版 12/25 分支生成 EntityDanmakuCreeper（弹幕苦力怕，阶段 3d-6 迁移），
- *  先回退为生成原版苦力怕，待 3d-6 完成后换回。 */
+ *  12/25 分支按原版生成 EntityDanmakuCreeper（弹幕苦力怕，阶段 3d-6 已迁移）。 */
 public class THSC_Fafurotskies_no_Kiseki extends THSpellCard implements ISpecialShot
 {
 
@@ -70,8 +70,8 @@ public class THSC_Fafurotskies_no_Kiseki extends THSpellCard implements ISpecial
 
 				if(calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) == 25)
 				{
-					// TODO 阶段 3d-6：还原为 EntityDanmakuCreeper（弹幕苦力怕）
-					Creeper entityCreeper = new Creeper(EntityType.CREEPER, world);
+					// 原版：EntityDanmakuCreeper（弾幕を撒き散らす苦力怕）
+					EntityDanmakuCreeper entityCreeper = new EntityDanmakuCreeper(world);
 					entityCreeper.moveTo(shot.getX(), shot.getY(), shot.getZ(), rand.nextFloat() * 360F, 0.0F);
 					if(!world.isClientSide)
 					{

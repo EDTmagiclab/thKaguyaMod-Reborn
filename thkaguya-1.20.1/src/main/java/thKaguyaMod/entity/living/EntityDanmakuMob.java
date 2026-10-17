@@ -534,6 +534,8 @@ public abstract class EntityDanmakuMob extends Mob
             this.setHealth(maxHP);
         }
         attackInterval = invincibleTime;
+        // 原版：阶段切换时消掉周围 40 格的「敌方以外」弹幕（自己的旧弹幕清空，避免叠屏）
+        THShotLib.danmakuRemove(this, 40.0D, "Enemy", true);
         isSpellCardMode = false;
     }
 
