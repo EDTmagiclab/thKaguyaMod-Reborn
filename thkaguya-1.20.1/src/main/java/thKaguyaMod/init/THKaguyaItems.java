@@ -41,6 +41,7 @@ import thKaguyaMod.item.ItemSilverKnife;
 import thKaguyaMod.item.ItemSpearTheGungnir;
 import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
 import thKaguyaMod.item.ItemSukima;
+import thKaguyaMod.item.ItemMiracleMallet;
 import thKaguyaMod.item.ItemShotMaterial;
 import thKaguyaMod.item.ItemTHLaser;
 import thKaguyaMod.item.ItemTHShot;
@@ -215,7 +216,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> TOYOSATOMIMI_SWORD = register("toyosatomimi_sword", () -> new ItemMikoSword());
 
     /** 打ち出の小槌 */
-    public static final RegistryObject<Item> MIRACLE_MALLET = register("miracle_mallet");
+    public static final RegistryObject<Item> MIRACLE_MALLET = register("miracle_mallet", () -> new ItemMiracleMallet());
 
     /** 霊撃札 */
     public static final RegistryObject<Item> SPIRITUAL_STRIKE_TALISMAN = register("spiritual_strike_talisman", () -> new ItemSpiritualStrikeTalisman());
