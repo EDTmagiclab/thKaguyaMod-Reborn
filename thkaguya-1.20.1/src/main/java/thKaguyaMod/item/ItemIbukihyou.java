@@ -5,6 +5,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -14,6 +15,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
@@ -88,6 +90,52 @@ public class ItemIbukihyou extends Item
 
 		player.startUsingItem(hand);
 		return InteractionResultHolder.consume(itemStack);
+	}
+
+	/**
+	 * 对着方块右键时走的是「使用方块」这条路径，1.20.1 的服务端 {@code ServerPlayerGameMode#useItemOn}
+	 * 在 {@code ItemStack.useOn} 返回 PASS 后**不会**再回落到 {@code Item#use}（已用 javap 核对字节码：
+	 * 方法末尾直接 `areturn` 返回 useOn 的结果）。客户端在浅水处瞄准水面时，射线因为水不可拾取而
+	 * 穿过去打在湖底方块上，于是只走 useOn、根本进不到 {@link #use(Level, Player, InteractionHand)}，
+	 * 灌水分支永远不执行——这就是「对着水右键没反应」的真正原因。
+	 * 因此这里必须再补一条 useOn 路径：点到水/含水方块，或者点到水下放块的顶面，都算在灌水。
+	 */
+	@Override
+	public InteractionResult useOn(UseOnContext context)
+	{
+		Level level = context.getLevel();
+		Player player = context.getPlayer();
+		if(player == null || !isWaterTarget(level, player, context))
+		{
+			return InteractionResult.PASS;
+		}
+
+		ItemStack itemStack = context.getItemInHand();
+		if(itemStack.getDamageValue() > 0)
+		{
+			player.swing(context.getHand());
+			if(!level.isClientSide)
+			{
+				itemStack.setDamageValue(itemStack.getDamageValue() - 1);
+			}
+		}
+		return InteractionResult.sidedSuccess(level.isClientSide);
+	}
+
+	private static boolean isWaterTarget(Level level, Player player, UseOnContext context)
+	{
+		BlockPos pos = context.getClickedPos();
+		if(isWaterSource(level, pos))
+		{
+			return true;
+		}
+		// 浅水处：射线穿过水打在湖底方块上时，点到的那个面正上方就是水
+		if(isWaterSource(level, pos.relative(context.getClickedFace())))
+		{
+			return true;
+		}
+		// 自己正泡在水里
+		return isWaterSource(level, BlockPos.containing(player.getEyePosition()));
 	}
 
 	@Override
