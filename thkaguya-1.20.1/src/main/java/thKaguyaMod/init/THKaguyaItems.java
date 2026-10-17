@@ -15,6 +15,8 @@ import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemDeathScythe;
 import thKaguyaMod.item.ItemDragonNeckJewel;
 import thKaguyaMod.item.ItemFireRatRobe;
+import thKaguyaMod.item.ItemKerobou;
+import thKaguyaMod.item.ItemThirdEye;
 import thKaguyaMod.item.ItemGapFoldingUmbrella;
 import thKaguyaMod.item.ItemIbukihyou;
 import thKaguyaMod.item.ItemHakurouken;
@@ -184,7 +186,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> ONBASHIRA = register("onbashira", () -> new ItemOnbashira());
 
     /** 諏訪子の帽子 */
-    public static final RegistryObject<Item> SUWAKO_HAT = register("suwako_hat");
+    public static final RegistryObject<Item> SUWAKO_HAT = register("suwako_hat", () -> new ItemKerobou());
 
     /** 天界の桃 */
     public static final RegistryObject<Item> HEAVENLY_PEACH = register("heavenly_peach");
@@ -193,7 +195,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> HISOU_SWORD = register("hisou_sword", () -> new ItemHisou());
 
     /** 第三の眼 */
-    public static final RegistryObject<Item> THIRD_EYE = register("third_eye");
+    public static final RegistryObject<Item> THIRD_EYE = register("third_eye", () -> new ItemThirdEye());
 
     /** 制御棒 */
     public static final RegistryObject<Item> NUCLEAR_CONTROL_ROD = register("nuclear_control_rod", () -> new ItemNuclearControlRod());

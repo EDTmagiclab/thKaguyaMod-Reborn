@@ -33,6 +33,7 @@ import thKaguyaMod.client.model.item.ModelKinkakuzi;
 import thKaguyaMod.client.model.item.ModelMiniHakkero;
 import thKaguyaMod.client.model.item.ModelMiniHakkero2;
 import thKaguyaMod.client.model.item.ModelPrivateSquare;
+import thKaguyaMod.client.model.item.ModelSuwakoHat;
 import thKaguyaMod.client.model.item.ModelYuukaParasol;
 import thKaguyaMod.client.model.shot.ModelSilverKnife;
 import thKaguyaMod.client.render.RenderDivineSpirit;
@@ -150,6 +151,8 @@ public class ClientRenderRegistry
         event.registerLayerDefinition(YUUKA_PARASOL_LAYER, ModelYuukaParasol::createBodyLayer);
         event.registerLayerDefinition(PRIVATE_SQUARE_LAYER, ModelPrivateSquare::createBodyLayer);
         event.registerLayerDefinition(DECOY_LAYER, ModelCursedDecoyDoll::createBodyLayer);
+        // 洩矢の帽子の盔甲模型
+        event.registerLayerDefinition(ModelSuwakoHat.LAYER, ModelSuwakoHat::createBodyLayer);
         // 弾幕形状のモデル（FORM_KNIFE = 銀のナイフ弾）
         event.registerLayerDefinition(ModelSilverKnife.LAYER_LOCATION, ModelSilverKnife::createBodyLayer);
     }
