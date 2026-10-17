@@ -1,13 +1,21 @@
 package thKaguyaMod.entity.living;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
 import thKaguyaMod.init.THKaguyaEntities;
+import thKaguyaMod.init.THKaguyaItems;
 
-/** 十六夜 咲夜（1.20.1 移植版） */
-public class EntitySakuya extends EntityDanmakuMob implements IDanmakuMob
+/**
+ * 十六夜 咲夜（1.20.1 移植版）
+ * 原版实现 IMerchant（右击开村民交易界面，2 条交易：银刀 / 怀表）。
+ */
+public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
 {
     public EntitySakuya(EntityType<? extends EntitySakuya> type, Level level)
     {
@@ -91,6 +99,33 @@ public class EntitySakuya extends EntityDanmakuMob implements IDanmakuMob
     protected boolean canFairyCall()
     {
         return false;
+    }
+
+    /** 原版 EntitySakuya.entityInit() 的 buyingList（2 条交易）。 */
+    @Override
+    protected MerchantOffers createOffers()
+    {
+        MerchantOffers offers = new MerchantOffers();
+        // 原版：new MerchantRecipe(new ItemStack(THKaguyaItems.shot_material, 16, 0),
+        //                         new ItemStack(THKaguyaItems.silver_knife, 1, 0))
+        offers.add(new MerchantOffer(
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 16),
+                new ItemStack(THKaguyaItems.SILVER_KNIFE_BLUE.get()),
+                7, 0, 0.0F));
+        // 原版：new MerchantRecipe(new ItemStack(THKaguyaItems.shot_material, 64, 0),
+        //                         new ItemStack(THKaguyaItems.sakuya_stopwatch, 1, 0))
+        offers.add(new MerchantOffer(
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 64),
+                new ItemStack(THKaguyaItems.SAKUYA_STOPWATCH.get()),
+                7, 0, 0.0F));
+        return offers;
+    }
+
+    @Override
+    protected Component getTradeTitle()
+    {
+        // 原版：StatCollector.translateToLocal("entity.Sakuya.name")
+        return Component.translatable("entity.thkaguya.sakuya");
     }
 
     @Override

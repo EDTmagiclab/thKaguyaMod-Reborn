@@ -194,8 +194,8 @@ public class THKaguyaCore
     public static final int GUI_DANMAKU_CRAFTING_ID      = 0;
     /** レーザー弾幕作業台GUI */
     public static final int GUI_DANMAKU_CRAFTING_LASER_ID = 1;
-    /** 守矢神社出張早苗さんGUI */
-    public static final int GUI_MERCHANT_SANAE_ID        = 2;
+    /* 原版 GUI_MERCHANT_SANAE_ID = 2 已删除：早苗/咲夜的商店改走原版 MerchantMenu，
+       原版的 ContainerMerchantSanae / GuiMerchantSanae 本身也没有任何入口（openGui 调用被注释）。 */
     /** 打ち出の小槌GUI */
     public static final int GUI_MIRACLE_MALLET_ID        = 3;
 }

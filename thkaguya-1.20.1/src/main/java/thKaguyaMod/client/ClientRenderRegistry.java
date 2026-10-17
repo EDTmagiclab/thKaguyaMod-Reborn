@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.client.gui.GuiDanmakuCrafting;
 import thKaguyaMod.client.gui.GuiDanmakuCraftingLaser;
-import thKaguyaMod.client.gui.GuiMerchantSanae;
 import thKaguyaMod.client.gui.GuiMiracleMallet;
 import thKaguyaMod.client.model.living.ModelCirno;
 import thKaguyaMod.client.model.living.ModelMiko;
@@ -252,7 +251,6 @@ public class ClientRenderRegistry
         {
             MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.DANMAKU_CRAFTING.get(), GuiDanmakuCrafting::new);
             MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.DANMAKU_CRAFTING_LASER.get(), GuiDanmakuCraftingLaser::new);
-            MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.MERCHANT_SANAE.get(), GuiMerchantSanae::new);
             MenuScreens.register(thKaguyaMod.init.THKaguyaMenuTypes.MIRACLE_MALLET.get(), GuiMiracleMallet::new);
 
             // 符卡アイテムのアイコン切り替え（阶段 7-③）

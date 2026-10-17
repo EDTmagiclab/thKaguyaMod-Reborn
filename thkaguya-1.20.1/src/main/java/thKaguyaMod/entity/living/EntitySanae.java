@@ -2,17 +2,25 @@ package thKaguyaMod.entity.living;
 
 import static thKaguyaMod.DanmakuConstants.*;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
 import thKaguyaMod.init.THKaguyaEntities;
+import thKaguyaMod.init.THKaguyaItems;
 
-/** 東風谷 早苗（1.20.1 移植版） */
-public class EntitySanae extends EntityDanmakuMob implements IDanmakuMob
+/**
+ * 東風谷 早苗（1.20.1 移植版）
+ * 原版实现 IMerchant（右击开村民交易界面，1 条交易：64 弹幕素材 → 1 病气平愈御守）。
+ */
+public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
 {
     public EntitySanae(EntityType<? extends EntitySanae> type, Level level)
     {
@@ -153,6 +161,27 @@ public class EntitySanae extends EntityDanmakuMob implements IDanmakuMob
     protected boolean canFairyCall()
     {
         return false;
+    }
+
+    /** 原版 EntitySanae.entityInit() 的 buyingList（只有 1 条交易）。 */
+    @Override
+    protected MerchantOffers createOffers()
+    {
+        MerchantOffers offers = new MerchantOffers();
+        // 原版：new MerchantRecipe(new ItemStack(THKaguyaItems.shot_material, 64, 0),
+        //                         new ItemStack(THKaguyaItems.illness_recovery_charm, 1, 0))
+        offers.add(new MerchantOffer(
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 64),
+                new ItemStack(THKaguyaItems.ILLNESS_RECOVERY_CHARM.get()),
+                7, 0, 0.0F));
+        return offers;
+    }
+
+    @Override
+    protected Component getTradeTitle()
+    {
+        // 原版：StatCollector.translateToLocal("entity.Sanae.name")
+        return Component.translatable("entity.thkaguya.sanae");
     }
 
     @Override
