@@ -31,7 +31,8 @@ import java.util.List;
  * - 弹数：{@code shotNum = 32 + 72000 - usedTime}（held 越久越多），上限 72，再 {@code /3}
  * - 充能 {@code getCharge(NBT "Charge") <= 200} 才能发射；每次发射 {@code addCharge(-50)}
  * - 潜行：8 层不同初速（0.3 + i*0.2）的全方位弹（way = shotNum，baseAngle = i*3°，distance 0.2）
- * - 非潜行：3 层环弹（way = shotNum / shotNum/2 / shotNum/3，ringSpan 15/10/5，distance 0）
+ * - 非潜行：前方扇状弹（原版此处是 3 层环弹 ringSpan 15/10/5，实机上是一坨；本版取作者同段注释代码
+ *   {@code createWideShot(..., shotNum, 30F, 0.2D)}，见 releaseUsing 里的说明）
  * - 库存里时每 50 tick {@code addCharge(+50)}（即充能回落），< 0 则 {@code setCharge(0)}
  * - 6 档图标按充能切换（icons[0..5] = houraiEda, _4, _3, _2, _1, _0）
  *
@@ -196,25 +197,18 @@ public class ItemHouraiJeweledBranch extends Item
 		}
 		else
 		{
-			// 非潜行：三层环弹，发射点前移半个方块
+			// 非潜行：前方扇状弹幕。
+			// 原版此处是三次 createRingShot（ringSpan 15/10/5）——那三个环都以视线为轴、
+			// 只偏 7.5°/5°/2.5°，近距离看是「一坨」而不是扇形；作者在同段里保留的注释代码
+			// createWideShot(..., shotNum, 30F, 0.2D) 才是扇形。按实机手感取扇形版本。
 			Vec3 angle = THShotLib.angle(player.getYRot(), player.getXRot());
 			Vec3 pos = THShotLib.pos(player.getX() + angle.x * 0.5D,
 					THShotLib.getPosYFromEye(player) + angle.y * 0.5D,
 					player.getZ() + angle.z * 0.5D);
 
-			THShotLib.createRingShot(player, player, pos, angle, 0F, 9999,
-					0.6D, 2.0D, 0.03D, THShotLib.gravity_Zero(),
-					shot, shotNum, 0.0D, 15F, level.random.nextFloat() * 360F);
-
-			shot = ShotData.shot(DanmakuConstants.FORM_PEARL, DanmakuConstants.RAINBOW, 0.3F, 5.0F, 1, 80);
-			THShotLib.createRingShot(player, player, pos, angle, 0F, 9999,
-					0.6D, 2.0D, 0.03D, THShotLib.gravity_Zero(),
-					shot, shotNum / 2, 0.0D, 10F, level.random.nextFloat() * 360F);
-
-			shot = ShotData.shot(DanmakuConstants.FORM_PEARL, DanmakuConstants.RAINBOW, 0.3F, 5.0F, 1, 80);
-			THShotLib.createRingShot(player, player, pos, angle, 0F, 9999,
-					0.6D, 2.0D, 0.03D, THShotLib.gravity_Zero(),
-					shot, shotNum / 3, 0.0D, 5F, level.random.nextFloat() * 360F);
+			THShotLib.createWideShot(player, player, pos, angle,
+					0.3D, 2.0D, 0.03D, THShotLib.gravity_Zero(),
+					shot, shotNum, 30F, 0.2D);
 		}
 
 		// 原版 "random.orb"

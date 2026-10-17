@@ -1,6 +1,7 @@
 package thKaguyaMod.item;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -16,8 +17,11 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * 伊吹瓢（ibuki_gourd，伊吹萃香的酒葫芦）—— 原版 {@code thKaguyaMod.item.ItemIbukihyou}（129 行）
@@ -60,24 +64,20 @@ public class ItemIbukihyou extends Item
 		ItemStack itemStack = player.getItemInHand(hand);
 
 		// 原版 getMovingObjectPositionFromPlayer(world, player, true)：含流体的方块射线
-		BlockHitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
+		BlockPos waterPos = findWaterSource(level, player);
 
-		if(hit.getType() == HitResult.Type.BLOCK)
+		if(waterPos != null)
 		{
-			BlockPos pos = hit.getBlockPos();
-			if(level.getBlockState(pos).is(Blocks.WATER))
+			// 水源で給水：耐久を 1 回復する（原版 itemStack.setItemDamage(getItemDamage() - 1)）
+			if(itemStack.getDamageValue() > 0)
 			{
-				// 水源で給水：耐久を 1 回復する（原版 itemStack.setItemDamage(getItemDamage() - 1)）
-				if(itemStack.getDamageValue() > 0)
+				player.swing(hand);
+				if(!level.isClientSide)
 				{
-					player.swing(hand);
-					if(!level.isClientSide)
-					{
-						itemStack.setDamageValue(itemStack.getDamageValue() - 1);
-					}
+					itemStack.setDamageValue(itemStack.getDamageValue() - 1);
 				}
-				return InteractionResultHolder.sidedSuccess(itemStack, level.isClientSide);
 			}
+			return InteractionResultHolder.sidedSuccess(itemStack, level.isClientSide);
 		}
 
 		// 空（耐久 >= 6）なら飲めない
@@ -144,5 +144,53 @@ public class ItemIbukihyou extends Item
 	public boolean isBarVisible(ItemStack itemStack)
 	{
 		return itemStack.getDamageValue() > 0;
+	}
+
+	/**
+	 * 视线内寻找可灌水的水源。
+	 *
+	 * 原版是 {@code getMovingObjectPositionFromPlayer(world, player, true)} + {@code Blocks.water && metadata == 0}。
+	 * 1.20.1 用 {@link #getPlayerPOVHitResult} 走 {@code ClipContext.Block.OUTLINE}：水没有 outline 形状，
+	 * 部分情况下（和水草/含水方块/贴在池边的方块混在一起时）射线落点并不是 {@code Blocks.WATER}，
+	 * 只看 {@code hit.getBlockPos()} 会漏判 → 表现为「右键水源没反应」。因此：
+	 * 1) 先用与桶一致的 clip 结果做流体判定（{@link FluidTags#WATER} + {@code isSource()}）；
+	 * 2) 再沿视线每 0.1 格采样兜底，碰到不透光实体方块就停下（避免隔墙灌水）。
+	 */
+	private static BlockPos findWaterSource(Level level, Player player)
+	{
+		BlockHitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
+		if(hit.getType() == HitResult.Type.BLOCK && isWaterSource(level, hit.getBlockPos()))
+		{
+			return hit.getBlockPos();
+		}
+
+		Vec3 eye = player.getEyePosition();
+		Vec3 dir = player.getViewVector(1.0F).normalize();
+		double reach = 4.5D;
+		for(double d = 0.0D; d <= reach; d += 0.1D)
+		{
+			BlockPos pos = BlockPos.containing(eye.add(dir.scale(d)));
+			if(isWaterSource(level, pos))
+			{
+				return pos;
+			}
+			BlockState state = level.getBlockState(pos);
+			if(!state.isAir() && !state.getFluidState().is(FluidTags.WATER) && state.isSolidRender(level, pos))
+			{
+				return null;
+			}
+		}
+		return null;
+	}
+
+	/** 1.7.10 的 {@code Blocks.water && metadata == 0} = 水源（含水方块里的水源也算） */
+	private static boolean isWaterSource(Level level, BlockPos pos)
+	{
+		FluidState fluid = level.getFluidState(pos);
+		if(fluid.is(FluidTags.WATER))
+		{
+			return fluid.isSource();
+		}
+		return level.getBlockState(pos).is(Blocks.WATER);
 	}
 }
