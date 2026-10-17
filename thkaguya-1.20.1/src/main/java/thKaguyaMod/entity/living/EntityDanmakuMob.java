@@ -886,17 +886,22 @@ public abstract class EntityDanmakuMob extends Mob
 
     /**
      * 倒れたときに落とすアイテム（1.7.10 dropFewItems 等价物）。
-     * 原版：符卡使用中且玩家击杀时掉落对应符卡。1.20.1 符卡已无 metadata 变体，
-     * 此处保留钩子，具体掉落留阶段 7 补全。
+     * 原版 EntityDanmakuMob.java:1390-1397:
+     *   if(getUsingSpellCardNo() >= 0 && hasBeenAttackedByPlayer)
+     *       entityDropItem(new ItemStack(THKaguyaItems.spell_card, 1, getUsingSpellCardNo()), 0.0F);
+     * 即「正在放的这张符卡」，符卡编号就写在 damage 值里（ItemTHSpellCard 用 damage 决定名字）。
      */
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit)
     {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
-        // 原版 dropFewItems: スペルカード使用中にプレイヤーに倒されたら、そのスペルカードを落とす
-        if (this.getUsingSpellCardNo() >= 0 && recentlyHit)
+        int spellCardNo = this.getUsingSpellCardNo();
+        if (spellCardNo >= 0 && recentlyHit)
         {
-            this.spawnAtLocation(new ItemStack(THKaguyaItems.SPELL_CARD.get(), 1));
+            // damage = 符卡 No。漏掉这一步会让所有 boss 一律掉 damage 0（灵符「梦想封印」）
+            ItemStack card = new ItemStack(THKaguyaItems.SPELL_CARD.get(), 1);
+            card.setDamageValue(spellCardNo);
+            this.spawnAtLocation(card);
         }
     }
 }
