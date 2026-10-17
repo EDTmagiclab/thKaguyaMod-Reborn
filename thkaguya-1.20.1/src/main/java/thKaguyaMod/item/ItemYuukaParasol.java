@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
@@ -37,7 +38,11 @@ public class ItemYuukaParasol extends Item implements ISpecialShot
 	public ItemYuukaParasol()
 	{
 		super(new Item.Properties().stacksTo(1).durability(PARASOL_MAX_DAMAGE));
-		// 原版 ItemYuukaParasol 构造器末尾登记自身为特殊弾处理器（花弾：命中生成弹幕花）
+		// 原版 ItemYuukaParasol 构造器末尾：registerSpecialShot(ItemYuukaParasol.class, SPECIAL_FLOWER_LAND)
+		// ① 登记「类」：EntityTHShot 的分发先查 getSpecialShotClass(id)，为 null 就整个跳过、
+		//    连下面的硬编码 switch 都轮不到，表现为「开花完全没反应」；
+		// ② 再登记「实例」：1.20.1 不能 new Item，实体必须直接拿到这个物品实例。
+		SpecialShotRegistry.registerSpecialShot(ItemYuukaParasol.class, SPECIAL_FLOWER_LAND);
 		SpecialShotRegistry.registerSpecialShotInstance(this, SPECIAL_FLOWER_LAND);
 	}
 
@@ -177,7 +182,17 @@ public class ItemYuukaParasol extends Item implements ISpecialShot
 	@Override
 	public boolean specialShot_hitBlock(Level world, int id, EntityTHShot shot, HitResult result)
 	{
-		BlockPos hitPoint = shot.blockPosition();
+		// 原版取的是 (int)posX, (int)(posY - 0.3D), (int)posZ —— 相对弹体中心往下 0.3 格的那个方块。
+		// 1.20.1 里直接用命中结果给的方块坐标更准（弹体贴到方块表面时 blockPosition() 常常还落在空气里）。
+		BlockPos hitPoint;
+		if(result instanceof BlockHitResult blockHit)
+		{
+			hitPoint = blockHit.getBlockPos();
+		}
+		else
+		{
+			hitPoint = BlockPos.containing(shot.getX(), shot.getY() - 0.3D, shot.getZ());
+		}
 		if(world.getBlockState(hitPoint).getBlock() == Blocks.GRASS_BLOCK)
 		{
 			BlockPos setPos = hitPoint.above();
