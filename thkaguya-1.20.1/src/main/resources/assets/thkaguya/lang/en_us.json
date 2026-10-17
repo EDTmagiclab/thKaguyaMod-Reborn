@@ -1,6 +1,13 @@
 {
   "block.thkaguya.danmaku_crafting_table": "Danmaku Crafting Table",
   "block.thkaguya.divine_spirit": "Divine Spirit",
+  "block.thkaguya.divine_spirit_red": "Divine Spirit",
+  "block.thkaguya.divine_spirit_green": "Divine Spirit",
+  "block.thkaguya.divine_spirit_yellow": "Divine Spirit",
+  "block.thkaguya.divine_spirit_purple": "Divine Spirit",
+  "block.thkaguya.divine_spirit_cyan": "Divine Spirit",
+  "block.thkaguya.divine_spirit_orange": "Divine Spirit",
+  "block.thkaguya.divine_spirit_white": "Divine Spirit",
   "block.thkaguya.laser_crafting_table": "Laser Crafting Table",
   "danmakuCrafting.bound": "Bound",
   "danmakuCrafting.color": "Color",

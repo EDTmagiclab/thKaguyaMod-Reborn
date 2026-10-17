@@ -1,6 +1,13 @@
 {
   "block.thkaguya.danmaku_crafting_table": "弹幕工作台",
   "block.thkaguya.divine_spirit": "小神霊",
+  "block.thkaguya.divine_spirit_red": "小神霊",
+  "block.thkaguya.divine_spirit_green": "小神霊",
+  "block.thkaguya.divine_spirit_yellow": "小神霊",
+  "block.thkaguya.divine_spirit_purple": "小神霊",
+  "block.thkaguya.divine_spirit_cyan": "小神霊",
+  "block.thkaguya.divine_spirit_orange": "小神霊",
+  "block.thkaguya.divine_spirit_white": "小神霊",
   "block.thkaguya.laser_crafting_table": "激光弹幕工作台",
   "entity.thkaguya.cirno": "琪露诺",
   "entity.thkaguya.danmaku_creeper": "弹幕苦力怕",

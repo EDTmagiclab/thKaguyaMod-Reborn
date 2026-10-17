@@ -1,6 +1,13 @@
 {
   "block.thkaguya.danmaku_crafting_table": "탄막 작업대",
   "block.thkaguya.divine_spirit": "소신령",
+  "block.thkaguya.divine_spirit_red": "소신령",
+  "block.thkaguya.divine_spirit_green": "소신령",
+  "block.thkaguya.divine_spirit_yellow": "소신령",
+  "block.thkaguya.divine_spirit_purple": "소신령",
+  "block.thkaguya.divine_spirit_cyan": "소신령",
+  "block.thkaguya.divine_spirit_orange": "소신령",
+  "block.thkaguya.divine_spirit_white": "소신령",
   "block.thkaguya.laser_crafting_table": "레이저 작업대",
   "entity.thkaguya.th_fairy": "妖精",
   "item.thkaguya.aja_red_stone": "에이자의 적석",

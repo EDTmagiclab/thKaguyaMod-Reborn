@@ -236,7 +236,7 @@ public class EntityDivineSpirit extends Entity
     public void playerTouch(Player player)
     {
         if(!level().isClientSide
-                && player.getInventory().add(new ItemStack(THKaguyaBlocks.DIVINE_SPIRIT_ITEM.get(), 1)))
+                && player.getInventory().add(new ItemStack(THKaguyaBlocks.divineSpiritItem(getDivineSpiritColor()), 1)))
         {
             // 原: worldObj.playSoundAtEntity(this, "random.pop", 4.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 0.3F)
             level().playSound(null, blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 4.0F,
