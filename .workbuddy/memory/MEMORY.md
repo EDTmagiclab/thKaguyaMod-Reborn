@@ -6,7 +6,7 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 进度快照（2026-10-17；HEAD `719001e`；jar md5 每次构建都变，版本标识只认 HEAD）
+## 进度快照（2026-10-18；HEAD `95b46c4`；jar md5 每次构建都变，版本标识只认 HEAD）
 
 - **d6c9346**：使魔被攻击后立刻崩服修复（`EntityFamiliar#getShooter` 未骑乘回退自身 + `EntityTHFairy#danmakuPattern` 判空）；上一轮删掉 `NOT_ATTACK` 无敌后解锁的这条路径首次执行就 NPE。
 - **1d64881**：`form`/`danmakuPattern` 改同步数据（妖精 3 套贴图真正切换、幽灵 8 色生效）；删掉非原版的 `NOT_ATTACK` 无敌（使魔可击杀）；魔理沙帽模型改成只造帽子部件。「露天地表 + 无限发光」；幽灵/使魔换专用 billboard 渲染器（RenderTHPhantom/RenderFamiliar）；魔理沙帽补 ModelMarisaHat（原版 7 部件 + scale 0.4F）。
@@ -15,9 +15,10 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 - 时停天空反色 ✅；小神霊 BER+8 色 ✅；音效核查：原版无语音资源（0 .ogg），实体音效靠蝙蝠×1.95 拟声（早苗/咲夜）与村民音（霖之助，原版如此），移植版音效三件套未搬，待用户定。
 
 
+- **95b46c4**：打磨一轮（用户 m09402 四项 + F2）：① 抬手动作补全（`ModelCirno`/`ModelRumia`/`ModelSanae`/`ModelTHFairy` 真正读 `getSpellCardMotion()`）；② 纳兹琳灵摆不转 = `EntityPendulum.java:173` 用 `getDescriptionId()+".name"` 比 `getName().getString()` 永远不等，改后恢复；③ Miko 空手右键循环 `danmakuLevel` 1→4；④ 妖精万圣节僵尸模式（`die()`+`aiStep()`，地狱或 10/31，非向日葵妖精，探知 8→2 复活成 2 血红弹 `form=-1`）；⑤ 龙之玉专属渲染 `RenderDragonNeckJewel` + `textures/entity/thkaguya_terrain.png`；⑥ 折叠伞 ribbon（`layer1` 模型 + 16 色 `ItemColor`）；sukima 音效按用户指示跳过。
 - 批次 E + F1 收尾（719001e）：28 张符卡配方落地（esult.nbt.Damage，无需自定义 serializer）、激光素材可试射、激光邻格染色、符卡动作/飞高改同步、删死配置。
 
-## 铁律索引（59 条；完整论述见 `移植任务书.md`「关键迁移约定」1–75）
+## 铁律索引（62 条；完整论述见 `移植任务书.md`「关键迁移约定」1–79）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/`/`textures/block/`（单数）**；复数→物品模型缺材质（latest.log `Missing textures in model`）。
 3. **实体三大注册缺一不可**：EntityType+EntityAttributeCreationEvent+EntityRenderer。
@@ -81,6 +82,10 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 58. **解锁原本走不到的分支前，先查那条分支上的 null 依赖**（d6c9346）：使魔原来永不进入攻击模式，`EntityTHFairy#danmakuPattern`（`EntityTHFairy.java:88`）的 `getShooter().getYRot()` 从未执行；一旦允许被攻击，`EntityFamiliar#getShooter()` 未骑乘返回 `null`（原版就是 `return null`）→ 服务端 tick NPE 崩服。修法：未骑乘回退 `this` + 调用点判空。原版的死代码在移植后被别的改动解锁时，要当新功能重审一遍。
 
 59. **结果要带 NBT/卡号的配方，先试 `result.nbt`，别急着写 `RecipeSerializer`**（719001e）：1.20.1 的 `ShapedRecipe#itemStackFromJson` 会读 `nbt` 并 `ItemStack.of`，`Damage` 键在 4 号数据版本仍然有效，所以 28 张符卡（`spell_card_<n>.json`，`nbt.Damage=n`）全走纯 JSON。核对坑：① `type` 的 namespace 默认 `minecraft`；② 键名必须 `Damage`（大写）；③ 物品 id 写错 build 期不报，必须 `gradle runServer` 扫 `Couldn't parse` / `Failed to load recipe`。
+
+60. **本工程没有 gradle wrapper，构建要直接调 `~/.gradle/wrapper/dists/gradle-8.2-bin/*/gradle-8.2/bin/gradle.bat`**（`C:\Users\<u>\.gradle\wrapper\dists\gradle-8.2-bin\bbg7u40eoinfdyxsxr3z4i7ta\gradle-8.2\bin\gradle.bat`）：`thkaguya-1.20.1` 下没有 `gradlew.bat`，`mc_gradle`/`.\gradlew.bat` 都会报「不是内部或外部命令」；项目本身是 ForgeGradle `[6.0,6.2)` + Gradle 8.2 + JDK17，`compileJava` 约 1 分、`build` 约 40 秒。
+61. **`getDescriptionId()+".name"` 不是名字；`getSpellCardMotion()` 有同步但没人读**（灵摆 / 抬手动作）：① 比对物品/方块名用 `getBlock().getName().getString()`，`Component.translatable(getDescriptionId()+".name")` 只是键字面量，永远不等于翻译结果；② 同步字段写进 `entityData` 只解决「客户端拿得到」，模型侧不读就什么都不会发生——查这类缺失要反过来 grep getter 的调用点，为 0 就是没接（原版公式见 `ModelCirno`/`ModelRumia`/`ModelSanae`/`ModelTHFairy`）。
+62. **死亡复活与两类渲染套路**（妖精僵尸 / 龙之玉 / 折叠伞）：① 1.20.1 没有可用的 `onDeathUpdate` 复活点，改成覆写 `die()` 后**不调 super 直接 return** + 在 `aiStep()` 里推进，且标志位为 true 时再进 `die()` 要跳过等待直接完成（否则卡在 0.5 血）；② terrain sheet 弹体 = 专用 `EntityRenderer` + `cameraOrientation()` billboard + `(color%16)*16/256F` UV；③ 1.7.10 双层图标 = 模型 `layer1` + `RegisterColorHandlersEvent.Item` 里 `tintIndex == 0 ? -1 : 色表值`（layer0 不染色）。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
