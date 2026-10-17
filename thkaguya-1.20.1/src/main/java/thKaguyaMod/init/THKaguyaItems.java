@@ -14,7 +14,12 @@ import thKaguyaMod.item.ItemClosedThirdEye;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemDeathScythe;
 import thKaguyaMod.item.ItemDragonNeckJewel;
+import thKaguyaMod.item.ItemBuddhaStoneBowl;
 import thKaguyaMod.item.ItemFireRatRobe;
+import thKaguyaMod.item.ItemHeavenlyPeach;
+import thKaguyaMod.item.ItemKappaCap;
+import thKaguyaMod.item.ItemMarisaHat;
+import thKaguyaMod.item.ItemSwallowCowrieShell;
 import thKaguyaMod.item.ItemKerobou;
 import thKaguyaMod.item.ItemThirdEye;
 import thKaguyaMod.item.ItemGapFoldingUmbrella;
@@ -76,13 +81,13 @@ public class THKaguyaItems
     public static final RegistryObject<Item> DRAGON_NECK_JEWEL = register("dragon_neck_jewel", () -> new ItemDragonNeckJewel());
 
     /** 仏の御石の鉢 */
-    public static final RegistryObject<Item> BUDDHA_STONE_BOWL = register("buddha_stone_bowl");
+    public static final RegistryObject<Item> BUDDHA_STONE_BOWL = register("buddha_stone_bowl", ItemBuddhaStoneBowl::new);
 
     /** 火鼠の皮衣 */
     public static final RegistryObject<Item> FIRE_RAT_ROBE = register("fire_rat_robe", () -> new ItemFireRatRobe());
 
     /** 燕の子安貝 */
-    public static final RegistryObject<Item> SWALLOW_COWRIE_SHELL = register("swallow_cowrie_shell");
+    public static final RegistryObject<Item> SWALLOW_COWRIE_SHELL = register("swallow_cowrie_shell", ItemSwallowCowrieShell::new);
 
     /** 金閣寺の一枚天井 */
     public static final RegistryObject<Item> KINKAKUJI = register("kinkakuji", () -> new ItemKinkakuzi());
@@ -114,7 +119,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> MINI_HAKKERO = register("mini_hakkero", () -> new ItemMiniHakkero());
 
     /** 魔理沙の帽子 */
-    public static final RegistryObject<Item> MARISA_HAT = register("marisa_hat");
+    public static final RegistryObject<Item> MARISA_HAT = register("marisa_hat", ItemMarisaHat::new);
 
     /** アイシクルソード */
     public static final RegistryObject<Item> ICICLE_SWORD = register("icicle_sword", () -> new ItemIcicleSword());
@@ -171,7 +176,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> TENGU_FAN = register("tengu_fan", () -> new ItemTenguFan());
 
     /** 河童の帽子 */
-    public static final RegistryObject<Item> KAPPA_CAP = register("kappa_cap");
+    public static final RegistryObject<Item> KAPPA_CAP = register("kappa_cap", ItemKappaCap::new);
 
     /** 河童の水鉄砲 */
     public static final RegistryObject<Item> KAPPA_WATER_PISTOL = register("kappa_water_pistol", () -> new ItemKappaWaterPistol());
@@ -189,7 +194,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> SUWAKO_HAT = register("suwako_hat", () -> new ItemKerobou());
 
     /** 天界の桃 */
-    public static final RegistryObject<Item> HEAVENLY_PEACH = register("heavenly_peach");
+    public static final RegistryObject<Item> HEAVENLY_PEACH = register("heavenly_peach", ItemHeavenlyPeach::new);
 
     /** 緋想の剣 */
     public static final RegistryObject<Item> HISOU_SWORD = register("hisou_sword", () -> new ItemHisou());

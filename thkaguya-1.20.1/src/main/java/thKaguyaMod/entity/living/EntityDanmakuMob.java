@@ -13,11 +13,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THKaguyaLib;
@@ -286,6 +288,17 @@ public abstract class EntityDanmakuMob extends Mob
     }
 
     /** 周りの妖精を敵対化させるか */
+    /** 批次 C1：自然生成服从配置开关（Spawn Fairy / Phantom / Boss / Danmaku Mob 总开关） */
+    @Override
+    public boolean checkSpawnRules(LevelAccessor level, MobSpawnType reason)
+    {
+        if (reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+        {
+            return thKaguyaMod.init.THKaguyaConfig.allowNaturalSpawn(this.getType());
+        }
+        return super.checkSpawnRules(level, reason);
+    }
+
     protected boolean canFairyCall()
     {
         return false;

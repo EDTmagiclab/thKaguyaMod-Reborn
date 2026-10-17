@@ -5,9 +5,11 @@ import static thKaguyaMod.DanmakuConstants.*;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
@@ -35,6 +37,17 @@ public class EntityDanmakuCreeper extends Creeper
     public static AttributeSupplier.Builder createAttributes()
     {
         return Creeper.createAttributes();
+    }
+
+    /** 批次 C1：尊重配置里的 Spawn Hanabeeper 开关（原版把 addSpawn 包在 if 里） */
+    @Override
+    public boolean checkSpawnRules(LevelAccessor level, MobSpawnType reason)
+    {
+        if (reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+        {
+            return THKaguyaConfig.allowNaturalSpawn(this.getType());
+        }
+        return super.checkSpawnRules(level, reason);
     }
 
     /** 膨胀到最大时：用弹幕爆炸替代方块爆炸 */

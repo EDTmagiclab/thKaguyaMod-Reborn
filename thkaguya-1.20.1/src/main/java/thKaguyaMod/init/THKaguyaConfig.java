@@ -1,5 +1,6 @@
 package thKaguyaMod.init;
 
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
@@ -102,6 +103,46 @@ public class THKaguyaConfig
         builder.pop();
 
         SPEC = builder.build();
+    }
+
+    /**
+     * 自然生成开关（原版 CommonProxy.registerSpawn 的 5 个 If 块，批次 C1）
+     *
+     * <p>原版是把 addSpawn 包在 if 里，1.20.1 的 biome modifier 是数据驱动、读不到配置，
+     * 所以改成在实体侧 checkSpawnRules 拒绝（效果一致：关掉的怪不会自然生成，刷怪蛋/命令仍可生成）。</p>
+     */
+    public static boolean allowNaturalSpawn(EntityType<?> type)
+    {
+        if (!spawnDanmakuMob)
+        {
+            // 原版最外层总开关：关掉后连妖精/幽灵/Boss 都不生成（早苗/咲夜/霖之助 不在其中）
+            if (type == THKaguyaEntities.TH_FAIRY.get() || type == THKaguyaEntities.SUNFLOWER_FAIRY.get()
+                    || type == THKaguyaEntities.TH_PHANTOM.get() || type == THKaguyaEntities.DANMAKU_CREEPER.get()
+                    || type == THKaguyaEntities.CIRNO.get() || type == THKaguyaEntities.RUMIA.get()
+                    || type == THKaguyaEntities.TOZIKO.get() || type == THKaguyaEntities.WRIGGLE.get())
+            {
+                return false;
+            }
+        }
+        if (type == THKaguyaEntities.TH_FAIRY.get() || type == THKaguyaEntities.SUNFLOWER_FAIRY.get())
+        {
+            return spawnFairy;
+        }
+        if (type == THKaguyaEntities.TH_PHANTOM.get())
+        {
+            return spawnPhantom;
+        }
+        if (type == THKaguyaEntities.DANMAKU_CREEPER.get())
+        {
+            return spawnHanabeeper;
+        }
+        if (type == THKaguyaEntities.CIRNO.get() || type == THKaguyaEntities.RUMIA.get()
+                || type == THKaguyaEntities.TOZIKO.get() || type == THKaguyaEntities.WRIGGLE.get())
+        {
+            return spawnBoss;
+        }
+        // 早苗/咲夜/霖之助：原版这三个不在任何开关里，永远生成
+        return true;
     }
 
     /** 注册时加载配置值到静态字段（阶段 3b：实体层用静态字段读写） */

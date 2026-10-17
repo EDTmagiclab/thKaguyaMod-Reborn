@@ -183,6 +183,20 @@ public class THKaguyaCore
                                 && level.getBlockState(below.south()).equals(ground));
                     });
 
+            // 批次 C1：其余 9 类自然生成的 SpawnPlacements（原版 CommonProxy 的 addSpawn 只有 monster 默认规则 → 这里取其中「暗处才生成」那一半，
+            // 早苗/咲夜/霖之助 当年是 ambient 类别 → 这里给它们「任何光照都允许」，白天也能遇到）
+            SpawnPlacements.register(THKaguyaEntities.CIRNO.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.RUMIA.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.TOZIKO.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.WRIGGLE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.TH_PHANTOM.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.SUNFLOWER_FAIRY.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.DANMAKU_CREEPER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, reason, pos, random) -> Monster.isDarkEnoughToSpawn(level, pos, random));
+            SpawnPlacements.register(THKaguyaEntities.SANAE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> true);
+            SpawnPlacements.register(THKaguyaEntities.SAKUYA.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> true);
+
             // ディスペンサー挙動（原版 CommonProxy.registerDispenser，阶段 7 补完）
             //   銀のナイフ 4 色 → EntitySilverKnife 射出 / 弾アイテム 19 種 → 弾幕発射
             thKaguyaMod.dispense.THKaguyaDispenserBehaviors.register();
