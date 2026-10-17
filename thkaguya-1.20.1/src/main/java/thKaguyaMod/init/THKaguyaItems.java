@@ -407,6 +407,12 @@ public class THKaguyaItems
             MIDDLE_LASER, SHORT_LASER, LONG_LASER
     };
 
+    /** 全 19 种弹物品（发射器注册用，原版 `shot_item` 一物）。 */
+    public static RegistryObject<Item>[] shotItems()
+    {
+        return SHOT_BY_TYPE.clone();
+    }
+
     /** 弹 type 取物品（越界按 19 取模）。 */
     public static Item shotItem(int type)
     {

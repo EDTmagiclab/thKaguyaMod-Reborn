@@ -4,6 +4,7 @@ import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaConfig;
+import thKaguyaMod.init.THKaguyaSounds;
 
 public class THSC_NonDirectionalLaser extends THSpellCard
 {
@@ -23,8 +24,7 @@ public class THSC_NonDirectionalLaser extends THSpellCard
 		if(time == 3)
 		{
 			world.playSound(null, user.getX(), user.getY(), user.getZ(),
-					net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
-							new net.minecraft.resources.ResourceLocation(thKaguyaMod.THKaguyaCore.MODID, "masterspark")),
+					THKaguyaSounds.MASTER_SPARK.get(),
 					net.minecraft.sounds.SoundSource.PLAYERS, (float)THKaguyaConfig.MasterSparkVol, 1.0F);
 			for(int i = 0; i < 5; i++)
 			{
@@ -37,8 +37,7 @@ public class THSC_NonDirectionalLaser extends THSpellCard
 		if(time == 63)
 		{
 			world.playSound(null, user.getX(), user.getY(), user.getZ(),
-					net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
-							new net.minecraft.resources.ResourceLocation(thKaguyaMod.THKaguyaCore.MODID, "masterspark")),
+					THKaguyaSounds.MASTER_SPARK.get(),
 					net.minecraft.sounds.SoundSource.PLAYERS, (float)THKaguyaConfig.MasterSparkVol, 1.0F);
 			for(int i = 0; i < 5; i++)
 			{

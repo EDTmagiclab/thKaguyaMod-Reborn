@@ -1,7 +1,5 @@
 package thKaguyaMod.event;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +11,7 @@ import thKaguyaMod.entity.effect.EntitySpellCardCircle;
 import thKaguyaMod.entity.living.EntityDanmakuMob;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.init.THKaguyaSounds;
 
 /**
  * EntityLiving が倒れたときの割り込み処理（原版 thKaguyaMod.event.THKaguyaPlayerDeathEventHandler の移植）
@@ -29,17 +28,13 @@ import thKaguyaMod.init.THKaguyaItems;
  *   <li>{@code player.hurtResistantTime = 100} → {@code player.invulnerableTime = 100}</li>
  *   <li>{@code player.isDead = false} + {@code setHealth(max)} → {@code event.setCanceled(true)} + {@code setHealth(max)}</li>
  *   <li>{@code inventory.mainInventory[i]} → {@code player.getInventory().items.get(i)}</li>
- *   <li>{@code "thkaguyamod:down"} → {@code thkaguya:down}（sounds.json に定義済み）</li>
+ *   <li>{@code "thkaguyamod:down"} → {@code THKaguyaSounds.DOWN}（sounds.json の "down"）</li>
  *   <li>{@code THShotLib.PURPLE}(0x0004) → {@code EntityDanmakuMob.CIRCLE_COLOR_PURPLE}(4)（同値）</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = THKaguyaCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class THKaguyaPlayerDeathEventHandler
 {
-    /** 原版 "thkaguyamod:down"（assets/thkaguya/sounds.json の "down"） */
-    private static final SoundEvent DOWN_SOUND =
-            SoundEvent.createVariableRangeEvent(new ResourceLocation("thkaguya", "down"));
-
     private THKaguyaPlayerDeathEventHandler()
     {
     }
@@ -57,7 +52,7 @@ public final class THKaguyaPlayerDeathEventHandler
         }
 
         // 倒れた瞬間の効果音（原版：倒れた場所で thkaguyamod:down を鳴らす）
-        player.level().playSound(null, player.blockPosition(), DOWN_SOUND,
+        player.level().playSound(null, player.blockPosition(), THKaguyaSounds.DOWN.get(),
                 SoundSource.PLAYERS, THKaguyaConfig.DownVol, 1.0F);
 
         // エクステンドアイテムを持っていれば 1 つ消費してその場で復活

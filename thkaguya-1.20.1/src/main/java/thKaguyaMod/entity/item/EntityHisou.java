@@ -62,7 +62,12 @@ public class EntityHisou extends Entity
 		setNum(n);
 		damage = da;
 		spellCardUsedTime = 0;
-		// TODO(阶段7): 音效 thkaguyamod:masterspark（HisoutenVol）
+		// 原版 EntityHisou.java:52：生成時にマスタースパーク音を鳴らす（HisoutenVol）
+		if(!level().isClientSide)
+		{
+			level().playSound(null, blockPosition(), thKaguyaMod.init.THKaguyaSounds.MASTER_SPARK.get(),
+					net.minecraft.sounds.SoundSource.PLAYERS, THKaguyaConfig.HisoutenVol, 1.0F);
+		}
 	}
 
 	/** 生成時に一度だけ呼ばれる */

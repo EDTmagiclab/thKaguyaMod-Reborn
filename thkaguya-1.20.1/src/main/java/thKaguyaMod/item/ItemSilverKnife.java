@@ -24,6 +24,12 @@ public class ItemSilverKnife extends Item
 		this.color = color;
 	}
 
+	/** ナイフの色（0 青 1 赤 2 緑 3 白）。原版の itemDamage 相当。ディスペンサー用。 */
+	public int getKnifeColor()
+	{
+		return color;
+	}
+
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand)
 	{

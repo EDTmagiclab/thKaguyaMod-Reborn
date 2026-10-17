@@ -259,6 +259,10 @@ public class EntitySukima extends Entity
 		{
 			return SoundEvents.ENDERMAN_TELEPORT;
 		}
+		if("thkaguya:sukima".equals(name))
+		{
+			return thKaguyaMod.init.THKaguyaSounds.SUKIMA.get();
+		}
 		return SoundEvent.createVariableRangeEvent(new ResourceLocation(name));
 	}
 

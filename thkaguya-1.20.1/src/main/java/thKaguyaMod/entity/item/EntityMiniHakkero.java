@@ -20,6 +20,7 @@ import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.init.THKaguyaSounds;
 
 /** ミニ八卦炉（1.20.1 移植版）
  *
@@ -71,7 +72,7 @@ public class EntityMiniHakkero extends Entity
     	isSpellCard = false;
 
     	level().playSound(null, blockPosition(),
-    			SoundEvent.createVariableRangeEvent(new ResourceLocation(THKaguyaCore.MODID, "masterspark")),
+    			THKaguyaSounds.MASTER_SPARK.get(),
     			SoundSource.PLAYERS, THKaguyaConfig.MasterSparkVol, 1.0F);
     	lastTime = 0;
 
@@ -96,7 +97,7 @@ public class EntityMiniHakkero extends Entity
     	moveTexture = 0;
     	damage = 1;
     	level().playSound(null, blockPosition(),
-    			SoundEvent.createVariableRangeEvent(new ResourceLocation(THKaguyaCore.MODID, "masterspark")),
+    			THKaguyaSounds.MASTER_SPARK.get(),
     			SoundSource.PLAYERS, THKaguyaConfig.MasterSparkVol, 1.0F);
     	lastTime = 0;
 

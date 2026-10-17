@@ -21,6 +21,7 @@ import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaCreativeTab;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.init.THKaguyaSounds;
 import thKaguyaMod.init.THKaguyaVillagers;
 import thKaguyaMod.registry.DanmakuPatternRegistry;
 
@@ -47,6 +48,8 @@ public class THKaguyaCore
         THKaguyaBlocks.BLOCK_ENTITIES.register(modEventBus);
         THKaguyaCreativeTab.CREATIVE_TABS.register(modEventBus);
         THKaguyaEntities.ENTITIES.register(modEventBus);
+        // 自定义音效事件（4 种：masterspark / spellcard / sukima / down）
+        THKaguyaSounds.SOUND_EVENTS.register(modEventBus);
         // 村民体系（阶段 7 补完）：霖之助的兴趣点（弹幕工作台）+ 职业
         THKaguyaVillagers.POI_TYPES.register(modEventBus);
         THKaguyaVillagers.PROFESSIONS.register(modEventBus);
@@ -179,6 +182,10 @@ public class THKaguyaCore
                                 && level.getBlockState(below.north()).equals(ground)
                                 && level.getBlockState(below.south()).equals(ground));
                     });
+
+            // ディスペンサー挙動（原版 CommonProxy.registerDispenser，阶段 7 补完）
+            //   銀のナイフ 4 色 → EntitySilverKnife 射出 / 弾アイテム 19 種 → 弾幕発射
+            thKaguyaMod.dispense.THKaguyaDispenserBehaviors.register();
         });
     }
 

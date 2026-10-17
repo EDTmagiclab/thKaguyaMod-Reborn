@@ -109,7 +109,7 @@ public class THKaguyaLib
 	private static void playSpellCardSound(Level world, Player player)
 	{
 		world.playSound(null, player.getX(), player.getY(), player.getZ(),
-				SoundEvent.createVariableRangeEvent(new ResourceLocation(THKaguyaCore.MODID, "spellcard")),
+				thKaguyaMod.init.THKaguyaSounds.SPELL_CARD.get(),
 				SoundSource.PLAYERS, THKaguyaConfig.SpellCardVol, 1.0F);
 	}
 
