@@ -1,9 +1,5 @@
 package thKaguyaMod.entity.shot;
 
-import org.slf4j.Logger;
-
-import com.mojang.logging.LogUtils;
-
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,11 +27,6 @@ public class EntityOnmyoudama extends EntityTHShot
 	 */
 	private boolean userHit;
 	private int hitTimer;
-
-	/** 一時診断（原因判明後に削除すること） */
-	private static final Logger DBG = LogUtils.getLogger();
-	private static final boolean DBG_ON = true;
-	private int dbgTicks;
 
     public EntityOnmyoudama(EntityType<?> type, Level level)
     {
@@ -105,14 +96,6 @@ public class EntityOnmyoudama extends EntityTHShot
 		// 原版 setSize(shotSize, shotSize)：1.20.1 は EntityType.Builder.sized() で
 		// 固定されるため按实例変更できない（当たり判定は hitCheck() が getShotSize() で行う）
 		shootingFlag = true;
-
-		if(DBG_ON && !level().isClientSide)
-		{
-			DBG.info("[TH-dbg] onmyo LAUNCH t={} angle=({},{},{}) motion=({},{},{}) size={} dmg={}",
-					tickCount, f(angle.x), f(angle.y), f(angle.z),
-					f(getDeltaMovement().x), f(getDeltaMovement().y), f(getDeltaMovement().z),
-					f(getShotSize()), f(shotDamage));
-		}
 	}
 
 	public boolean isLaunched()
@@ -123,17 +106,6 @@ public class EntityOnmyoudama extends EntityTHShot
 	@Override
 	public void tick()
 	{
-		if(DBG_ON && !level().isClientSide && dbgTicks < 30)
-		{
-			dbgTicks++;
-			DBG.info("[TH-dbg] onmyo t={} pos=({},{},{}) size={} dmg={} anim={} end={} speed={} motion=({},{},{}) flag={} userHit={} using={} alive={}",
-					tickCount, f(getX()), f(getY()), f(getZ()), f(getShotSize()), f(shotDamage),
-					getAnimationCount(), getShotEndTime(), f(getSpeed()),
-					f(getDeltaMovement().x), f(getDeltaMovement().y), f(getDeltaMovement().z),
-					shootingFlag, userHit,
-					user instanceof Player pl && pl.isUsingItem(), isAlive());
-		}
-
 		if(user instanceof Player player)
 		{
 			if(player.isUsingItem() && !shootingFlag)
@@ -213,18 +185,6 @@ public class EntityOnmyoudama extends EntityTHShot
 		}
 	}
 
-	@Override
-	public void remove(Entity.RemovalReason reason)
-	{
-		if(DBG_ON && !level().isClientSide)
-		{
-			DBG.info("[TH-dbg] onmyo REMOVE reason={} t={} pos=({},{},{}) size={} dmg={} anim={} flag={} userHit={}",
-					reason, tickCount, f(getX()), f(getY()), f(getZ()),
-					f(getShotSize()), f(shotDamage), getAnimationCount(), shootingFlag, userHit);
-		}
-		super.remove(reason);
-	}
-
 	/** 原版の意味：true になるまで全エンティティを弾く（＝発射直後の無敵時間） */
 	@Override
 	public boolean userHitCheck(Entity entity)
@@ -266,11 +226,5 @@ public class EntityOnmyoudama extends EntityTHShot
 	{
 		return player.getMainHandItem().getItem() == THKaguyaItems.HAKUREI_MIKO_STICK.get()
 				|| player.getOffhandItem().getItem() == THKaguyaItems.HAKUREI_MIKO_STICK.get();
-	}
-
-	/** 一時診断用の小数整形 */
-	private static String f(double value)
-	{
-		return String.format(java.util.Locale.ROOT, "%.2f", value);
 	}
 }
