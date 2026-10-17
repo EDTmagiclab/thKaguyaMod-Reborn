@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thkaguya:item/tiny_shot"
+    "layer0": "thkaguya:item/tiny_shot",
+    "layer1": "thkaguya:item/tiny_shot_2"
   }
 }

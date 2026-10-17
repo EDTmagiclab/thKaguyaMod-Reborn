@@ -1,4 +1,4 @@
-﻿{
+{
   "block.thkaguya.danmaku_crafting_table": "Danmaku Crafting Table",
   "block.thkaguya.divine_spirit": "Divine Spirit",
   "block.thkaguya.laser_crafting_table": "Laser Crafting Table",
@@ -208,5 +208,6 @@
   "thKaguya.danmakuForm.4": "Sphere",
   "thKaguya.danmakuForm.5": "Ring",
   "thKaguya.danmakuForm.6": "Undefined",
-  "Infinity": "Infinity"
+  "Infinity": "Infinity",
+  "thKaguya.gravityFree": "Gravity Free"
 }

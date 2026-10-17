@@ -1,4 +1,4 @@
-﻿{
+{
   "block.thkaguya.danmaku_crafting_table": "弹幕工作台",
   "block.thkaguya.divine_spirit": "小神霊",
   "block.thkaguya.laser_crafting_table": "激光弹幕工作台",
@@ -194,5 +194,20 @@
   "thKaguya.danmakuForm.4": "球状",
   "thKaguya.danmakuForm.5": "环状",
   "thKaguya.danmakuForm.6": "未定义",
-  "Infinity": "Infinity"
+  "Infinity": "无限",
+  "danmakuCrafting.name": "弹幕工作台",
+  "danmakuCrafting.form": "弹幕形状",
+  "danmakuCrafting.copy": "复制",
+  "danmakuCrafting.material": "素材",
+  "danmakuCrafting.number": "弹数",
+  "danmakuCrafting.speed": "弹速",
+  "danmakuCrafting.color": "颜色",
+  "danmakuCrafting.gravity": "重力加速度",
+  "danmakuCrafting.bound": "反弹次数",
+  "danmakuCrafting.damage": "威力",
+  "laserCrafting.name": "激光弹幕工作台",
+  "miracleMallet.material": "素材",
+  "miracleMallet.result": "结果",
+  "thKaguya.gravityFree": "无重力",
+  "item.thkaguya.laser_material": "激光之素"
 }

@@ -341,7 +341,7 @@ public class ItemTHShot extends Item
 		}
 		else
 		{
-			tooltip.add(line("danmakuCrafting.gravity", "GFree"));
+			tooltip.add(lineTranslated("danmakuCrafting.gravity", "thKaguya.gravityFree"));
 		}
 
 		tooltip.add(Component.translatable("danmakuCrafting.color").append(" : ")
@@ -353,7 +353,7 @@ public class ItemTHShot extends Item
 		}
 		else if(bound == 4)
 		{
-			tooltip.add(line("danmakuCrafting.bound", "Infinity"));
+			tooltip.add(lineTranslated("danmakuCrafting.bound", "Infinity"));
 		}
 		else
 		{
@@ -369,6 +369,11 @@ public class ItemTHShot extends Item
 	private static Component line(String key, String value)
 	{
 		return Component.translatable(key).append(" : ").append(value);
+	}
+
+	private static Component lineTranslated(String key, String valueKey)
+	{
+		return Component.translatable(key).append(" : ").append(Component.translatable(valueKey));
 	}
 
 	private static String fmt(float value)
