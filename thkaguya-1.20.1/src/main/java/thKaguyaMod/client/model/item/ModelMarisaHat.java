@@ -17,17 +17,20 @@ import thKaguyaMod.THKaguyaCore;
  * 魔理沙の帽子（marisa_hat）的盔甲模型
  *
  * 原版 extract/sources/java/thKaguyaMod/client/model/ModelMarisaHat.java（93 行，extends ModelBiped，64x32）：
- * ・hatBase    texOffs(0,0)   addBox(-4,-8,-4, 8,4,8)   rotationPoint(0,0,0)     rot(0,0,0)            挂在 bipedHead
- * ・hatBase2   texOffs(32,2)  addBox(-3,-3,-3, 6,3,6)   rotationPoint(0,-7,0)    rot(-0.2792527,0,0)   挂在 hatBase
- * ・hatBase3   texOffs(48,16) addBox(-2,-3,-2, 4,3,4)   rotationPoint(0,-9,0)    rot(-0.5410521,0,0)   挂在 hatBase
- * ・hatBase4   texOffs(48,24) addBox(-1,-3,-1, 2,3,2)   rotationPoint(0,-11,1)   rot(-0.8203047,0,0)   挂在 hatBase
- * ・brim      texOffs(0,16)  addBox(-6,0,-6, 12,1,12)   rotationPoint(0,-6,0)    rot(0,0,0)            挂在 hatBase
- * ・ribbonRight texOffs(44,12) addBox(0,-2,-1, 4,3,1)   rotationPoint(0.5,-6,-4) rot(0,0,-0.3490659)   挂在 hatBase
- * ・ribbonLeft  texOffs(32,12) addBox(-4,-2,-1, 4,3,1)  rotationPoint(-0.5,-6,-4) rot(0,0, 0.3490659)  挂在 hatBase
- * ・scale = 0.4F（原版 ItemMarisaHat#getArmorModel 传入），对应 1.20.1 的 CubeDeformation(0.4F)
+ * ・hatBase    texOffs(0,0)   addBox(-4,-8,-4, 8,4,8, 0.4F)   rotationPoint(0,0,0)     rot(0,0,0)          挂在 bipedHead
+ * ・hatBase2   texOffs(32,2)  addBox(-3,-3,-3, 6,3,6, 0.4F)   rotationPoint(0,-7,0)    rot(-0.2792527,0,0) 挂在 hatBase
+ * ・hatBase3   texOffs(48,16) addBox(-2,-3,-2, 4,3,4, 0.4F)   rotationPoint(0,-9,0)    rot(-0.5410521,0,0) 挂在 hatBase
+ * ・hatBase4   texOffs(48,24) addBox(-1,-3,-1, 2,3,2, 0.4F)   rotationPoint(0,-11,1)   rot(-0.8203047,0,0) 挂在 hatBase
+ * ・brim      texOffs(0,16)  addBox(-6,0,-6, 12,1,12, 0.4F)   rotationPoint(0,-6,0)    rot(0,0,0)          挂在 hatBase
+ * ・ribbonRight texOffs(44,12) addBox(0,-2,-1, 4,3,1, 0.4F)   rotationPoint(0.5,-6,-4) rot(0,0,-0.3490659) 挂在 hatBase
+ * ・ribbonLeft  texOffs(32,12) addBox(-4,-2,-1, 4,3,1, 0.4F)  rotationPoint(-0.5,-6,-4) rot(0,0, 0.3490659) 挂在 hatBase
+ * ・addBox 的最后一个参数（0.4F）在 1.7.10 是「盒子整体外扩」，对应 1.20.1 的 CubeDeformation(0.4F)。
  *
- * 1.20.1 用 HumanoidArmorLayer 自动渲染：Forge 会用 copyPropertiesTo 把玩家模型的头/身姿态复制到本模型，
- * 所以这里把帽子几何挂在 head 之下的自有部件上（head 本身留空），帽子就会跟着头转。
+ * 1.20.1 关键点（踩过的坑）：HumanoidModel.createMesh() 会造出完整的头/身/手臂/腿盒子，
+ * 而 HumanoidArmorLayer 会把整个模型都画出来——于是标准头盒子（texOffs 0,0 正好是帽子的黑色区域）
+ * 把玩家整张脸糊成黑色，看起来就是「帽子下沿糊在脸上」。
+ * 所以这里不用 createMesh()，只造「空 head + 帽子部件」，其余部件也留空，
+ * 让 HumanoidArmorLayer 画出来只有帽子本身。
  */
 public class ModelMarisaHat extends HumanoidModel<LivingEntity>
 {
@@ -41,8 +44,17 @@ public class ModelMarisaHat extends HumanoidModel<LivingEntity>
 
 	public static LayerDefinition createBodyLayer()
 	{
-		MeshDefinition mesh = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F);
-		PartDefinition head = mesh.getRoot().getChild("head");
+		MeshDefinition mesh = new MeshDefinition();
+		PartDefinition root = mesh.getRoot();
+
+		// HumanoidModel 的构造器要求这些名字都存在；全部留空（不画任何盒子）
+		PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.ZERO);
+		root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+		root.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.ZERO);
+		root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offset(-5.0F, 2.0F, 0.0F));
+		root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offset(5.0F, 2.0F, 0.0F));
+		root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offset(-1.9F, 12.0F, 0.0F));
+		root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offset(1.9F, 12.0F, 0.0F));
 
 		CubeDeformation deform = new CubeDeformation(0.4F);
 
@@ -50,7 +62,7 @@ public class ModelMarisaHat extends HumanoidModel<LivingEntity>
 		PartDefinition hatBase = head.addOrReplaceChild("hatBase",
 				CubeListBuilder.create().texOffs(0, 0).mirror()
 						.addBox(-4.0F, -8.0F, -4.0F, 8, 4, 8, deform),
-				PartPose.offset(0.0F, 0.0F, 0.0F));
+				PartPose.ZERO);
 
 		hatBase.addOrReplaceChild("hatBase2",
 				CubeListBuilder.create().texOffs(32, 2).mirror()

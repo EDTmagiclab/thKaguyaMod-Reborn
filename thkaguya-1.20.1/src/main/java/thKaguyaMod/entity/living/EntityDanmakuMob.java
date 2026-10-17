@@ -1,5 +1,9 @@
 package thKaguyaMod.entity.living;
 
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -232,8 +236,24 @@ public abstract class EntityDanmakuMob extends Mob
     /** 魔法陣 */
     public EntitySpellCardCircle circle;
 
-    /** 見た目（妖精の形態 ID，渲染阶段 4 用） */
+    /** 見た目（妖精の形態 ID，渲染阶段 4 用：客户端渲染需要读取，必须同步） */
     protected byte form;
+
+    /** 見た目（同步用） */
+    private static final EntityDataAccessor<Byte> DATA_FORM =
+            SynchedEntityData.defineId(EntityDanmakuMob.class, EntityDataSerializers.BYTE);
+
+    /** 弾幕パターン（同步用：原版是普通字段，但 1.20.1 客户端渲染/贴图选择要用到，必须同步） */
+    private static final EntityDataAccessor<Integer> DATA_PATTERN =
+            SynchedEntityData.defineId(EntityDanmakuMob.class, EntityDataSerializers.INT);
+
+    @Override
+    protected void defineSynchedData()
+    {
+        super.defineSynchedData();
+        this.entityData.define(DATA_FORM, (byte)0);
+        this.entityData.define(DATA_PATTERN, NOT_ATTACK);
+    }
 
     /** 英名 */
     protected String danmakuMobName = "";
@@ -453,13 +473,14 @@ public abstract class EntityDanmakuMob extends Mob
     /** 見た目（妖精の形態 ID）を返す */
     public byte getForm()
     {
-        return form;
+        return this.entityData.get(DATA_FORM);
     }
 
     /** 見た目（妖精の形態 ID）を設定する */
     public void setForm(byte type)
     {
         form = type;
+        this.entityData.set(DATA_FORM, type);
     }
 
     /** 使用中のスペルカードNoを返す（子类实现） */
@@ -803,15 +824,15 @@ public abstract class EntityDanmakuMob extends Mob
         }
     }
 
-    /** 無敵状態（攻击阶段切换的间隔时间 + NOT_ATTACK 状态均无敌） */
+    /**
+     * 無敵状態（攻击阶段切换的间隔时间）。
+     * 原版 extract/sources/.../EntityDanmakuMob.java:1081 的 isEntityInvulnerable 只判 attackInterval > 0，
+     * 移植版曾额外加「NOT_ATTACK 一律无敌」，导致使魔等不进入攻击模式的怪物打不掉血，已按原版删掉。
+     */
     @Override
     public boolean isInvulnerableTo(DamageSource source)
     {
         if(attackInterval > 0)
-        {
-            return true;
-        }
-        if(getDanmakuPattern() == NOT_ATTACK)
         {
             return true;
         }
@@ -840,12 +861,16 @@ public abstract class EntityDanmakuMob extends Mob
 
     public int getDanmakuPattern()
     {
-        return this.danmakuPattern;
+        return this.entityData.get(DATA_PATTERN);
     }
 
     public void setDanmakuPattern(int pattern)
     {
         this.danmakuPattern = pattern;
+        if(!this.level().isClientSide)
+        {
+            this.entityData.set(DATA_PATTERN, pattern);
+        }
     }
 
     /** 飞行怪不掉落伤害（1.20.1 无 checkFallDamage，重写 causeFallDamage） */
