@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -71,6 +72,8 @@ import thKaguyaMod.entity.living.EntitySanae;
 import thKaguyaMod.entity.living.EntityToziko;
 import thKaguyaMod.entity.living.EntityWriggle;
 import thKaguyaMod.init.THKaguyaEntities;
+import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.item.ItemTHShot;
 
 /**
  * 客户端渲染注册（1.20.1 移植版，阶段 4 止血 + 3d-4 可见性修复）
@@ -82,6 +85,25 @@ import thKaguyaMod.init.THKaguyaEntities;
 @Mod.EventBusSubscriber(modid = THKaguyaCore.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientRenderRegistry
 {
+    /**
+     * 弾アイテムの動的着色（原版 ItemTHShot.getColorFromItemStack 相当）。
+     * NBT "Color"（弾幕工作台が書き込む 0～7）で layer0 を着色する。
+     * tintIndex 1 以降は無着色（-1）を返す。
+     */
+    @SubscribeEvent
+    public static void registerItemColors(RegisterColorHandlersEvent.Item event)
+    {
+        event.register(
+                (stack, tintIndex) -> tintIndex == 0 ? ItemTHShot.getTintColor(stack) : -1,
+                THKaguyaItems.TINY_SHOT.get(), THKaguyaItems.SMALL_SHOT.get(), THKaguyaItems.MEDIUM_SHOT.get(),
+                THKaguyaItems.BIG_SHOT.get(), THKaguyaItems.STAR_SHOT.get(), THKaguyaItems.SMALL_STAR_SHOT.get(),
+                THKaguyaItems.CIRCLE_SHOT.get(), THKaguyaItems.SCALE_SHOT.get(), THKaguyaItems.BUTTERFLY_SHOT.get(),
+                THKaguyaItems.LIGHT_SHOT.get(), THKaguyaItems.KNIFE_SHOT.get(), THKaguyaItems.HEART_SHOT.get(),
+                THKaguyaItems.KUNAI_SHOT.get(), THKaguyaItems.TALISMAN_SHOT.get(), THKaguyaItems.BIG_LIGHT_SHOT.get(),
+                THKaguyaItems.RICE_SHOT.get(), THKaguyaItems.OVAL_SHOT.get(), THKaguyaItems.CRYSTAL_SHOT.get(),
+                THKaguyaItems.ARROW_SHOT.get());
+    }
+
     /* boss 模型 layer 位置（阶段 3d-6） */
     private static final ModelLayerLocation CIRNO_LAYER   = layer("cirno");
     private static final ModelLayerLocation MIKO_LAYER    = layer("miko");

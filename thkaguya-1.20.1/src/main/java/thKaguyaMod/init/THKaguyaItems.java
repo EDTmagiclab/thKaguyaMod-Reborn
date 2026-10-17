@@ -40,6 +40,9 @@ import thKaguyaMod.item.ItemSilverKnife;
 import thKaguyaMod.item.ItemSpearTheGungnir;
 import thKaguyaMod.item.ItemSpiritualStrikeTalisman;
 import thKaguyaMod.item.ItemSukima;
+import thKaguyaMod.item.ItemShotMaterial;
+import thKaguyaMod.item.ItemTHLaser;
+import thKaguyaMod.item.ItemTHShot;
 import thKaguyaMod.item.ItemTHSpellCard;
 import thKaguyaMod.item.ItemTenguFan;
 import thKaguyaMod.item.ItemWallPassingChisel;
@@ -216,8 +219,8 @@ public class THKaguyaItems
     /** 霊撃札 */
     public static final RegistryObject<Item> SPIRITUAL_STRIKE_TALISMAN = register("spiritual_strike_talisman", () -> new ItemSpiritualStrikeTalisman());
 
-    /** 弾幕の素 */
-    public static final RegistryObject<Item> SHOT_MATERIAL = register("shot_material");
+    /** 弾幕の素（右键试射极小白弹，原版 ItemShotMaterial） */
+    public static final RegistryObject<Item> SHOT_MATERIAL = register("shot_material", () -> new ItemShotMaterial());
 
     /** レーザーの素（原版 laser_item，阶段 5 激光工作台素材） */
     public static final RegistryObject<Item> LASER_MATERIAL = register("laser_material");
@@ -292,71 +295,71 @@ public class THKaguyaItems
 
     /* ==================== 弾（metadata 变体拆分）==================== */
     /** 粒弾 */
-    public static final RegistryObject<Item> TINY_SHOT = register("tiny_shot");
+    public static final RegistryObject<Item> TINY_SHOT = register("tiny_shot", () -> new ItemTHShot(ItemTHShot.TINY));
 
     /** 小弾 */
-    public static final RegistryObject<Item> SMALL_SHOT = register("small_shot");
+    public static final RegistryObject<Item> SMALL_SHOT = register("small_shot", () -> new ItemTHShot(ItemTHShot.SMALL));
 
     /** 中弾 */
-    public static final RegistryObject<Item> MEDIUM_SHOT = register("medium_shot");
+    public static final RegistryObject<Item> MEDIUM_SHOT = register("medium_shot", () -> new ItemTHShot(ItemTHShot.MEDIUM));
 
     /** 大弾 */
-    public static final RegistryObject<Item> BIG_SHOT = register("big_shot");
+    public static final RegistryObject<Item> BIG_SHOT = register("big_shot", () -> new ItemTHShot(ItemTHShot.BIG));
 
     /** 星弾 */
-    public static final RegistryObject<Item> STAR_SHOT = register("star_shot");
+    public static final RegistryObject<Item> STAR_SHOT = register("star_shot", () -> new ItemTHShot(ItemTHShot.STAR));
 
     /** 小星弾 */
-    public static final RegistryObject<Item> SMALL_STAR_SHOT = register("small_star_shot");
+    public static final RegistryObject<Item> SMALL_STAR_SHOT = register("small_star_shot", () -> new ItemTHShot(ItemTHShot.SMALLSTAR));
 
     /** 輪弾 */
-    public static final RegistryObject<Item> CIRCLE_SHOT = register("circle_shot");
+    public static final RegistryObject<Item> CIRCLE_SHOT = register("circle_shot", () -> new ItemTHShot(ItemTHShot.CIRCLE));
 
     /** 鱗弾 */
-    public static final RegistryObject<Item> SCALE_SHOT = register("scale_shot");
+    public static final RegistryObject<Item> SCALE_SHOT = register("scale_shot", () -> new ItemTHShot(ItemTHShot.SCALE));
 
     /** 蝶弾 */
-    public static final RegistryObject<Item> BUTTERFLY_SHOT = register("butterfly_shot");
+    public static final RegistryObject<Item> BUTTERFLY_SHOT = register("butterfly_shot", () -> new ItemTHShot(ItemTHShot.BUTTERFLY));
 
     /** 光弾 */
-    public static final RegistryObject<Item> LIGHT_SHOT = register("light_shot");
+    public static final RegistryObject<Item> LIGHT_SHOT = register("light_shot", () -> new ItemTHShot(ItemTHShot.LIGHT));
 
     /** ナイフ弾 */
-    public static final RegistryObject<Item> KNIFE_SHOT = register("knife_shot");
+    public static final RegistryObject<Item> KNIFE_SHOT = register("knife_shot", () -> new ItemTHShot(ItemTHShot.KNIFE));
 
     /** ハート弾 */
-    public static final RegistryObject<Item> HEART_SHOT = register("heart_shot");
+    public static final RegistryObject<Item> HEART_SHOT = register("heart_shot", () -> new ItemTHShot(ItemTHShot.HEART));
 
     /** クナイ弾 */
-    public static final RegistryObject<Item> KUNAI_SHOT = register("kunai_shot");
+    public static final RegistryObject<Item> KUNAI_SHOT = register("kunai_shot", () -> new ItemTHShot(ItemTHShot.KUNAI));
 
     /** 札弾 */
-    public static final RegistryObject<Item> TALISMAN_SHOT = register("talisman_shot");
+    public static final RegistryObject<Item> TALISMAN_SHOT = register("talisman_shot", () -> new ItemTHShot(ItemTHShot.TALISMAN));
 
     /** 大光弾 */
-    public static final RegistryObject<Item> BIG_LIGHT_SHOT = register("big_light_shot");
+    public static final RegistryObject<Item> BIG_LIGHT_SHOT = register("big_light_shot", () -> new ItemTHShot(ItemTHShot.BIGLIGHT));
 
     /** 米弾 */
-    public static final RegistryObject<Item> RICE_SHOT = register("rice_shot");
+    public static final RegistryObject<Item> RICE_SHOT = register("rice_shot", () -> new ItemTHShot(ItemTHShot.RICE));
 
     /** 楕円弾 */
-    public static final RegistryObject<Item> OVAL_SHOT = register("oval_shot");
+    public static final RegistryObject<Item> OVAL_SHOT = register("oval_shot", () -> new ItemTHShot(ItemTHShot.OVAL));
 
     /** 結晶弾 */
-    public static final RegistryObject<Item> CRYSTAL_SHOT = register("crystal_shot");
+    public static final RegistryObject<Item> CRYSTAL_SHOT = register("crystal_shot", () -> new ItemTHShot(ItemTHShot.CRYSTAL));
 
     /** 矢弾 */
-    public static final RegistryObject<Item> ARROW_SHOT = register("arrow_shot");
+    public static final RegistryObject<Item> ARROW_SHOT = register("arrow_shot", () -> new ItemTHShot(ItemTHShot.ARROW));
 
     /* ==================== レーザー（metadata 变体拆分）==================== */
-    /** ショートレーザー */
-    public static final RegistryObject<Item> SHORT_LASER = register("short_laser");
+    /** ショートレーザー（長さ 2） */
+    public static final RegistryObject<Item> SHORT_LASER = register("short_laser", () -> new ItemTHLaser(ItemTHLaser.SHORT));
 
-    /** レーザー */
-    public static final RegistryObject<Item> MIDDLE_LASER = register("middle_laser");
+    /** レーザー（長さ 5） */
+    public static final RegistryObject<Item> MIDDLE_LASER = register("middle_laser", () -> new ItemTHLaser(ItemTHLaser.MIDDLE));
 
-    /** ロングレーザー */
-    public static final RegistryObject<Item> LONG_LASER = register("long_laser");
+    /** ロングレーザー（長さ 8） */
+    public static final RegistryObject<Item> LONG_LASER = register("long_laser", () -> new ItemTHLaser(ItemTHLaser.LONG));
 
     /* ==================== 銀ナイフ（metadata 变体拆分）==================== */
     /** 銀のナイフ 青 */

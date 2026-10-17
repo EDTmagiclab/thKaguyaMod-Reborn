@@ -1,4 +1,4 @@
-{
+﻿{
   "block.thkaguya.danmaku_crafting_table": "弹幕工作台",
   "block.thkaguya.divine_spirit": "小神霊",
   "block.thkaguya.laser_crafting_table": "激光弹幕工作台",
@@ -176,5 +176,23 @@
   "thKaguya.left": "左",
   "thKaguya.up": "上",
   "thKaguya.down": "下",
-  "entity.thkaguya.aja_red_stone_effect": "艾哲红石之光"
+  "entity.thkaguya.aja_red_stone_effect": "艾哲红石之光",
+  "thKaguya.color.0": "红",
+  "thKaguya.color.1": "蓝",
+  "thKaguya.color.2": "绿",
+  "thKaguya.color.3": "黄",
+  "thKaguya.color.4": "紫",
+  "thKaguya.color.5": "水",
+  "thKaguya.color.6": "橙",
+  "thKaguya.color.7": "白",
+  "thKaguya.color.8": "随机",
+  "thKaguya.color.9": "彩虹",
+  "thKaguya.danmakuForm.0": "一点",
+  "thKaguya.danmakuForm.1": "前方随机",
+  "thKaguya.danmakuForm.2": "前方扩散",
+  "thKaguya.danmakuForm.3": "全方位",
+  "thKaguya.danmakuForm.4": "球状",
+  "thKaguya.danmakuForm.5": "环状",
+  "thKaguya.danmakuForm.6": "未定义",
+  "Infinity": "Infinity"
 }
