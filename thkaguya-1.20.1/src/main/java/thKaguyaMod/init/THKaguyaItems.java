@@ -8,15 +8,18 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.item.ItemAjaRedStone;
+import thKaguyaMod.item.ItemBloodthirstyOnmyoudama;
 import thKaguyaMod.item.ItemByoukiheiyuMamori;
 import thKaguyaMod.item.ItemClosedThirdEye;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemDeathScythe;
 import thKaguyaMod.item.ItemDragonNeckJewel;
 import thKaguyaMod.item.ItemGapFoldingUmbrella;
+import thKaguyaMod.item.ItemIbukihyou;
 import thKaguyaMod.item.ItemHakurouken;
 import thKaguyaMod.item.ItemHisou;
 import thKaguyaMod.item.ItemHomingAmulet;
+import thKaguyaMod.item.ItemHouraiJeweledBranch;
 import thKaguyaMod.item.ItemIcicleSword;
 import thKaguyaMod.item.ItemKappaWaterPistol;
 import thKaguyaMod.item.ItemKinkakuzi;
@@ -64,7 +67,7 @@ public class THKaguyaItems
 
     /* ==================== 独立物品 ==================== */
     /** 蓬莱の玉の枝 */
-    public static final RegistryObject<Item> HOURAI_JEWELED_BRANCH = register("hourai_jeweled_branch");
+    public static final RegistryObject<Item> HOURAI_JEWELED_BRANCH = register("hourai_jeweled_branch", () -> new ItemHouraiJeweledBranch());
 
     /** 龍の頸の玉 */
     public static final RegistryObject<Item> DRAGON_NECK_JEWEL = register("dragon_neck_jewel", () -> new ItemDragonNeckJewel());
@@ -99,7 +102,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> YIN_YANG_ORB = register("yin_yang_orb");
 
     /** 血に餓えた陰陽玉 */
-    public static final RegistryObject<Item> BLOODTHIRSTY_YIN_YANG_ORB = register("bloodthirsty_yin_yang_orb");
+    public static final RegistryObject<Item> BLOODTHIRSTY_YIN_YANG_ORB = register("bloodthirsty_yin_yang_orb", () -> new ItemBloodthirstyOnmyoudama());
 
     /** 魔法の箒 */
     public static final RegistryObject<Item> MAGIC_BROOM = register("magic_broom", () -> new ItemMarisaBroom());
@@ -150,7 +153,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> GAP_FOLDING_UMBRELLA = register("gap_folding_umbrella", () -> new ItemGapFoldingUmbrella());
 
     /** 伊吹瓢 */
-    public static final RegistryObject<Item> IBUKI_GOURD = register("ibuki_gourd");
+    public static final RegistryObject<Item> IBUKI_GOURD = register("ibuki_gourd", () -> new ItemIbukihyou());
 
     /** 幽香の傘 */
     public static final RegistryObject<Item> YUUKA_PARASOL = register("yuuka_parasol", () -> new ItemYuukaParasol());

@@ -2,5 +2,37 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "thkaguya:item/hourai_jeweled_branch"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "thkaguya:item/hourai_jeweled_branch_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "thkaguya:item/hourai_jeweled_branch_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "thkaguya:item/hourai_jeweled_branch_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "thkaguya:item/hourai_jeweled_branch_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "thkaguya:item/hourai_jeweled_branch_0"
+    }
+  ]
 }
