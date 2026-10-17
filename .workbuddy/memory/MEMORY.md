@@ -7,7 +7,7 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 铁律（完整 55 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
+## 铁律（完整 56 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/` 与 `textures/block/`（单数）**。复数目录→实体渲染正常但物品模型缺材质（指纹：latest.log 的 `Missing textures in model`）。符卡 35 张卡面曾因此全缺材质（d983d32 修）。
 3. **实体三大注册缺一不可**：EntityType + EntityAttributeCreationEvent + EntityRenderer。
@@ -60,6 +60,7 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 39. **时停「天空反色」= `ONE_MINUS_DST_COLOR` 反色混合；1.20.1 用 `AFTER_SKY` 全屏 quad 复刻，纯白负片会棕、事件给的 PoseStack 会变成半边的墙**（`6121db4` → `6343b7e`，咲夜怀表）：原版球壳 `glBlendFunc(ONE_MINUS_DST_COLOR, GL_ZERO)` + 全白 `DarkTexture.png`，`dst' = src*(1-dst)`，画在地形之前 + 被地形遮挡 → 观感「只有天空翻负片」；原版 alpha 淡出是死代码（无 `SRC_ALPHA`）＝硬切。三个坑：① 用事件 `PoseStack` 画 quad 会被相机旋转带成竖直平面 → 只有一半天空变色，必须改成 GUI 那套「正射影 + 单位模型视图」（`setProjectionMatrix(new Matrix4f().setOrtho(...), VertexSorting.ORTHOGRAPHIC_Z)` + `getModelViewStack()` push 后 `pose().identity()` + `applyModelViewMatrix()`，画完 pop + `setProjectionMatrix(旧, DISTANCE_TO_ORIGIN)`；1.20.1 没有 `setModelViewMatrix`）；② `AFTER_SKY` 时帧缓冲里只有天空，地形/实体/云在其后画 → 天然只反天空；③ 纯白负片对蓝天必然橙褐，改「青紫负片」：第 1 遍 `ONE_MINUS_DST_COLOR`/`ZERO` + 顶点色 TINT → `dst' = TINT*(1-dst)`，第 2 遍 `ONE`/`ONE` + GLOW → `dst' += GLOW`。**别用 `shaders/post/invert.json`**（整屏反色 + 抢 `gameRenderer.postEffect`）。
 40. **`Long.MIN_VALUE` 当「从未发生」哨兵 + `now - sentinel > 1` 会溢出成负数 → 条件恒假、效果从进游戏就常亮**（`6343b7e`，时停反色第一次交付）：`getGameTime()` 是小正数，减 `Long.MIN_VALUE` 直接溢出成负值，于是「还没见过怀表」被判成「刚见过」，天空一进游戏就变色。正解：每个 tick 先置 `false`、命中才置 `true` 的布尔量（`active`），语义即「本 tick 有停止空间」，天然硬切、无溢出面。
 41. **1.20.1 的「死了又活」= `LivingDeathEvent.setCanceled(true)` + `setHealth(max)`，不是 1.7.10 的 `isDead = false`**（`43ebc31`，扩展道具复活）：`LivingEntity.die()` 第一条语句就是 `ForgeHooks.onLivingDeath`，返回 true 直接 return（`dead` 都不置位）；`hurtResistantTime` → `invulnerableTime`（`Entity` 的 public 字段）；`inventory.mainInventory[i]` → `getInventory().items.get(i)`；事件两侧都 fire，必须自判 `isClientSide`。同批补的三处 `danmakuRemove` 都在服务器端执行，且 `"Other"` 会连中心那发自己一起消（原版如此）。
+42. **「掉的怪不对」先查原版分支与概率，别急着改代码**（Fafrotskies 复核）：`pattern <= 90` 分支原版就是**普通** `EntityCreeper`；`EntityDanmakuCreeper` 仅在 12/25 生成、1/1–1/3 换核弹；且原版弹幕苦力怕**没有自定义模型/贴图**，与普通苦力怕肉眼相同，只能看爆炸是否撒弹幕。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
