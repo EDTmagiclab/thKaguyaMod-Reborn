@@ -6,16 +6,18 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 进度快照（2026-10-17；HEAD `72db034`；jar md5 每次构建都变，版本标识只认 HEAD）
+## 进度快照（2026-10-17；HEAD `1264ebe`；jar md5 每次构建都变，版本标识只认 HEAD）
 - 阶段 1–6 + 阶段 7 全结清：配置/触发物品/死亡事件+弹消接线/村民霖之助+箱子战利品/发射器 23 项+音效+boss 血条/早苗咲夜商店。
 - 哑物品三批全清并多轮实测返修：批次 1 22/22；批次 2 23/24（`laser_material` 原版即无右键行为）；批次 3 7/7。
 - 符卡 35 张已注册（BrilliantDragonBullet 原版即注释，勿"补"）；核验报告 `符卡弹幕形状核验报告.md`（34/36 一致；2 卡片+4 框架级偏差待用户确认后修，THSC_KappaPororoca 的 `bound()` 一行调用仍遗留）。
 - 时停天空反色 ✅；小神霊 BER+8 色 ✅ 待用户实测。
+- 小神霊 8 色物品与可见性已由用户确认修好（m06896）。
 - Review 完成（`移植实现度核验报告.md`）：≈85–88%；最大缺口=自然生成（209 addSpawn→1 biome_modifier）与掉落链断（THItem/ShotMaterial 未迁移）；次缺=5 物品退化、32 配方缺失。待用户定夺。
 - **用户批复路线（m06969）**：先做 A（补遗债务）和 B（掉落链），顺序 **B→C1**（自然生成走 C1）；符卡配方**接受**（需自定义 RecipeSerializer）；盔甲层**接受**；时停已可用（核实：`EntitySakuyaWatch` 378 行 + `inPrivateSquare` 传送世界中心 + `TimeStopSkyEffect`，报告 §4.12 写「未移植」是误判）。
 - **批次 A 已交付 `72db034`**：4 条普通配方 + 两张工作台战利品表 + KappaPororoca `bound()` 恢复 + 幽香伞花弹注册 + `thKaguya.item.kishitu` ×5 语言；构建 44s、runServer `Done (13.809s)` 无解析错误。
+- **批次 B 掉落链已交付 `1264ebe`**：新增 `entity/item/EntityShotMaterial.java` + `EntityTHItem.java`（原版同名类的 1.20.1 移植：落体/吸附/潜行拾取/进背包）、`RenderShotMaterial`/`RenderTHItem` 两个 billboard 渲染器、`THKaguyaEntities.SHOT_MATERIAL_ENTITY`/`TH_ITEM` 注册；`EntityDanmakuMob` 的 `dropItem`/`dropPowerUpItem`/`dropPointItem`/`dropSpellCardItem`/`dropExtendItem` 与 `dropCustomDeathLoot` 由 no-op 改为真实实现；琪露诺按原版 40 个环形得点/威力；构建 `BUILD SUCCESSFUL`、runServer `Done (11.645s)`、jar md5 `80EA5EB6B4095315AA3A191A4CC04B07`（1669181 B）已同步 mods。
 
-## 铁律索引（49 条；编号与日志引用一致；完整论述见 `移植任务书.md`「关键迁移约定」1–64）
+## 铁律索引（50 条；编号与日志引用一致；完整论述见 `移植任务书.md`「关键迁移约定」1–65）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/`/`textures/block/`（单数）**；复数→物品模型缺材质（latest.log `Missing textures in model`）。
 3. **实体三大注册缺一不可**：EntityType+EntityAttributeCreationEvent+EntityRenderer。
@@ -65,6 +67,7 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 47. **「方块本体不画、只有 TESR 画」=空模型+BER**（ebfddac，小神霊）：原版 ISBRH `return false`、画面全在 TESR、无碰撞。① barrier 式空模型；② `BlockEntityRenderer` 是 interface（implements 别 extends）；③ 注册用 `registerBlockEntityRenderer`；④ `noCollission()`；⑤ 朝向相机 `mulPose(cameraOrientation())`；⑥ `EnumProperty`+blockstates 给齐变体。**工作台原版就是普通满亮方块，别当漏项修。**
 48. **空模型+BER 的方块必须实现 `EntityBlock`**（f18d2a5）：漏 `newBlockEntity`→整块不可见（用户实测报障）；同轮补 `getDrops`（工程无 loot_tables）+8 色独立物品（`getPlacementState` 写回 COLOR；旧 ID `divine_spirit` 代表蓝色）。
 49. **配方/战利品表/语言键一律走 JSON**（72db034，批次 A）：`data/thkaguya/recipes/*.json` = `crafting_shaped`+`pattern`+`key`+`result`（1.20.1 无 oreDict，写具体 id）；方块战利品表必须 `data/thkaguya/loot_tables/blocks/<注册名>.json`，**没有隐式自掉落，缺表=0 掉落**；`thKaguya.item.*` tooltip 键漏了不报错、只显示原始 key（`kishitu` 曾五语言全缺）。
+50. **掉落链实体是 `extends Entity` 的 MISC 实体，1.20.1 拾取要自己写**（1264ebe，批次 B）：`EntityShotMaterial`（基类：落体+玩家靠近吸附）→ `EntityTHItem`（加 `DATA_ITEM_TYPE`：威力小/大、得点、炸弹、残机）；`defineSynchedData` 同步类型、NBT `putByte("ItemType")`；1.20.1 没有 `onCollideWithPlayer`，要 `getEntitiesOfClass(Player.class, bbox.inflate(0.3D))` + `playerTouch(player)`，`canBePickedUp` 写 `player.isShiftKeyDown()` 才是「潜行吸取」；拾取 `player.getInventory().add(stack)`，满了 `player.drop(stack,false)` + `ITEM_PICKUP` 音效；渲染继承 `RenderItemBillboard`、贴 `textures/item/*.png`。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
