@@ -2,6 +2,12 @@ package thKaguyaMod.entity.living;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -477,6 +483,84 @@ public abstract class EntityDanmakuMob extends Mob
         super.die(source);
     }
 
+    // ------------------------------------------------------------------
+    // ボスバー（1.20.1 ではバニラのボスバーを使う）
+    //
+    // 原版 1.7.10 は RenderTHBoss が頭上に status.png の体力バーを描画していたが、
+    // 1.20.1 ではクライアント描画の都合（視野角 20°制限・カメラ向き・拡大率）で
+    // 見た目が崩れやすいため、エンダードラゴンと同じ ServerBossEvent に置き換えた。
+    // バーを出すのは hasBossBar() が true のボス系のみ（妖精・使い魔は出さない）。
+    // ------------------------------------------------------------------
+
+    /** ボスバー（サーバー側のみ実体を持つ。クライアントでは null のまま） */
+    @Nullable
+    private ServerBossEvent bossBar;
+
+    /** このモブがボスバーを出すか。ボス系の子クラスだけ true を返す */
+    public boolean hasBossBar()
+    {
+        return false;
+    }
+
+    /** ボスバーを遅延生成して返す */
+    protected ServerBossEvent bossBar()
+    {
+        if(bossBar == null)
+        {
+            bossBar = new ServerBossEvent(getDisplayName(),
+                    BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
+        }
+        return bossBar;
+    }
+
+    @Override
+    public void startSeenByPlayer(ServerPlayer player)
+    {
+        super.startSeenByPlayer(player);
+        if(hasBossBar())
+        {
+            bossBar().addPlayer(player);
+        }
+    }
+
+    @Override
+    public void stopSeenByPlayer(ServerPlayer player)
+    {
+        super.stopSeenByPlayer(player);
+        if(bossBar != null)
+        {
+            bossBar.removePlayer(player);
+        }
+    }
+
+    @Override
+    public void remove(Entity.RemovalReason reason)
+    {
+        if(!level().isClientSide && bossBar != null)
+        {
+            bossBar.removeAllPlayers();
+        }
+        super.remove(reason);
+    }
+
+    /** ボスバーの体力と表示状態を毎 tick 同期する */
+    protected void tickBossBar()
+    {
+        if(level().isClientSide || !hasBossBar())
+        {
+            return;
+        }
+
+        ServerBossEvent bar = bossBar();
+        // 攻撃中（弾幕パターンが NOT_ATTACK 以外）だけ出す。原版の頭上バーと同じ条件
+        boolean show = this.isAlive() && getDanmakuPattern() != NOT_ATTACK;
+        if(bar.isVisible() != show)
+        {
+            bar.setVisible(show);
+        }
+        bar.setProgress(Mth.clamp(getHealth() / getMaxHealth(), 0.0F, 1.0F));
+    }
+
     protected void setStopStart()
     {
         stop = true;
@@ -569,6 +653,8 @@ public abstract class EntityDanmakuMob extends Mob
         // 而 1.20.1 的 tickCount 在 super.tick() 内递增，若沿用 <= 判断会第一次 tick 就永久冻结。
         // 时停系统（Sakuya 技能）尚未移植，lastTime 恒为 0，故此处直接正常 tick。
         super.tick();
+
+        tickBossBar();
 
         if(this.getHealth() <= 0.0F)
         {

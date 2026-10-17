@@ -9,6 +9,12 @@ import thKaguyaMod.init.THKaguyaEntities;
 /** 豊聡耳 神子（1.20.1 移植版） */
 public class EntityMiko extends EntityDanmakuMob
 {
+    /** 原版 RenderTHBoss 系のボスなので、バニラのボスバーを出す */
+    @Override
+    public boolean hasBossBar()
+    {
+        return true;
+    }
     public EntityMiko(EntityType<? extends EntityMiko> type, Level level)
     {
         super(type, level);

@@ -14,6 +14,12 @@ import thKaguyaMod.init.THKaguyaEntities;
 /** リグル・ナイトバグ（1.20.1 移植版） */
 public class EntityWriggle extends EntityDanmakuMob
 {
+    /** 原版 RenderTHBoss 系のボスなので、バニラのボスバーを出す */
+    @Override
+    public boolean hasBossBar()
+    {
+        return true;
+    }
     public EntityWriggle(EntityType<? extends EntityWriggle> type, Level level)
     {
         super(type, level);

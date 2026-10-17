@@ -22,6 +22,13 @@ import thKaguyaMod.init.THKaguyaItems;
  */
 public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
 {
+    /** RenderTHBoss 系のボスなので、バニラのボスバーを出す */
+    @Override
+    public boolean hasBossBar()
+    {
+        return true;
+    }
+
     public EntitySanae(EntityType<? extends EntitySanae> type, Level level)
     {
         super(type, level);

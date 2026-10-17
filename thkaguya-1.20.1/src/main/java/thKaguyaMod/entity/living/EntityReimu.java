@@ -10,6 +10,12 @@ import thKaguyaMod.init.THKaguyaEntities;
 /** 博麗 霊夢（1.20.1 移植版） */
 public class EntityReimu extends EntityDanmakuMob
 {
+    /** 原版 RenderTHBoss 系のボスなので、バニラのボスバーを出す */
+    @Override
+    public boolean hasBossBar()
+    {
+        return true;
+    }
     public EntityReimu(EntityType<? extends EntityReimu> type, Level level)
     {
         super(type, level);

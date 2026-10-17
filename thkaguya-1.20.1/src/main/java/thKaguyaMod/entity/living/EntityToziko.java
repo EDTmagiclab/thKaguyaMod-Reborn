@@ -13,6 +13,12 @@ import thKaguyaMod.init.THKaguyaEntities;
 /** 蘇我 屠自古（1.20.1 移植版） */
 public class EntityToziko extends EntityDanmakuMob
 {
+    /** 原版 RenderTHBoss 系のボスなので、バニラのボスバーを出す */
+    @Override
+    public boolean hasBossBar()
+    {
+        return true;
+    }
     public EntityToziko(EntityType<? extends EntityToziko> type, Level level)
     {
         super(type, level);

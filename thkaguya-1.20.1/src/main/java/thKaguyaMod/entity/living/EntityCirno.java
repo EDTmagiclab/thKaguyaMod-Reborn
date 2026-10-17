@@ -18,6 +18,12 @@ import thKaguyaMod.init.THKaguyaItems;
 /** チルノ（1.20.1 移植版） */
 public class EntityCirno extends EntityDanmakuMob
 {
+    /** 原版 RenderTHBoss 系のボスなので、バニラのボスバーを出す */
+    @Override
+    public boolean hasBossBar()
+    {
+        return true;
+    }
     private int randomValue;
 
     public EntityCirno(EntityType<? extends EntityCirno> type, Level level)

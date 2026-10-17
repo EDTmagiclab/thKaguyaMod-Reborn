@@ -95,9 +95,12 @@ public final class THKaguyaDispenserBehaviors
             }
 
             // 原版は使い魔を射手役（living）にして発射する。ワールドに追加はしない。
+            // 距離は原版 CommonProxy.java:640 と同じ「弾の大きさ + 1.0D」。
+            // +1.0D が無いとディスペンサー中心＝ブロック内部に弾が湧き、その場で
+            // ブロックに当たって消える（＝発射されていないように見える）。
             EntityFamiliar shooter = new EntityFamiliar(level);
             shotItem.shootDanmaku(stack, shooter, false, pos, angle,
-                    DanmakuConstants.SIZE[shotItem.getShotForm()]);
+                    DanmakuConstants.SIZE[shotItem.getShotForm()] + 1.0D);
 
             boolean isInfinity = false;
             if (stack.getTag() != null)
