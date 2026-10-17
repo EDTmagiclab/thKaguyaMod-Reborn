@@ -90,6 +90,21 @@ public class ItemOharaibouR extends Item
 		level.playSound(null, player.getX(), player.getY(), player.getZ(),
 				SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 2.0F, 0.3F);
 
+		// サーバー側：このプレイヤーの陰陽玉を明示的に発射する。
+		// 原版は弾自身が「使用中のアイテム」を見て発射するが、1.20.1 では解放パケットと
+		// 弾の tick 順序に依存して取りこぼすことがある（＝「陰陽玉は出るが発射されない」）。
+		// 二重発射は EntityOnmyoudama#launch() の shootingFlag ガードで防いでいる。
+		if(!level.isClientSide)
+		{
+			for(EntityOnmyoudama orb : level.getEntitiesOfClass(EntityOnmyoudama.class, player.getBoundingBox().inflate(4.0D)))
+			{
+				if(orb.user == player && !orb.isLaunched())
+				{
+					orb.launch();
+				}
+			}
+		}
+
 		// 耐久を１減らす
 		itemStack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(player.getUsedItemHand()));
 	}

@@ -1,5 +1,9 @@
 package thKaguyaMod.entity.shot;
 
+import org.slf4j.Logger;
+
+import com.mojang.logging.LogUtils;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,6 +30,11 @@ public class EntityOnmyoudama extends EntityTHShot
 	 */
 	private boolean userHit;
 	private int hitTimer;
+
+	/** 一時診断（原因判明後に削除すること） */
+	private static final Logger DBG = LogUtils.getLogger();
+	private static final boolean DBG_ON = true;
+	private int dbgTicks;
 
     public EntityOnmyoudama(EntityType<?> type, Level level)
     {
@@ -66,9 +75,65 @@ public class EntityOnmyoudama extends EntityTHShot
                 color, size, damage, delay, end, special);
     }
 
+	/**
+	 * 発射処理（原版 onUpdate の「使用をやめた瞬間」ブロック）。
+	 *
+	 * <p>原版は弾自身が「使用者がまだ使っているか」を見て発射するが、1.20.1 では
+	 * 解放パケットと弾の tick 順序に依存して取りこぼすことがあるため、
+	 * {@code ItemOharaibouR.releaseUsing} からも明示的に呼べるようにしてある
+	 * （{@code shootingFlag} で二重発射は防ぐ）。
+	 */
+	public void launch()
+	{
+		if(shootingFlag)
+		{
+			return;
+		}
+
+		// 原版: ticksExisted = 1（発射時に弾の寿命をリセット）
+		tickCount = 1;
+		shotSpeed = 0.5D;
+		setVector();
+		// 移植版 setVector() は updateMotion() → getSpeed()（＝現在の deltaMovement の長さ）を使うため、
+		// チャージ中（delta = 0）に呼ぶと初速が 0 になる。原版 setVector() は shotSpeed を使っていたので、
+		// ここで明示的に shotSpeed ぶんの初速を与える（さもないと初速 0 のまま＝飛ばない）。
+		this.setDeltaMovement(angle.scale(shotSpeed));
+		lastShotMotionX = angle.x * shotSpeed;
+		lastShotMotionY = angle.y * shotSpeed;
+		lastShotMotionZ = angle.z * shotSpeed;
+		shotAcceleration = 1.0D;
+		// 原版 setSize(shotSize, shotSize)：1.20.1 は EntityType.Builder.sized() で
+		// 固定されるため按实例変更できない（当たり判定は hitCheck() が getShotSize() で行う）
+		shootingFlag = true;
+
+		if(DBG_ON && !level().isClientSide)
+		{
+			DBG.info("[TH-dbg] onmyo LAUNCH t={} angle=({},{},{}) motion=({},{},{}) size={} dmg={}",
+					tickCount, f(angle.x), f(angle.y), f(angle.z),
+					f(getDeltaMovement().x), f(getDeltaMovement().y), f(getDeltaMovement().z),
+					f(getShotSize()), f(shotDamage));
+		}
+	}
+
+	public boolean isLaunched()
+	{
+		return shootingFlag;
+	}
+
 	@Override
 	public void tick()
 	{
+		if(DBG_ON && !level().isClientSide && dbgTicks < 30)
+		{
+			dbgTicks++;
+			DBG.info("[TH-dbg] onmyo t={} pos=({},{},{}) size={} dmg={} anim={} end={} speed={} motion=({},{},{}) flag={} userHit={} using={} alive={}",
+					tickCount, f(getX()), f(getY()), f(getZ()), f(getShotSize()), f(shotDamage),
+					getAnimationCount(), getShotEndTime(), f(getSpeed()),
+					f(getDeltaMovement().x), f(getDeltaMovement().y), f(getDeltaMovement().z),
+					shootingFlag, userHit,
+					user instanceof Player pl && pl.isUsingItem(), isAlive());
+		}
+
 		if(shootingFlag)
 		{
 			shotAcceleration = 0.0D;
@@ -104,14 +169,7 @@ public class EntityOnmyoudama extends EntityTHShot
 					}
 					return;
 				}
-				// 原版: ticksExisted = 1（発射時に弾の寿命をリセット）
-				tickCount = 1;
-				shotSpeed = 0.5D;
-				setVector();
-				shotAcceleration = 1.0D;
-				// 原版 setSize(shotSize, shotSize)：1.20.1 は EntityType.Builder.sized() で
-				// 固定されるため按实例変更できない（当たり判定は hitCheck() が getShotSize() で行う）
-				shootingFlag = true;
+				launch();
 			}
 		}
 		else if(user == null)
@@ -159,6 +217,18 @@ public class EntityOnmyoudama extends EntityTHShot
 		}
 	}
 
+	@Override
+	public void remove(Entity.RemovalReason reason)
+	{
+		if(DBG_ON && !level().isClientSide)
+		{
+			DBG.info("[TH-dbg] onmyo REMOVE reason={} t={} pos=({},{},{}) size={} dmg={} anim={} flag={} userHit={}",
+					reason, tickCount, f(getX()), f(getY()), f(getZ()),
+					f(getShotSize()), f(shotDamage), getAnimationCount(), shootingFlag, userHit);
+		}
+		super.remove(reason);
+	}
+
 	/** 原版の意味：true になるまで全エンティティを弾く（＝発射直後の無敵時間） */
 	@Override
 	public boolean userHitCheck(Entity entity)
@@ -200,5 +270,11 @@ public class EntityOnmyoudama extends EntityTHShot
 	{
 		return player.getMainHandItem().getItem() == THKaguyaItems.HAKUREI_MIKO_STICK.get()
 				|| player.getOffhandItem().getItem() == THKaguyaItems.HAKUREI_MIKO_STICK.get();
+	}
+
+	/** 一時診断用の小数整形 */
+	private static String f(double value)
+	{
+		return String.format(java.util.Locale.ROOT, "%.2f", value);
 	}
 }

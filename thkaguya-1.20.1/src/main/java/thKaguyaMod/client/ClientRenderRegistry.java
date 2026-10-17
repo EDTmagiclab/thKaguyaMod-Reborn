@@ -58,6 +58,7 @@ import thKaguyaMod.client.render.living.RenderTHBoss;
 import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.living.RenderSunFlowerFairy;
 import thKaguyaMod.client.render.shot.RenderOnmyoudama;
+import thKaguyaMod.client.render.shot.RenderSanaeWind;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
 import thKaguyaMod.client.render.shot.RenderTHShot;
 import thKaguyaMod.client.render.spellcard.RenderSpellCard;
@@ -179,7 +180,7 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.MUSOU_FUUIN.get(), RenderTHShot::new);
         event.registerEntityRenderer(THKaguyaEntities.NUCLEAR_SHOT.get(), RenderTHShot::new);
         event.registerEntityRenderer(THKaguyaEntities.ONMYOUDAMA.get(), RenderOnmyoudama::new);
-        event.registerEntityRenderer(THKaguyaEntities.SANAE_WIND.get(), RenderTHShot::new);
+        event.registerEntityRenderer(THKaguyaEntities.SANAE_WIND.get(), RenderSanaeWind::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_HENYORI_LASER.get(), RenderTHLaser::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_SET_LASER.get(), RenderTHLaser::new);
 
