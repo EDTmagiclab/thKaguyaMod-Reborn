@@ -30,7 +30,7 @@ import java.util.List;
  * - 右键按住进入 {@code EnumAction.block}（格挡姿势），松手射出「真珠彩虹弹」
  * - 弹数：{@code shotNum = 32 + 72000 - usedTime}（held 越久越多），上限 72，再 {@code /3}
  * - 充能 {@code getCharge(NBT "Charge") <= 200} 才能发射；每次发射 {@code addCharge(-50)}
- * - 潜行：8 层完整圆环（弹速 0.3 + i*0.2，每层 +3°，360/way 均匀铺满，见 releaseUsing 里的说明）
+ * - 潜行：8 层水平 360° 全方位弹（弹速 0.3 + i*0.2，每层绕竖直轴转 3°，见 releaseUsing 里的说明）
  * - 非潜行：前方扇状弹（原版此处是 3 层环弹 ringSpan 15/10/5，实机上是一坨；本版取作者同段注释代码
  *   {@code createWideShot(..., shotNum, 30F, 0.2D)}，见 releaseUsing 里的说明）
  * - 库存里时每 50 tick {@code addCharge(+50)}（即充能回落），< 0 则 {@code setCharge(0)}
@@ -186,16 +186,27 @@ public class ItemHouraiJeweledBranch extends Item
 
 		if(player.isShiftKeyDown())
 		{
-			// 潜行：多层完整圆环（弹速逐层不同）。
-			// 原版用 createCircleShot：它内部转成 createWideShot(wideAngle = 360 - 360/way)，
-			// 首尾之间正好留一个 360/way 的空档（缺口始终在正后方）→ 看起来是「背后没弹幕」的扇形。
-			// 1.20.1 的 createRingShot（ringSpan = 0）是 360/way 均匀铺满一整圈，才是完整圆环。
-			Vec3 angle = THShotLib.angle(player.getYRot(), player.getXRot());
+			// 潜行：以玩家为圆心的水平 360° 全方位弹（前后左右都有弹）。
+			// 原版的 createCircleShot / createRingShot 都是拿「视线」当旋转轴，在**垂直于视线**的
+			// 平面里铺一圈——平视时那是一面竖着的圆墙，弹全都向前飞，身后没有弹；
+			// 而 ringSpan = 0 更会退化成一条直线（baseVec 与轴重合，绕轴旋转无效）。
+			// 这里改成绕竖直轴（Y）旋转，弹幕铺在水平面上，才是真正的全方位。
+			Vec3 dir = THShotLib.angle(player.getYRot(), 0F);
+			Vec3 axis = new Vec3(0.0D, 1.0D, 0.0D);
+			Vec3 pos = THShotLib.pos_Living(player);
+			float span = 360F / (float)shotNum;
 			for(int i = 0; i < shotNum; i += 3)
 			{
-				THShotLib.createRingShot(player, player, THShotLib.pos_Living(player), angle,
-						0F, 9999, 0.3D + (double)i * 0.2D, 2.0D, 0.03D, THShotLib.gravity_Zero(),
-						shot, shotNum, 0.2D, 0F, i * 3F);
+				float base = (float)i * 3F;
+				double speed = 0.3D + (double)i * 0.2D;
+				for(int k = 0; k < shotNum; k++)
+				{
+					Vec3 vec = THShotLib.getVectorFromRotation(axis, dir, base + (float)k * span);
+					THShotLib.createShot(player, player,
+							THShotLib.pos(pos.x + vec.x * 0.2D, pos.y + vec.y * 0.2D, pos.z + vec.z * 0.2D),
+							vec, 0F, axis, 0F, 9999,
+							speed, 2.0D, 0.03D, THShotLib.gravity_Zero(), shot);
+				}
 			}
 		}
 		else
