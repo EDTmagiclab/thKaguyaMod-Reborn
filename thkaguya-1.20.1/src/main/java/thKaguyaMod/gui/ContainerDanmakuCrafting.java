@@ -2,6 +2,7 @@ package thKaguyaMod.gui;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -40,6 +41,12 @@ public class ContainerDanmakuCrafting extends AbstractContainerMenu
     private final BlockPos pos;
     private final Player player;
 
+    /**
+     * 参数槽（素材/弹数/速度/复制/颜色/重力/反弹）任一改动 → 重算产物。
+     * 结果槽 {@code craftResult} 不挂监听器，所以 {@link #recalcResult()} 里写结果不会递归。
+     */
+    private final ContainerListener recalcListener = this::slotsChanged;
+
     private static final int RESULT_SLOT = 0;
     private static final int PLAYER_INV_START = 17;
     private static final int PLAYER_INV_END = 53;
@@ -60,6 +67,14 @@ public class ContainerDanmakuCrafting extends AbstractContainerMenu
         this.craftBound = new SimpleContainer(1);
         this.craftGravity = new SimpleContainer(1);
         this.craftResult = new SimpleContainer(1);
+
+        // SimpleContainer 不会自己通知 menu（只有 TransientCraftingContainer 会），
+        // 不手动挂监听器就会出现「放了染料，产物还停在上一次算出来的颜色」。
+        for (Container input : new Container[] { this.craftMaterial, this.craftWay, this.craftSpeed,
+                this.craftCopy, this.craftColor, this.craftGravity, this.craftBound })
+        {
+            ((SimpleContainer) input).addListener(this.recalcListener);
+        }
 
         addSlot(new SlotDanmakuResult(player, this.craftMaterial, this.craftMatrix, this.craftWay,
                 this.craftSpeed, this.craftCopy, this.craftGravity, this.craftBound,

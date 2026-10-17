@@ -2,6 +2,7 @@ package thKaguyaMod.gui;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -34,6 +35,9 @@ public class ContainerDanmakuCraftingLaser extends AbstractContainerMenu
     private final Level level;
     private final BlockPos pos;
 
+    /** 参数槽改动 → 重算产物（结果槽不挂监听器，故不会递归）。 */
+    private final ContainerListener recalcListener = this::slotsChanged;
+
     private static final int PLAYER_INV_START = 15;
     private static final int PLAYER_INV_END = 51;
 
@@ -50,6 +54,13 @@ public class ContainerDanmakuCraftingLaser extends AbstractContainerMenu
         this.craftCopy = new SimpleContainer(1);
         this.craftColor = new SimpleContainer(1);
         this.craftResult = new SimpleContainer(1);
+
+        // SimpleContainer 不会自己通知 menu（只有 TransientCraftingContainer 会），必须手动挂。
+        for (Container input : new Container[] { this.craftMaterial, this.craftWay, this.craftSpeed,
+                this.craftCopy, this.craftColor })
+        {
+            ((SimpleContainer) input).addListener(this.recalcListener);
+        }
 
         addSlot(new SlotLaserResult(playerInventory.player, this.craftMaterial, this.craftMatrix,
                 this.craftWay, this.craftSpeed, this.craftCopy, this.craftResult, 0, 228, 35));

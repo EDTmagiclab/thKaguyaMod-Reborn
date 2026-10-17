@@ -1,6 +1,7 @@
 package thKaguyaMod.gui;
 
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,9 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
     private final Container craftMaterial;
     private final Container craftResult;
 
+    /** 素材槽改动 → 重算产物（结果槽不挂监听器，故不会递归）。 */
+    private final ContainerListener recalcListener = this::slotsChanged;
+
     public ContainerMiracleMallet(int windowId, Inventory playerInventory)
     {
         super(THKaguyaMenuTypes.MIRACLE_MALLET.get(), windowId);
@@ -28,6 +32,10 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
         addSlot(new SlotMiracleMalletResult(playerInventory.player, this.craftMaterial,
                 this.craftResult, 0, 228, 35));
         addSlot(new Slot(this.craftMaterial, 0, 8, 17));
+
+        // SimpleContainer 不会自己通知 menu（只有 TransientCraftingContainer 会），必须手动挂，
+        // 否则往素材槽放东西后产物不会刷新。
+        ((SimpleContainer) this.craftMaterial).addListener(this.recalcListener);
 
         for (int l = 0; l < 3; ++l)
         {
