@@ -22,8 +22,10 @@ import thKaguyaMod.entity.item.EntityMiniHakkero;
 import thKaguyaMod.entity.item.EntityPendulum;
 import thKaguyaMod.entity.item.EntitySakuyaStopWatch;
 import thKaguyaMod.entity.item.EntitySakuyaWatch;
+import thKaguyaMod.entity.item.EntityShotMaterial;
 import thKaguyaMod.entity.item.EntitySilverKnife;
 import thKaguyaMod.entity.item.EntitySpiritualStrikeTalisman;
+import thKaguyaMod.entity.item.EntityTHItem;
 import thKaguyaMod.entity.item.EntitySukima;
 import thKaguyaMod.entity.item.EntityYuukaParasol;
 import thKaguyaMod.entity.living.EntityCirno;
@@ -390,6 +392,21 @@ public class THKaguyaEntities
                                     (EntityType.EntityFactory<EntitySilverKnife>) (type, level) -> new EntitySilverKnife(type, level),
                                     MobCategory.MISC)
                             .sized(0.1F, 0.1F).clientTrackingRange(64).build("silver_knife"));
+    /** 弾の素（原版 EntityShotMaterial）。ドロップ品が吸い寄せられて拾われる。 */
+    public static final RegistryObject<EntityType<EntityShotMaterial>> SHOT_MATERIAL_ENTITY =
+            ENTITIES.register("shot_material_entity",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityShotMaterial>) (type, level) -> new EntityShotMaterial(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.5F, 0.5F).clientTrackingRange(64).build("shot_material_entity"));
+
+    /** パワーアップ／得点／ボム／エクステンド（原版 EntityTHItem）。 */
+    public static final RegistryObject<EntityType<EntityTHItem>> TH_ITEM =
+            ENTITIES.register("th_item",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<EntityTHItem>) (type, level) -> new EntityTHItem(type, level),
+                                    MobCategory.MISC)
+                            .sized(0.5F, 0.5F).clientTrackingRange(64).updateInterval(2).build("th_item"));
 
     public static final RegistryObject<EntityType<EntitySpiritualStrikeTalisman>> SPIRITUAL_STRIKE_TALISMAN =
             ENTITIES.register("spiritual_strike_talisman",

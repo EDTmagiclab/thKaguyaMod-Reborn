@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -17,6 +18,9 @@ import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
 import thKaguyaMod.init.THKaguyaConfig;
+import thKaguyaMod.entity.item.EntityTHItem;
+import thKaguyaMod.init.THKaguyaEntities;
+import thKaguyaMod.init.THKaguyaItems;
 
 /**
  * 弾幕を使うMOBの定義クラス（1.20.1 移植版，抽象基类）
@@ -733,7 +737,13 @@ public abstract class EntityDanmakuMob extends Mob
      */
     protected void dropItem(int type, Vec3 pos, Vec3 angle)
     {
-        // TODO(阶段4/7): EntityTHItem 迁移后回填掉落道具
+        if (this.level().isClientSide)
+        {
+            return;
+        }
+        EntityTHItem item = new EntityTHItem(THKaguyaEntities.TH_ITEM.get(), this.level(),
+                pos.x, pos.y, pos.z, angle, (byte)type);
+        this.level().addFreshEntity(item);
     }
 
     public void dropPowerUpItem(Vec3 pos, Vec3 angle)
@@ -743,7 +753,10 @@ public abstract class EntityDanmakuMob extends Mob
 
     public void dropPowerUpItem(int num)
     {
-        // TODO: EntityTHItem 迁移后回填
+        for (int i = 1; i <= num; i++)
+        {
+            dropPowerUpItem(this.position(), THShotLib.angle_LimitRandom(THShotLib.angle(0.0D, 1.0D, 0.0D), 90F));
+        }
     }
 
     public void dropPointItem(Vec3 pos, Vec3 angle)
@@ -753,7 +766,10 @@ public abstract class EntityDanmakuMob extends Mob
 
     public void dropPointItem(int num)
     {
-        // TODO: EntityTHItem 迁移后回填
+        for (int i = 1; i <= num; i++)
+        {
+            dropPointItem(this.position(), THShotLib.angle_LimitRandom(THShotLib.angle(0.0D, 1.0D, 0.0D), 90F));
+        }
     }
 
     public void dropSpellCardItem(Vec3 pos, Vec3 angle)
@@ -761,9 +777,25 @@ public abstract class EntityDanmakuMob extends Mob
         dropItem(10, pos, angle);
     }
 
+    public void dropSpellCardItem(int num)
+    {
+        for (int i = 1; i <= num; i++)
+        {
+            dropSpellCardItem(this.position(), THShotLib.angle_LimitRandom(THShotLib.angle(0.0D, 1.0D, 0.0D), 90F));
+        }
+    }
+
     public void dropExtendItem(Vec3 pos, Vec3 angle)
     {
         dropItem(11, pos, angle);
+    }
+
+    public void dropExtendItem(int num)
+    {
+        for (int i = 1; i <= num; i++)
+        {
+            dropExtendItem(this.position(), THShotLib.angle_LimitRandom(THShotLib.angle(0.0D, 1.0D, 0.0D), 90F));
+        }
     }
 
     /**
@@ -775,5 +807,10 @@ public abstract class EntityDanmakuMob extends Mob
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit)
     {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
+        // 原版 dropFewItems: スペルカード使用中にプレイヤーに倒されたら、そのスペルカードを落とす
+        if (this.getUsingSpellCardNo() >= 0 && recentlyHit)
+        {
+            this.spawnAtLocation(new ItemStack(THKaguyaItems.SPELL_CARD.get(), 1));
+        }
     }
 }

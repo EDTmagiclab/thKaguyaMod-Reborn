@@ -205,10 +205,26 @@ public class EntityCirno extends EntityDanmakuMob
     {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
 
+        // 原版 dropFewItems: スペルカード攻撃中に倒されたら得点／威力アイテムを 40 個リング状に落とす
+        if (recentlyHit && this.isSpellCardAttack())
+        {
+            int j = 40;
+            for (int k = 0; k < j; k += 2)
+            {
+                float yaw = 360F / (float)j * (float)k;
+                float pitch = (float)Math.sin(yaw / 180F * Math.PI * 4F) * 20F - 60F;
+                this.dropPointItem(this.position(), THShotLib.getVecFromAngle(yaw, pitch, 1.0F));
+
+                yaw = 360F / (float)j * (float)(k + 1);
+                pitch = (float)Math.cos(yaw / 180F * Math.PI * 4F) * 20F - 60F;
+                this.dropPowerUpItem(this.position(), THShotLib.getVecFromAngle(yaw, pitch, 1.0F));
+            }
+        }
+
         if(recentlyHit && getDanmakuPattern() == SPELLCARD_ATTACK02)
         {
             this.spawnAtLocation(new ItemStack(THKaguyaItems.ICICLE_SWORD.get(), 1));
-            // 原版还 dropExtendItem（得点道具，依赖未迁移的 EntityTHItem），暂略
+            this.dropExtendItem(this.position(), THShotLib.angle(this.getYRot(), -90F));
         }
     }
 }

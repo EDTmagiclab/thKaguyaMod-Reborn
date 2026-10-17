@@ -57,7 +57,7 @@ public class RenderItemBillboard<T extends Entity> extends EntityRenderer<T>
         PoseStack.Pose pose = poseStack.last();
         var matrix = pose.pose();
         var normal = pose.normal();
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(this.getTextureLocation(entity)));
         float half = size;
 
         consumer.vertex(matrix,  half,  half, 0.0F).color(255, 255, 255, 255)

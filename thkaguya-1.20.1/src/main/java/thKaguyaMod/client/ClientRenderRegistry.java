@@ -53,8 +53,10 @@ import thKaguyaMod.client.render.item.RenderMiniHakkero;
 import thKaguyaMod.client.render.item.RenderPendulum;
 import thKaguyaMod.client.render.item.RenderPrivateSquare;
 import thKaguyaMod.client.render.item.RenderSakuyaStopWatch;
+import thKaguyaMod.client.render.item.RenderShotMaterial;
 import thKaguyaMod.client.render.item.RenderSilverKnife;
 import thKaguyaMod.client.render.item.RenderSpiritualStrikeTalisman;
+import thKaguyaMod.client.render.item.RenderTHItem;
 import thKaguyaMod.client.render.item.RenderSukima;
 import thKaguyaMod.client.render.item.RenderYuukaParasol;
 import thKaguyaMod.client.render.living.RenderTHBoss;
@@ -220,6 +222,9 @@ public class ClientRenderRegistry
         // billboard 必须用 textures/item/ 的物品图标（完整单品图）；
         // textures/entity/ 的 *_texture.png 是盒子模型 UV 展开图，铺平会显示碎片（实测踩坑）
         event.registerEntityRenderer(THKaguyaEntities.SILVER_KNIFE.get(), RenderSilverKnife::new);
+        // 掉落链（批次 B）：弹之素 / 道具本体（原版 RenderShotMaterial・RenderTHItem 对应）
+        event.registerEntityRenderer(THKaguyaEntities.SHOT_MATERIAL_ENTITY.get(), RenderShotMaterial::new);
+        event.registerEntityRenderer(THKaguyaEntities.TH_ITEM.get(), RenderTHItem::new);
         event.registerEntityRenderer(THKaguyaEntities.SUKIMA.get(), RenderSukima::new);
         // 魔理沙扫帚：使用 RenderMarisaBroom 的程序化几何（4 面旋转长杆 + 刷毛 3 段锥形扩散），
         // 贴图 textures/entity/magic_bloom.png（64x32，与原版 textures/MagicBloom.png 同源）。
