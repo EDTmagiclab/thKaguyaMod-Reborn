@@ -257,6 +257,8 @@ public class THKaguyaItems
             () -> new ForgeSpawnEggItem(THKaguyaEntities.DANMAKU_CREEPER, 0x40C040, 0x202020, new Item.Properties()));
     public static final RegistryObject<Item> FAMILIAR_SPAWN_EGG = ITEMS.register("familiar_spawn_egg",
             () -> new ForgeSpawnEggItem(THKaguyaEntities.FAMILIAR, 0xFFE0A0, 0xC08040, new Item.Properties()));
+    public static final RegistryObject<Item> RINNOSUKE_SPAWN_EGG = ITEMS.register("rinnosuke_spawn_egg",
+            () -> new ForgeSpawnEggItem(THKaguyaEntities.RINNOSUKE, 0x6A5A3C, 0xE8D8B0, new Item.Properties()));
     public static final RegistryObject<Item> MIKO_SPAWN_EGG = ITEMS.register("miko_spawn_egg",
             () -> new ForgeSpawnEggItem(THKaguyaEntities.MIKO, 0xFFE0E0, 0x800080, new Item.Properties()));
     public static final RegistryObject<Item> REIMU_SPAWN_EGG = ITEMS.register("reimu_spawn_egg",

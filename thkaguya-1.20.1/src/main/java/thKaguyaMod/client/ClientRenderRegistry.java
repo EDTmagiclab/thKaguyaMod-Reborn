@@ -20,6 +20,7 @@ import thKaguyaMod.client.gui.GuiMiracleMallet;
 import thKaguyaMod.client.model.living.ModelCirno;
 import thKaguyaMod.client.model.living.ModelMiko;
 import thKaguyaMod.client.model.living.ModelReimu;
+import thKaguyaMod.client.model.living.ModelRinnosuke;
 import thKaguyaMod.client.model.living.ModelRumia;
 import thKaguyaMod.client.model.living.ModelSakuya;
 import thKaguyaMod.client.model.living.ModelSanae;
@@ -59,6 +60,7 @@ import thKaguyaMod.client.render.item.RenderYuukaParasol;
 import thKaguyaMod.client.render.living.RenderTHBoss;
 import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.living.RenderSunFlowerFairy;
+import thKaguyaMod.client.render.living.RenderRinnosuke;
 import thKaguyaMod.client.render.shot.RenderOnmyoudama;
 import thKaguyaMod.client.render.shot.RenderSanaeWind;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
@@ -155,6 +157,8 @@ public class ClientRenderRegistry
         event.registerLayerDefinition(ModelSuwakoHat.LAYER, ModelSuwakoHat::createBodyLayer);
         // 弾幕形状のモデル（FORM_KNIFE = 銀のナイフ弾）
         event.registerLayerDefinition(ModelSilverKnife.LAYER_LOCATION, ModelSilverKnife::createBodyLayer);
+        // 森近霖之助（rinnosuke）の模型 layer
+        event.registerLayerDefinition(ModelRinnosuke.LAYER, ModelRinnosuke::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -236,6 +240,8 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.SPIRITUAL_STRIKE_TALISMAN.get(), RenderSpiritualStrikeTalisman::new);
         event.registerEntityRenderer(THKaguyaEntities.YUUKA_PARASOL.get(),
                 ctx -> new RenderYuukaParasol(ctx, new ModelYuukaParasol<>(ctx.bakeLayer(YUUKA_PARASOL_LAYER))));
+        // 森近霖之助（rinnosuke）：原版 RenderRinnosuke 相当
+        event.registerEntityRenderer(THKaguyaEntities.RINNOSUKE.get(), RenderRinnosuke::new);
     }
 
     /** 注册 GUI 屏幕（阶段 5：Container→AbstractContainerMenu + GuiScreen→Screen） */

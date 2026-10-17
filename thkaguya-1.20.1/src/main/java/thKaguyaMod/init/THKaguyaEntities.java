@@ -89,6 +89,14 @@ public class THKaguyaEntities
                                     MobCategory.MONSTER)
                             .sized(0.6F, 1.7F).clientTrackingRange(64).build("danmaku_creeper"));
 
+    /** 森近霖之助（村民系，职业 thkaguya:rinnosuke，绑定弹幕工作台兴趣点） */
+    public static final RegistryObject<EntityType<thKaguyaMod.entity.living.EntityRinnosuke>> RINNOSUKE =
+            ENTITIES.register("rinnosuke",
+                    () -> EntityType.Builder.of(
+                                    (EntityType.EntityFactory<thKaguyaMod.entity.living.EntityRinnosuke>) (type, level) -> new thKaguyaMod.entity.living.EntityRinnosuke(type, level),
+                                    MobCategory.CREATURE)
+                            .sized(0.6F, 1.95F).clientTrackingRange(64).build("rinnosuke"));
+
     public static final RegistryObject<EntityType<EntityFamiliar>> FAMILIAR =
             ENTITIES.register("familiar",
                     () -> EntityType.Builder.of(

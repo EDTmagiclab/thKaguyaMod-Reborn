@@ -1,7 +1,9 @@
 package thKaguyaMod;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -19,6 +21,7 @@ import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaCreativeTab;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.init.THKaguyaVillagers;
 import thKaguyaMod.registry.DanmakuPatternRegistry;
 
 /**
@@ -44,6 +47,9 @@ public class THKaguyaCore
         THKaguyaBlocks.BLOCK_ENTITIES.register(modEventBus);
         THKaguyaCreativeTab.CREATIVE_TABS.register(modEventBus);
         THKaguyaEntities.ENTITIES.register(modEventBus);
+        // 村民体系（阶段 7 补完）：霖之助的兴趣点（弹幕工作台）+ 职业
+        THKaguyaVillagers.POI_TYPES.register(modEventBus);
+        THKaguyaVillagers.PROFESSIONS.register(modEventBus);
         thKaguyaMod.init.THKaguyaMenuTypes.MENU_TYPES.register(modEventBus);
 
         // 实体属性注册（阶段 3b：属性系统）
@@ -93,6 +99,9 @@ public class THKaguyaCore
         event.put(THKaguyaEntities.TH_PHANTOM.get(), thKaguyaMod.entity.living.EntityTHPhantom.createAttributes().build());
         event.put(THKaguyaEntities.TOZIKO.get(), thKaguyaMod.entity.living.EntityToziko.createAttributes().build());
         event.put(THKaguyaEntities.WRIGGLE.get(), thKaguyaMod.entity.living.EntityWriggle.createAttributes().build());
+
+        // 村民系（阶段 7 补完）：霖之助直接复用村民属性
+        event.put(THKaguyaEntities.RINNOSUKE.get(), Villager.createAttributes().build());
     }
 
     /** 自然生成规则注册 */
@@ -150,6 +159,25 @@ public class THKaguyaCore
                     (type, level, reason, pos, random) -> {
                         // 原版妖精在草/土/沙上自然生成；此处简化为主世界地面即可
                         return pos.getY() >= 64 && level.canSeeSky(pos);
+                    });
+
+            // 霖之助：忠实原版 EntityRinnosuke#getCanSpawnHere
+            SpawnPlacements.register(THKaguyaEntities.RINNOSUKE.get(),
+                    SpawnPlacements.Type.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> {
+                        // 原版 rand.nextInt(100) < 98 → false（2% 才允许）
+                        if (random.nextInt(100) < 98)
+                        {
+                            return false;
+                        }
+                        // 原版：脚下四周方块完全相同时拒绝生成（避开绝对平坦的地面）
+                        BlockPos below = pos.below();
+                        var ground = level.getBlockState(below);
+                        return !(level.getBlockState(below.west()).equals(ground)
+                                && level.getBlockState(below.east()).equals(ground)
+                                && level.getBlockState(below.north()).equals(ground)
+                                && level.getBlockState(below.south()).equals(ground));
                     });
         });
     }
