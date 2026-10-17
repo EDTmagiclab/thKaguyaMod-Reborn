@@ -37,7 +37,7 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
 
-## 进度快照（2026-10-17；HEAD `7c1de2b`，jar md5 `D90B70E2834D619C00C5D60EA808831F`）
+## 进度快照（2026-10-17；HEAD `f803885`，jar md5 `DB4ADD7EBE3CA9CACEC01EDCA68FEF46`）
 - ✅ 阶段 0/1/2（注册 107 物品/3 方块/配方 77/语言 5/模型 109/贴图 199）；阶段 3 实体层全完成（EntityType 44）；阶段 4 渲染全完成（含 4-8 保真度对齐 ff82ac8/f337d40/d7591f0/c85ea86）；阶段 5 GUI 4 套；阶段 6 已结清（服务器+联机实测通过）
 - 🔶 阶段 7：配置✅、触发物品✅；剩死亡事件/村民霖之助/发射器+loot/音效核对
 - ✅ 哑物品批次 1 22/22（f580315+395a03b）；用户实测后修复 3 处（`46d32cb`：楼观剑 `getUseDuration`、御币弹手持判定 + 专用 `RenderOnmyoudama`）；第二轮实测后修复 2 处（`7d4bb6c`：楼观剑突进斩击的位移判定、御币弹光效绘制顺序 + 补回 `bound()` 反弹，顺带修好 ScarletShoot 等 BOUND01/02/04 弹体）；第三轮实测后修掉御币弹的真正根因（`7c1de2b`：EntityType 串到 `TH_SHOT` 导致专用渲染器失效 + `userHit` 未武装导致无伤害 + 地面反射缺失，见铁律 25）；剩余真哑 31 项（批次 2 的 24 弹/激光素材 + 批次 3 的 7 重活），见 `哑物品清理任务书.md`
