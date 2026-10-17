@@ -8,7 +8,9 @@ import thKaguyaMod.entity.item.EntitySakuyaWatch;
 
 /**
  * 咲夜の懐中時計の描画（阶段 4-6：ModelPrivateSquare 3D 模型替换 billboard）。
- * 原版：scale(0.3) + rotate(180-yaw+ticksExisted*7,Y) + model（时停暗幕略，阶段 6 配置接线时补）。
+ * 原版：scale(0.3) + rotate(180-yaw+ticksExisted*7,Y) + model。
+ * 原版的「时停暗幕」（反色球壳，renderPrivateSquare 内）由 {@link thKaguyaMod.client.TimeStopSkyEffect}
+ * 以 AFTER_SKY 全屏反色 quad 实现（同一种 ONE_MINUS_DST_COLOR 混合，画完天空即反色，地形随后覆盖）。
  */
 public class RenderPrivateSquare extends RenderModelItem<EntitySakuyaWatch>
 {
