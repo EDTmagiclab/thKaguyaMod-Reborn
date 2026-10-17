@@ -66,8 +66,8 @@ public class THSC_KappaPororoca extends THSpellCard implements ISpecialShot
 		switch(id)
 		{
 			case SPECIAL_KAPPA_POROROCA01:
-				// 原版 bound 反弹逻辑暂缺（阶段 4 完整化时补），先原地消弹
-					shot.discard();
+				// 原版 THSC_KappaPororoca：撞墙反弹 4 次（0.9D 回弹率）
+				shot.bound(movingObjectPosition, 0.9D, 4);
 				return true;
 			default:
 				return false;

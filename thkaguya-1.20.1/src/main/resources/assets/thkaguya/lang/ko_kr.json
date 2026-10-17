@@ -218,5 +218,6 @@
   "entity.thkaguya.wriggle": "리글",
   "item.thkaguya.wriggle_spawn_egg": "리글 생성 알",
   "entity.thkaguya.danmaku_creeper": "탄막 크리퍼",
-  "item.thkaguya.danmaku_creeper_spawn_egg": "탄막 크리퍼 생성 알"
+  "item.thkaguya.danmaku_creeper_spawn_egg": "탄막 크리퍼 생성 알",
+  "thKaguya.item.kishitu": "기질"
 }

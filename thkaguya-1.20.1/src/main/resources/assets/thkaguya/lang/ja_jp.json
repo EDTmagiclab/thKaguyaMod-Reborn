@@ -218,5 +218,6 @@
   "entity.thkaguya.wriggle": "リグル",
   "item.thkaguya.wriggle_spawn_egg": "リグルのスポーンエッグ",
   "entity.thkaguya.danmaku_creeper": "弾幕クリーパー",
-  "item.thkaguya.danmaku_creeper_spawn_egg": "弾幕クリーパーのスポーンエッグ"
+  "item.thkaguya.danmaku_creeper_spawn_egg": "弾幕クリーパーのスポーンエッグ",
+  "thKaguya.item.kishitu": "気質"
 }

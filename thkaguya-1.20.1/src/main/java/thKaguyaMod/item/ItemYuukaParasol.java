@@ -26,6 +26,7 @@ import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.item.EntityYuukaParasol;
 import thKaguyaMod.entity.shot.EntityTHShot;
 import thKaguyaMod.entity.shot.ISpecialShot;
+import thKaguyaMod.registry.SpecialShotRegistry;
 
 /** 幽香の傘 */
 public class ItemYuukaParasol extends Item implements ISpecialShot
@@ -36,7 +37,8 @@ public class ItemYuukaParasol extends Item implements ISpecialShot
 	public ItemYuukaParasol()
 	{
 		super(new Item.Properties().stacksTo(1).durability(PARASOL_MAX_DAMAGE));
-		// TODO(阶段3d-5): SpecialShotRegistry 未迁移，特殊弾（花）の登録は保留
+		// 原版 ItemYuukaParasol 构造器末尾登记自身为特殊弾处理器（花弾：命中生成弹幕花）
+		SpecialShotRegistry.registerSpecialShotInstance(this, SPECIAL_FLOWER_LAND);
 	}
 
 	@Override
