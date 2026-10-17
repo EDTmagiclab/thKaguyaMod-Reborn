@@ -203,8 +203,7 @@ public class ContainerDanmakuCrafting extends AbstractContainerMenu
         ItemStack newShot;
         if (!shot.isEmpty() && !(form == 4 && way > 32) && form >= 0)
         {
-            newShot = new ItemStack(THKaguyaItems.SHOT_MATERIAL.get());
-            newShot.setDamageValue(craftMaterial.getItem(0).getDamageValue());
+            newShot = new ItemStack(THKaguyaItems.shotItem(THKaguyaItems.shotTypeOf(craftMaterial.getItem(0))));
 
             var nbt2 = newShot.getOrCreateTag();
             nbt2.putShort("Number", way);

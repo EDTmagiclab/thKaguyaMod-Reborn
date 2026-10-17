@@ -37,7 +37,7 @@ public class SlotDanmakuCraftingA extends Slot
             case 1:
                 return stack.getItem() == THKaguyaItems.POINT_ITEM.get();
             case 2:
-                return stack.getItem() == THKaguyaItems.SHOT_MATERIAL.get();
+                return THKaguyaItems.isShotMaterialItem(stack);
             case 3:
                 return stack.getItem() == Items.RED_DYE ||
                        stack.getItem() == Items.GUNPOWDER ||
@@ -45,7 +45,7 @@ public class SlotDanmakuCraftingA extends Slot
             case 4:
                 return stack.getItem() == THKaguyaItems.POWER_UP_ITEM_BIG.get();
             case 5:
-                return stack.getItem() == THKaguyaItems.LASER_MATERIAL.get();
+                return THKaguyaItems.isLaserMaterialItem(stack);
             default:
                 return false;
         }

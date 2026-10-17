@@ -157,8 +157,7 @@ public class ContainerDanmakuCraftingLaser extends AbstractContainerMenu
 
         if (!shot.isEmpty() && !(form == 4 && way > 32) && form >= 0)
         {
-            ItemStack newShot = new ItemStack(THKaguyaItems.LASER_MATERIAL.get());
-            newShot.setDamageValue(craftMaterial.getItem(0).getDamageValue());
+            ItemStack newShot = new ItemStack(THKaguyaItems.laserItem(THKaguyaItems.laserTypeOf(craftMaterial.getItem(0))));
 
             var nbt2 = newShot.getOrCreateTag();
             nbt2.putShort("Number", way);

@@ -1,6 +1,7 @@
 package thKaguyaMod.init;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -380,6 +381,74 @@ public class THKaguyaItems
 
     /** パワーアップアイテム 大 */
     public static final RegistryObject<Item> POWER_UP_ITEM_BIG = register("power_up_item_big");
+
+    /* ==================== type → 物品（工作台产物用）==================== */
+    /** 弹 type（`ItemTHShot` 的 0-18）→ 物品。原版靠 itemDamage，1.20.1 拆成 19 个独立物品。 */
+    private static final RegistryObject<Item>[] SHOT_BY_TYPE = new RegistryObject[]
+    {
+            TINY_SHOT, SMALL_SHOT, MEDIUM_SHOT, BIG_SHOT, STAR_SHOT, SMALL_STAR_SHOT,
+            CIRCLE_SHOT, SCALE_SHOT, BUTTERFLY_SHOT, LIGHT_SHOT, KNIFE_SHOT, HEART_SHOT,
+            KUNAI_SHOT, TALISMAN_SHOT, BIG_LIGHT_SHOT, RICE_SHOT, OVAL_SHOT, CRYSTAL_SHOT,
+            ARROW_SHOT
+    };
+
+    /** 激光 type（`ItemTHLaser` 的 0-2：middle/short/long）→ 物品。 */
+    private static final RegistryObject<Item>[] LASER_BY_TYPE = new RegistryObject[]
+    {
+            MIDDLE_LASER, SHORT_LASER, LONG_LASER
+    };
+
+    /** 弹 type 取物品（越界按 19 取模）。 */
+    public static Item shotItem(int type)
+    {
+        return SHOT_BY_TYPE[Math.floorMod(type, SHOT_BY_TYPE.length)].get();
+    }
+
+    /** 激光 type 取物品（越界按 3 取模）。 */
+    public static Item laserItem(int type)
+    {
+        return LASER_BY_TYPE[Math.floorMod(type, LASER_BY_TYPE.length)].get();
+    }
+
+    /** 素材槽里的物品 → 弹 type。已定型的 `*_shot` 用自身 type，弹幕之素沿用 damage（默认 0＝粒弾）。 */
+    public static int shotTypeOf(ItemStack stack)
+    {
+        if (stack.getItem() instanceof ItemTHShot shot)
+        {
+            return shot.getShotType();
+        }
+        if (stack.getItem() == SHOT_MATERIAL.get())
+        {
+            return Math.floorMod(stack.getDamageValue(), SHOT_BY_TYPE.length);
+        }
+        return ItemTHShot.TINY;
+    }
+
+    /** 素材槽里的物品 → 激光 type。已定型的 `*_laser` 用自身 type，激光之素沿用 damage（默认 0＝中）。 */
+    public static int laserTypeOf(ItemStack stack)
+    {
+        if (stack.getItem() instanceof ItemTHLaser laser)
+        {
+            return laser.getLaserType();
+        }
+        if (stack.getItem() == LASER_MATERIAL.get())
+        {
+            return Math.floorMod(stack.getDamageValue(), LASER_BY_TYPE.length);
+        }
+        return ItemTHLaser.MIDDLE;
+    }
+
+    /** 是否为可放进弹幕工作台素材槽的物品。 */
+    public static boolean isShotMaterialItem(ItemStack stack)
+    {
+        return stack.getItem() instanceof ItemTHShot || stack.getItem() == SHOT_MATERIAL.get();
+    }
+
+    /** 是否为可放进激光工作台素材槽的物品。 */
+    public static boolean isLaserMaterialItem(ItemStack stack)
+    {
+        return stack.getItem() instanceof ItemTHLaser || stack.getItem() == LASER_MATERIAL.get();
+    }
 
     private static RegistryObject<Item> register(String name, java.util.function.Supplier<Item> supplier)
     {
