@@ -31,6 +31,7 @@ import thKaguyaMod.client.model.item.ModelCursedDecoyDoll;
 import thKaguyaMod.client.model.item.ModelHisou;
 import thKaguyaMod.client.model.item.ModelKinkakuzi;
 import thKaguyaMod.client.model.item.ModelMiniHakkero;
+import thKaguyaMod.client.model.item.ModelMarisaHat;
 import thKaguyaMod.client.model.item.ModelMiniHakkero2;
 import thKaguyaMod.client.model.item.ModelPrivateSquare;
 import thKaguyaMod.client.model.item.ModelSuwakoHat;
@@ -59,8 +60,10 @@ import thKaguyaMod.client.render.item.RenderSpiritualStrikeTalisman;
 import thKaguyaMod.client.render.item.RenderTHItem;
 import thKaguyaMod.client.render.item.RenderSukima;
 import thKaguyaMod.client.render.item.RenderYuukaParasol;
+import thKaguyaMod.client.render.living.RenderFamiliar;
 import thKaguyaMod.client.render.living.RenderTHBoss;
 import thKaguyaMod.client.render.living.RenderTHFairy;
+import thKaguyaMod.client.render.living.RenderTHPhantom;
 import thKaguyaMod.client.render.living.RenderSunFlowerFairy;
 import thKaguyaMod.client.render.living.RenderRinnosuke;
 import thKaguyaMod.client.render.shot.RenderOnmyoudama;
@@ -157,6 +160,7 @@ public class ClientRenderRegistry
         event.registerLayerDefinition(DECOY_LAYER, ModelCursedDecoyDoll::createBodyLayer);
         // 洩矢の帽子の盔甲模型
         event.registerLayerDefinition(ModelSuwakoHat.LAYER, ModelSuwakoHat::createBodyLayer);
+        event.registerLayerDefinition(ModelMarisaHat.LAYER, ModelMarisaHat::createBodyLayer);
         // 弾幕形状のモデル（FORM_KNIFE = 銀のナイフ弾）
         event.registerLayerDefinition(ModelSilverKnife.LAYER_LOCATION, ModelSilverKnife::createBodyLayer);
         // 森近霖之助（rinnosuke）の模型 layer
@@ -188,7 +192,7 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.CIRNO.get(),
                 ctx -> new RenderTHBoss<EntityCirno>(ctx, new ModelCirno<>(ctx.bakeLayer(CIRNO_LAYER)), "textures/mob/cirnotexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.DANMAKU_CREEPER.get(), CreeperRenderer::new);
-        event.registerEntityRenderer(THKaguyaEntities.FAMILIAR.get(), RenderTHFairy::new);
+        event.registerEntityRenderer(THKaguyaEntities.FAMILIAR.get(), RenderFamiliar::new);
         event.registerEntityRenderer(THKaguyaEntities.MIKO.get(),
                 ctx -> new RenderTHBoss<EntityMiko>(ctx, new ModelMiko<>(ctx.bakeLayer(MIKO_LAYER)), "textures/mob/mikotexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.REIMU.get(),
@@ -201,7 +205,7 @@ public class ClientRenderRegistry
                 ctx -> new RenderTHBoss<EntitySanae>(ctx, new ModelSanae<>(ctx.bakeLayer(SANAE_LAYER)), "textures/mob/sanaetexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.SUNFLOWER_FAIRY.get(),
                 ctx -> new RenderSunFlowerFairy(ctx, new ModelSunFlowerFairy<>(ctx.bakeLayer(SUNFLOWER_LAYER))));
-        event.registerEntityRenderer(THKaguyaEntities.TH_PHANTOM.get(), RenderTHFairy::new);
+        event.registerEntityRenderer(THKaguyaEntities.TH_PHANTOM.get(), RenderTHPhantom::new);
         event.registerEntityRenderer(THKaguyaEntities.TOZIKO.get(),
                 ctx -> new RenderTHBoss<EntityToziko>(ctx, new ModelToziko<>(ctx.bakeLayer(TOZIKO_LAYER)), "textures/mob/tozikotexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.WRIGGLE.get(),

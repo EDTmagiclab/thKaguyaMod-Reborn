@@ -4,15 +4,21 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -294,11 +300,32 @@ public abstract class EntityDanmakuMob extends Mob
     {
         if (reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
         {
+            // 用户实测反馈：原生生成会落到地下洞穴里很难找 → 只允许「头顶露天」的位置生成
+            if (!level.canSeeSky(this.blockPosition()))
+            {
+                return false;
+            }
             return thKaguyaMod.init.THKaguyaConfig.allowNaturalSpawn(this.getType());
         }
         return super.checkSpawnRules(level, reason);
     }
 
+    /**
+     * 用户需求：自然生成的妖怪自带永久发光，方便在野外找到。
+     * （只对 NATURAL/CHUNK_GENERATION 生效——刷怪蛋、命令、繁殖出来的不带，避免污染手动测试）
+     */
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
+                                        @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+                && this.getType().getCategory() == net.minecraft.world.entity.MobCategory.MONSTER)
+        {
+            this.addEffect(new MobEffectInstance(MobEffects.GLOWING, -1, 0, false, false));
+        }
+        return result;
+    }
     protected boolean canFairyCall()
     {
         return false;

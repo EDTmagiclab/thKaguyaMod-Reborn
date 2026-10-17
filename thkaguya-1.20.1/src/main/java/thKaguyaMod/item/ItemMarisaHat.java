@@ -1,12 +1,19 @@
 package thKaguyaMod.item;
 
+import java.util.function.Consumer;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import thKaguyaMod.client.model.item.ModelMarisaHat;
 import thKaguyaMod.init.THKaguyaArmorMaterials;
 
 /**
@@ -75,5 +82,31 @@ public class ItemMarisaHat extends ArmorItem
 		{
 			item.playerTouch(player);
 		}
+	}
+
+
+	/** 原版 getArmorModel：只有头盔槽用自定义模型 ModelMarisaHat（scale 0.4F） */
+	@Override
+	public void initializeClient(Consumer<IClientItemExtensions> consumer)
+	{
+		consumer.accept(new IClientItemExtensions()
+		{
+			private ModelMarisaHat model;
+
+			@Override
+			public HumanoidModel<?> getHumanoidArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot slot,
+					HumanoidModel<?> original)
+			{
+				if(slot == EquipmentSlot.HEAD)
+				{
+					if(model == null)
+					{
+						model = new ModelMarisaHat(Minecraft.getInstance().getEntityModels().bakeLayer(ModelMarisaHat.LAYER));
+					}
+					return model;
+				}
+				return original;
+			}
+		});
 	}
 }

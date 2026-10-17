@@ -2,10 +2,18 @@ package thKaguyaMod.entity.living;
 
 import static thKaguyaMod.DanmakuConstants.*;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
@@ -45,11 +53,29 @@ public class EntityDanmakuCreeper extends Creeper
     {
         if (reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
         {
+            // 同 EntityDanmakuMob：只在地表（头顶露天）生成，避免刷进地下洞穴
+            if (!level.canSeeSky(this.blockPosition()))
+            {
+                return false;
+            }
             return THKaguyaConfig.allowNaturalSpawn(this.getType());
         }
         return super.checkSpawnRules(level, reason);
     }
 
+    /** 自然生成时自带永久发光（同 EntityDanmakuMob，方便寻找） */
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
+                                        @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+                && this.getType().getCategory() == net.minecraft.world.entity.MobCategory.MONSTER)
+        {
+            this.addEffect(new MobEffectInstance(MobEffects.GLOWING, -1, 0, false, false));
+        }
+        return result;
+    }
     /** 膨胀到最大时：用弹幕爆炸替代方块爆炸 */
     @Override
     public void explodeCreeper()
