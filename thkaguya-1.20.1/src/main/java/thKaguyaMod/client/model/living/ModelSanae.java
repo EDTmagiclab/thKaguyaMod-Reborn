@@ -102,6 +102,32 @@ public class ModelSanae<T extends EntityDanmakuMob> extends EntityModel<T>
         if(bipedLeftArm != null) { bipedLeftArm.xRot = Mth.cos(limbSwing) * 0.7F * limbSwingAmount; }
         if(bipedRightLeg != null) { bipedRightLeg.xRot = Mth.cos(limbSwing + (float)Math.PI) * 0.7F * limbSwingAmount; }
         if(bipedLeftLeg != null) { bipedLeftLeg.xRot = Mth.cos(limbSwing + (float)Math.PI) * 0.7F * limbSwingAmount; }
+
+        // スペルカードの宣言をする（原版 ModelSanae#setRotationAngles L179-203 の移植）
+        byte spellCardMotion = entity.getSpellCardMotion();
+        if(bipedRightArm != null)
+        {
+            if(spellCardMotion < -15)
+            {
+                bipedRightArm.xRot = -0.7F - Mth.sin(ageInTicks / 10F) * 0.1F - Mth.sin((float)(30F + spellCardMotion) / 180F * (float)Math.PI) * 4F;
+            }
+            else if(spellCardMotion < 0)
+            {
+                bipedRightArm.xRot = -0.7F - Mth.sin(ageInTicks / 10F) * 0.1F - Mth.sin((float)(-spellCardMotion) / 180F * (float)Math.PI) * 4F;
+            }
+            else
+            {
+                bipedRightArm.xRot = -12F / 180F * (float)Math.PI;
+                bipedRightArm.yRot = -10F / 180F * (float)Math.PI;
+                bipedRightArm.zRot = 30F / 180F * (float)Math.PI;
+                if(bipedLeftArm != null)
+                {
+                    bipedLeftArm.xRot = bipedRightArm.xRot;
+                    bipedLeftArm.yRot = -bipedRightArm.yRot;
+                    bipedLeftArm.zRot = -bipedRightArm.zRot;
+                }
+            }
+        }
     }
 
     @Override

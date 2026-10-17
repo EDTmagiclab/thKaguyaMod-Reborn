@@ -1,9 +1,15 @@
 package thKaguyaMod.entity.living;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
+import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 
 /** 豊聡耳 神子（1.20.1 移植版） */
@@ -91,6 +97,48 @@ public class EntityMiko extends EntityDanmakuMob
         default:
             break;
         }
+    }
+
+    /**
+     * 右クリックで弾幕難易度を切り替える（原版 EntityMiko#interact L250-281 の移植）。
+     * EASY(1) → NORMAL(2) → HARD(3) → LUNATIC(4) → EASY(1)。原版同様に config 値そのものを書き換える。
+     */
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand)
+    {
+        // 原版: ticksExisted % 2 == 0 のときは反応しない（連打で 2 回進むのを防ぐ）
+        if(this.tickCount % 2 == 0)
+        {
+            return InteractionResult.PASS;
+        }
+
+        int level = THKaguyaConfig.danmakuLevel;
+        String str;
+
+        if(level == DanmakuConstants.EASY)
+        {
+            level = DanmakuConstants.NORMAL;
+            str = "NORMAL";
+        }
+        else if(level == DanmakuConstants.NORMAL)
+        {
+            level = DanmakuConstants.HARD;
+            str = "HARD";
+        }
+        else if(level == DanmakuConstants.HARD)
+        {
+            level = DanmakuConstants.LUNATIC;
+            str = "LUNATIC";
+        }
+        else
+        {
+            level = DanmakuConstants.EASY;
+            str = "EASY";
+        }
+
+        THKaguyaConfig.danmakuLevel = level;
+        player.displayClientMessage(Component.literal(str), false);
+        return InteractionResult.SUCCESS;
     }
 
     @Override

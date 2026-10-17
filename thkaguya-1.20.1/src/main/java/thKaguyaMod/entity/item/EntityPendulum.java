@@ -170,7 +170,10 @@ public class EntityPendulum extends Entity
 				{
 					for(int sj = searchY; sj < searchMaxY; sj++)
 					{
-						searchName = Component.translatable(level().getBlockState(new net.minecraft.core.BlockPos(si, sj, sk)).getBlock().getDescriptionId() + ".name").getString();
+						// 原版: StatCollector.translateToLocal(getUnlocalizedName() + ".name")。
+						// 1.20.1 的 getDescriptionId() 已是 "block.minecraft.xxx"，再拼 ".name" 会得到不存在的键，
+						// 导致 searchCount 恒为 0（灵摆不旋转）。改用 Block#getName()。
+						searchName = level().getBlockState(new net.minecraft.core.BlockPos(si, sj, sk)).getBlock().getName().getString();
 						if(searchName.equals(searchBlockName))
 						{
 							searchCount++;

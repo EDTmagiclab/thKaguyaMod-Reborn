@@ -158,6 +158,17 @@ public class ModelTHFairy<T extends EntityDanmakuMob> extends EntityModel<T>
         this.rightArm.zRot = -0.6457718F;
         this.leftArm.xRot = this.rightArm.xRot;
         this.leftArm.zRot = 0.6457718F;
+
+        // スペルカードの宣言で腕を振り上げる（原版 ModelTouhouDefault L169-176 の移植）
+        byte spellCardMotion = entity.getSpellCardMotion();
+        if(spellCardMotion < -15)
+        {
+            this.rightArm.xRot = -0.7F - Mth.sin(ageInTicks / 10F) * 0.1F - Mth.sin((float)(30F + spellCardMotion) / 180F * (float)Math.PI) * 4F;
+        }
+        else if(spellCardMotion < 0)
+        {
+            this.rightArm.xRot = -0.7F - Mth.sin(ageInTicks / 10F) * 0.1F - Mth.sin((float)(-spellCardMotion) / 180F * (float)Math.PI) * 4F;
+        }
     }
 
     @Override

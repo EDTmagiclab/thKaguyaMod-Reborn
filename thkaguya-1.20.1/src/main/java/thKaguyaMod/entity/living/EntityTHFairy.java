@@ -1,7 +1,9 @@
 package thKaguyaMod.entity.living;
 
+import java.util.Calendar;
 import java.util.Random;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -184,6 +186,86 @@ public class EntityTHFairy extends EntityDanmakuMob
         {
             int num = d % 100 + 1;
             THShotLib.createRandomRingShot(getShooter(), pos(), look, speedRate, shotData, num, 360F);
+        }
+    }
+
+    /**
+     * 万圣节（10/31）或地狱时「僵尸妖精」复活的处理中标志
+     * （原版 EntityTHFairy#onDeathUpdate L111-145 的移植）
+     */
+    private boolean zombieRising;
+
+    /** 原版 onDeathUpdate 的条件：地狱，或现实日期 10/31；向日葵妖精除外 */
+    private boolean canRiseAsZombie()
+    {
+        if(this instanceof EntitySunFlowerFairy)
+        {
+            return false;
+        }
+        if(this.level().dimension() == Level.NETHER)
+        {
+            return true;
+        }
+        Calendar calendar = Calendar.getInstance();
+        return calendar.get(Calendar.MONTH) + 1 == 10 && calendar.get(Calendar.DATE) == 31;
+    }
+
+    /** 复活直后的数值（原版 setHealth(2)/探知8/攻撃2/飛高2/speed0.03/pattern0/赤弾/form -1） */
+    private void becomeZombieFairy()
+    {
+        this.zombieRising = false;
+        this.setHealth(2.0F);
+        this.setDetectionDistance(8.0D);
+        this.setAttackDistance(2.0D);
+        this.setFlyingHeight(2);
+        this.setSpeed(0.03D);
+        this.setDanmakuPattern(0);
+        this.danmakuSpan = 50 - (THKaguyaConfig.danmakuLevel * 10);
+        this.speedRate = 0.2F;
+        this.shotForm = (byte)(THShotLib.LIGHT[0] / 8);
+        this.shotColor = (byte)THShotLib.RED;
+        this.setForm((byte)-1);
+    }
+
+    @Override
+    public void die(DamageSource damageSource)
+    {
+        if(!this.level().isClientSide && this.canRiseAsZombie())
+        {
+            if(this.zombieRising)
+            {
+                // 起き上がり中に追い打ちされたら、待たずに即ゾンビ化して立て直す
+                this.becomeZombieFairy();
+                return;
+            }
+            // まだ死なない：探知距離が 2.0 に縮むまで「倒れた」状態で耐える
+            this.zombieRising = true;
+            this.setHealth(0.5F);
+            this.setFlyingHeight(0);
+            this.setTarget(null);
+            return;
+        }
+        super.die(damageSource);
+    }
+
+    @Override
+    public void aiStep()
+    {
+        super.aiStep();
+
+        if(!this.level().isClientSide && this.zombieRising)
+        {
+            if(this.getDetectionDistance() > 2.0D)
+            {
+                // 原版：1 tick につき 0.03 ずつ探知距離を縮める
+                this.setFlyingHeight(0);
+                this.setDetectionDistance(this.getDetectionDistance() - 0.03D);
+                this.setTarget(null);
+            }
+            else
+            {
+                this.becomeZombieFairy();
+            }
         }
     }
 

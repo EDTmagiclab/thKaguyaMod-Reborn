@@ -66,6 +66,7 @@ import thKaguyaMod.client.render.living.RenderTHFairy;
 import thKaguyaMod.client.render.living.RenderTHPhantom;
 import thKaguyaMod.client.render.living.RenderSunFlowerFairy;
 import thKaguyaMod.client.render.living.RenderRinnosuke;
+import thKaguyaMod.client.render.shot.RenderDragonNeckJewel;
 import thKaguyaMod.client.render.shot.RenderOnmyoudama;
 import thKaguyaMod.client.render.shot.RenderSanaeWind;
 import thKaguyaMod.client.render.shot.RenderTHLaser;
@@ -81,6 +82,7 @@ import thKaguyaMod.entity.living.EntityToziko;
 import thKaguyaMod.entity.living.EntityWriggle;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
+import thKaguyaMod.item.ItemGapFoldingUmbrella;
 import thKaguyaMod.item.ItemTHShot;
 
 /**
@@ -110,6 +112,11 @@ public class ClientRenderRegistry
                 THKaguyaItems.KUNAI_SHOT.get(), THKaguyaItems.TALISMAN_SHOT.get(), THKaguyaItems.BIG_LIGHT_SHOT.get(),
                 THKaguyaItems.RICE_SHOT.get(), THKaguyaItems.OVAL_SHOT.get(), THKaguyaItems.CRYSTAL_SHOT.get(),
                 THKaguyaItems.ARROW_SHOT.get());
+
+        // 隙間折りたたみ傘：layer1（ribbon）を NBT "GapColor" で着色（原版 getColorFromItemStack(pass=1)）
+        event.register(
+                (stack, tintIndex) -> tintIndex == 1 ? ItemGapFoldingUmbrella.getRibbonColor(stack) : -1,
+                THKaguyaItems.GAP_FOLDING_UMBRELLA.get());
     }
 
     /* boss 模型 layer 位置（阶段 3d-6） */
@@ -212,7 +219,7 @@ public class ClientRenderRegistry
                 ctx -> new RenderTHBoss<EntityWriggle>(ctx, new ModelWriggle<>(ctx.bakeLayer(WRIGGLE_LAYER)), "textures/mob/wriggletexture.png", 0.25F));
 
         // 特殊弹体（阶段 3d-3）：继承 THShot 用 RenderTHShot，继承 THLaser 用 RenderTHLaser
-        event.registerEntityRenderer(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), RenderTHShot::new);
+        event.registerEntityRenderer(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), RenderDragonNeckJewel::new);
         event.registerEntityRenderer(THKaguyaEntities.HOMING_AMULET.get(), RenderTHShot::new);
         event.registerEntityRenderer(THKaguyaEntities.MASTER_SPARK.get(), RenderTHLaser::new);
         event.registerEntityRenderer(THKaguyaEntities.MUSOU_FUUIN.get(), RenderTHShot::new);

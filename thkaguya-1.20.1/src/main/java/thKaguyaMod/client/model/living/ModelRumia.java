@@ -78,6 +78,25 @@ public class ModelRumia<T extends EntityDanmakuMob> extends EntityModel<T>
         if(leftArm != null) { leftArm.xRot = Mth.cos(limbSwing) * 0.7F * limbSwingAmount; }
         if(rightLeg != null) { rightLeg.xRot = Mth.cos(limbSwing + (float)Math.PI) * 0.7F * limbSwingAmount; }
         if(leftLeg != null) { leftLeg.xRot = Mth.cos(limbSwing + (float)Math.PI) * 0.7F * limbSwingAmount; }
+
+        // スペルカードの宣言をする（原版 ModelRumia#setRotationAngles L135-147 の移植）
+        byte spellCardMotion = entity.getSpellCardMotion();
+        if(rightArm != null)
+        {
+            if(spellCardMotion < -15)
+            {
+                rightArm.xRot = -0.7F - Mth.sin(ageInTicks / 10F) * 0.1F - Mth.sin((float)(30F + spellCardMotion) / 180F * (float)Math.PI) * 4F;
+            }
+            else if(spellCardMotion < 0)
+            {
+                rightArm.xRot = -0.7F - Mth.sin(ageInTicks / 10F) * 0.1F - Mth.sin((float)(-spellCardMotion) / 180F * (float)Math.PI) * 4F;
+            }
+            else
+            {
+                rightArm.zRot = 90F / 180F * (float)Math.PI;
+                if(leftArm != null) { leftArm.zRot = -rightArm.zRot; }
+            }
+        }
     }
 
     @Override
