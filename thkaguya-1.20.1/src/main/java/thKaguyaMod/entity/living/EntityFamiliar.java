@@ -38,7 +38,12 @@ public class EntityFamiliar extends EntityTHFairy
         return EntityDanmakuMob.createAttributes();
     }
 
-    /** 弾の発射主（乗っている Entity）を返す */
+    /**
+     * 弾の発射主（乗っている Entity）を返す。
+     * 騎乗していないときは自分自身を返す——原版这里返回 null，但原版使い魔不会进入攻击模式，
+     * 移植版允许击杀之后它会开火，null 会让 EntityTHFairy#danmakuPattern 里的 getShooter().getYRot() 直接 NPE
+     * （客户端实测：打一下使魔就崩，latest.log 里是 EntityTHFairy.java:88 的 NullPointerException）。
+     */
     @Override
     public LivingEntity getShooter()
     {
@@ -47,7 +52,7 @@ public class EntityFamiliar extends EntityTHFairy
         {
             return (LivingEntity)vehicle;
         }
-        return null;
+        return this;
     }
 
     @Override

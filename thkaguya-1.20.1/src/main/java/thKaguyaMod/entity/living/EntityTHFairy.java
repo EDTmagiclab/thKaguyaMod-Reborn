@@ -85,7 +85,12 @@ public class EntityTHFairy extends EntityDanmakuMob
             return;
         }
 
-        Vec3 look = THShotLib.angle(getShooter().getYRot(), getShooter().getXRot());
+        LivingEntity shooter = getShooter();
+        if(shooter == null)
+        {
+            return;
+        }
+        Vec3 look = THShotLib.angle(shooter.getYRot(), shooter.getXRot());
         look = THShotLib.angle_LimitRandom(look, THKaguyaConfig.danmakuAccuracy);
 
         int d = getDanmakuPattern();
