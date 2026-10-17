@@ -1,12 +1,12 @@
 # 项目长期记忆：五つの難題MOD+ 1.7.10 → 1.20.1 移植
 
 ## 定位与路径
-东方同人 mod 移植到 1.20.1 Forge。新工程 `thkaguya-1.20.1/`（modid `thkaguya`，包名 `thKaguyaMod`）→ 产物 `build/libs/thkaguya-1.0.0.jar`。原版唯一权威基线 `extract/sources/java/thKaguyaMod/`（266 文件）。mod 目录 `F:\mc\versions\newserver\.minecraft\versions\1.20.1-Forge_47.4.28\mods`。**每次 build 成功必须把 jar 覆盖复制到 mods 目录**（核验 md5/mtime；勿用 `build|tail&&cp` 链，tail 恒 0 会掩盖失败）。完整 64 条迁移约定见 `移植任务书.md`「关键迁移约定」；历史进度见 memory 日志；本文件为索引+当前状态。
+东方同人 mod 移植到 1.20.1 Forge。新工程 `thkaguya-1.20.1/`（modid `thkaguya`，包名 `thKaguyaMod`）→ 产物 `build/libs/thkaguya-1.0.0.jar`。原版唯一权威基线 `extract/sources/java/thKaguyaMod/`（266 文件）。mod 目录 `F:\mc\versions\newserver\.minecraft\versions\1.20.1-Forge_47.4.28\mods`。**每次 build 成功必须把 jar 覆盖复制到 mods 目录**（核验 md5/mtime；勿用 `build|tail&&cp` 链，tail 恒 0 会掩盖失败）。完整 66 条迁移约定见 `移植任务书.md`「关键迁移约定」；历史进度见 memory 日志；本文件为索引+当前状态。
 
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 进度快照（2026-10-17；HEAD `1264ebe`；jar md5 每次构建都变，版本标识只认 HEAD）
+## 进度快照（2026-10-17；HEAD `5231247`；jar md5 每次构建都变，版本标识只认 HEAD）
 - 阶段 1–6 + 阶段 7 全结清：配置/触发物品/死亡事件+弹消接线/村民霖之助+箱子战利品/发射器 23 项+音效+boss 血条/早苗咲夜商店。
 - 哑物品三批全清并多轮实测返修：批次 1 22/22；批次 2 23/24（`laser_material` 原版即无右键行为）；批次 3 7/7。
 - 符卡 35 张已注册（BrilliantDragonBullet 原版即注释，勿"补"）；核验报告 `符卡弹幕形状核验报告.md`（34/36 一致；2 卡片+4 框架级偏差待用户确认后修，THSC_KappaPororoca 的 `bound()` 一行调用仍遗留）。
@@ -16,8 +16,9 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 - **用户批复路线（m06969）**：先做 A（补遗债务）和 B（掉落链），顺序 **B→C1**（自然生成走 C1）；符卡配方**接受**（需自定义 RecipeSerializer）；盔甲层**接受**；时停已可用（核实：`EntitySakuyaWatch` 378 行 + `inPrivateSquare` 传送世界中心 + `TimeStopSkyEffect`，报告 §4.12 写「未移植」是误判）。
 - **批次 A 已交付 `72db034`**：4 条普通配方 + 两张工作台战利品表 + KappaPororoca `bound()` 恢复 + 幽香伞花弹注册 + `thKaguya.item.kishitu` ×5 语言；构建 44s、runServer `Done (13.809s)` 无解析错误。
 - **批次 B 掉落链已交付 `1264ebe`**：新增 `entity/item/EntityShotMaterial.java` + `EntityTHItem.java`（原版同名类的 1.20.1 移植：落体/吸附/潜行拾取/进背包）、`RenderShotMaterial`/`RenderTHItem` 两个 billboard 渲染器、`THKaguyaEntities.SHOT_MATERIAL_ENTITY`/`TH_ITEM` 注册；`EntityDanmakuMob` 的 `dropItem`/`dropPowerUpItem`/`dropPointItem`/`dropSpellCardItem`/`dropExtendItem` 与 `dropCustomDeathLoot` 由 no-op 改为真实实现；琪露诺按原版 40 个环形得点/威力；构建 `BUILD SUCCESSFUL`、runServer `Done (11.645s)`、jar md5 `80EA5EB6B4095315AA3A191A4CC04B07`（1669181 B）已同步 mods。
+- **用户实测反馈与修复 `5231247`**（m07426 的实测清单）：✅ 小神霊八色/方块掉落/小神霊掉色/合成表/工作台掉落/河童符卡/气质弹/得点拾取/咲夜早苗交易/星球飞行正常；❌ 发射器「弹幕无法发射也不被丢出」、boss 血条显示不正确、霖之助刷怪蛋缺失材质 → 三处已修（血条改 `ServerBossEvent`、弹幕出膛 `+1.0D`、刷怪蛋补 model json）；构建 55s、runServer `Done (13.314s)` 无 ERROR、jar md5 `01BCA50E2B85432995B954033B0CC579`（1667671 B）已同步。**待用户复测这三项**。
 
-## 铁律索引（50 条；编号与日志引用一致；完整论述见 `移植任务书.md`「关键迁移约定」1–65）
+## 铁律索引（51 条；编号与日志引用一致；完整论述见 `移植任务书.md`「关键迁移约定」1–66）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/`/`textures/block/`（单数）**；复数→物品模型缺材质（latest.log `Missing textures in model`）。
 3. **实体三大注册缺一不可**：EntityType+EntityAttributeCreationEvent+EntityRenderer。
@@ -62,12 +63,13 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 42. **「掉的怪不对」先查原版分支与概率**（Fafrotskies）：`pattern<=90` 分支原版就是**普通** `EntityCreeper`；`EntityDanmakuCreeper` 仅 12/25 生成、1/1–1/3 换核弹；且原版弹幕苦力怕**没有自定义模型/贴图**，只能看爆炸是否撒弹幕。
 43. **村民=`PoiType`+`VillagerProfession`+`VillagerTradesEvent` 三件套，谓词只能用 `ResourceKey`**（ae3eae7，霖之助）：`PoiType` 用 `DeferredRegister` 即可被识别，无需反射；谓词必须 `holder.is(KEY)`（注册期 `REG.get()` 是 null 会 NPE）；override `setVillagerData` 强制写回职业；`MerchantOffer(buying, selling, 7, 0, 0.0F)`=原版默认。**原版 `registerChestItem()` 是空方法**→万宝槌进箱子是有意新增（`LootTableLoadEvent`）。
 44. **`IBehaviorDispenseItem`→`DispenserBlock.registerBehavior`，在 `commonSetup` 注册**（24790d4，发射器 23 项）：`DefaultDispenseItemBehavior` 子类覆写 `execute`；方向取 `DispenserBlock.FACING`；弹物品 `shootDanmaku(..., new EntityFamiliar(level), false, ...)`（使い魔只当射手不 spawn）；`registerBehavior` 只是填静态表但两侧都要跑→`enqueueWork`。
-45. **boss 血条/名牌用实体渲染器画，别用 `RenderLevelStageEvent`**（24790d4）：`MobRenderer#render` 里 `mulPose(cameraOrientation())`+`Font#drawInBatch`；用 `camera.getLookVector()` 与「实体位置-camera 位置」点积求 `acos` 夹角复刻 ±20° 显示；血条 `textures/mob/status.png`+`entityTranslucent`。
+45. ~~**boss 血条/名牌用实体渲染器画，别用 `RenderLevelStageEvent`**（24790d4）~~ → **`5231247` 已作废，改见铁律 51**（渲染器里画头顶血条实机崩坏）。原记录：`MobRenderer#render` 里 `mulPose(cameraOrientation())`+`Font#drawInBatch`；用 `camera.getLookVector()` 与「实体位置-camera 位置」点积求 `acos` 夹角复刻 ±20° 显示；血条 `textures/mob/status.png`+`entityTranslucent`。
 46. **商人型生物=`implements Merchant`+`openTradingScreen`，别自己搭 UI**（d4b18c0，早苗/咲夜）：`setTradingPlayer` 必须先于 `openTradingScreen`；`notifyTrade` 里必须 `offer.increaseUses()`（否则次数永不消耗）；`MerchantOffer(...,7,0,0.0F)`=原版默认；存盘 `tag.put("Offers", ...)`。**原版 `ContainerMerchantSanae`/`GuiMerchantSanae` 从来没有入口**，骨架已删。
 47. **「方块本体不画、只有 TESR 画」=空模型+BER**（ebfddac，小神霊）：原版 ISBRH `return false`、画面全在 TESR、无碰撞。① barrier 式空模型；② `BlockEntityRenderer` 是 interface（implements 别 extends）；③ 注册用 `registerBlockEntityRenderer`；④ `noCollission()`；⑤ 朝向相机 `mulPose(cameraOrientation())`；⑥ `EnumProperty`+blockstates 给齐变体。**工作台原版就是普通满亮方块，别当漏项修。**
 48. **空模型+BER 的方块必须实现 `EntityBlock`**（f18d2a5）：漏 `newBlockEntity`→整块不可见（用户实测报障）；同轮补 `getDrops`（工程无 loot_tables）+8 色独立物品（`getPlacementState` 写回 COLOR；旧 ID `divine_spirit` 代表蓝色）。
 49. **配方/战利品表/语言键一律走 JSON**（72db034，批次 A）：`data/thkaguya/recipes/*.json` = `crafting_shaped`+`pattern`+`key`+`result`（1.20.1 无 oreDict，写具体 id）；方块战利品表必须 `data/thkaguya/loot_tables/blocks/<注册名>.json`，**没有隐式自掉落，缺表=0 掉落**；`thKaguya.item.*` tooltip 键漏了不报错、只显示原始 key（`kishitu` 曾五语言全缺）。
 50. **掉落链实体是 `extends Entity` 的 MISC 实体，1.20.1 拾取要自己写**（1264ebe，批次 B）：`EntityShotMaterial`（基类：落体+玩家靠近吸附）→ `EntityTHItem`（加 `DATA_ITEM_TYPE`：威力小/大、得点、炸弹、残机）；`defineSynchedData` 同步类型、NBT `putByte("ItemType")`；1.20.1 没有 `onCollideWithPlayer`，要 `getEntitiesOfClass(Player.class, bbox.inflate(0.3D))` + `playerTouch(player)`，`canBePickedUp` 写 `player.isShiftKeyDown()` 才是「潜行吸取」；拾取 `player.getInventory().add(stack)`，满了 `player.drop(stack,false)` + `ITEM_PICKUP` 音效；渲染继承 `RenderItemBillboard`、贴 `textures/item/*.png`。
+51. **boss 血条改用原版 `ServerBossEvent`（铁律 45 作废）；发射器打弹幕要 `SIZE+1.0D`；刷怪蛋必须有 model json**（5231247，实测反馈）：① 渲染器里画头顶血条在 1.20.1 实机崩坏（`status.png` 三层 UV + 相机朝向 + `size=1+distance/64` + ±20° 视锥），改为 `EntityDanmakuMob` 里 `ServerBossEvent(PINK, PROGRESS)`（末影龙同款）+ `hasBossBar()` 钩子（只有 8 个 boss 子类 true）+ `startSeenByPlayer`/`stopSeenByPlayer` 增删玩家 + `tick` 里 `setProgress`/`setVisible(isAlive() && pattern != NOT_ATTACK)` + `remove(RemovalReason)` 里 `removeAllPlayers()`；`RenderTHBoss` 只留模型+贴图。② **刷怪蛋物品必须有 `models/item/<id>.json`（`{"parent":"minecraft:item/template_spawn_egg"}`）**，缺了就是紫黑块（`rinnosuke_spawn_egg` 漏了）。③ 发射器打弹幕物品：`shootDanmaku` 距离必须是 `DanmakuConstants.SIZE[...] + 1.0D`（原版 `CommonProxy.java:640`），只给 `SIZE` 会在发射器方块内部生成、立刻被方块吃掉 → 表现为「没反应也不丢物品」；银刀自带 `0.58D` 所以没这个问题。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
