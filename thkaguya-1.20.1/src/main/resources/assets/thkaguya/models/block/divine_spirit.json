@@ -1,6 +1,5 @@
 {
-  "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "thkaguya:block/divine_spirit"
+    "particle": "thkaguya:block/divine_spirit"
   }
 }

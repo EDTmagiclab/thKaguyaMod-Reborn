@@ -1,7 +1,12 @@
 {
   "variants": {
-    "": {
-      "model": "thkaguya:block/divine_spirit"
-    }
+    "color=red": { "model": "thkaguya:block/divine_spirit" },
+    "color=blue": { "model": "thkaguya:block/divine_spirit" },
+    "color=green": { "model": "thkaguya:block/divine_spirit" },
+    "color=yellow": { "model": "thkaguya:block/divine_spirit" },
+    "color=purple": { "model": "thkaguya:block/divine_spirit" },
+    "color=cyan": { "model": "thkaguya:block/divine_spirit" },
+    "color=orange": { "model": "thkaguya:block/divine_spirit" },
+    "color=white": { "model": "thkaguya:block/divine_spirit" }
   }
 }

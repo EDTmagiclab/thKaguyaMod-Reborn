@@ -12,6 +12,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.block.BlockDanmakuCraftingTable;
+import thKaguyaMod.block.BlockDivineSpirit;
 import thKaguyaMod.tileentity.TileEntityDivineSpirit;
 
 import java.util.function.Supplier;
@@ -45,14 +46,18 @@ public class THKaguyaBlocks
                     .sound(SoundType.WOOD)
                     .lightLevel(s -> 15), true));
 
-    /** 小神霊 */
+    /**
+     * 小神霊（原版 metadata 8 色 → BlockState プロパティ、当たり判定なし、ワールドでは TESR だけが描く）
+     * 原版: BlockDivineSpirit（BlockContainer + ISBRH は何も描かない + TileEntityDivineSpiritRenderer）
+     */
     public static final RegistryObject<Block> DIVINE_SPIRIT = BLOCKS.register("divine_spirit",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new BlockDivineSpirit(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_BLUE)
                     .strength(0.1F, 2000.0F)
                     .sound(SoundType.SNOW)
                     .lightLevel(s -> 8)
-                    .noOcclusion()));
+                    .noOcclusion()
+                    .noCollission()));
 
     /* ==================== 方块实体 ==================== */
     /** 小神霊 TileEntity（原版方法体被注释，1.20.1 仅保留空实现占位） */
