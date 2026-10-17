@@ -141,9 +141,10 @@ public class ContainerDanmakuCraftingLaser extends AbstractContainerMenu
         if (!craftColor.getItem(0).isEmpty())
         {
             ItemStack colorStack = craftColor.getItem(0);
-            if (colorStack.getItem() == Items.RED_DYE)
+            int dyeColor = ContainerDanmakuCrafting.dyeColorIndex(colorStack);
+            if (dyeColor >= 0)
             {
-                color = (byte)DanmakuConstants.SELECTABLE_COLOR[Math.floorMod(colorStack.getDamageValue(), 16)];
+                color = (byte)dyeColor;
             }
             else if (colorStack.getItem() == Items.GUNPOWDER)
             {

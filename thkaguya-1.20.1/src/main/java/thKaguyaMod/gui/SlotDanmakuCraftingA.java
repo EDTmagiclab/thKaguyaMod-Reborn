@@ -2,6 +2,7 @@ package thKaguyaMod.gui;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import thKaguyaMod.init.THKaguyaItems;
@@ -39,7 +40,7 @@ public class SlotDanmakuCraftingA extends Slot
             case 2:
                 return THKaguyaItems.isShotMaterialItem(stack);
             case 3:
-                return stack.getItem() == Items.RED_DYE ||
+                return stack.getItem() instanceof DyeItem ||
                        stack.getItem() == Items.GUNPOWDER ||
                        stack.getItem() == Items.DIAMOND;
             case 4:

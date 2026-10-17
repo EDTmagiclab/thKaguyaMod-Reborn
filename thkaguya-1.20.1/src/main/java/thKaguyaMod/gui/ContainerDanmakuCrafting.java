@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -186,9 +187,10 @@ public class ContainerDanmakuCrafting extends AbstractContainerMenu
         if (!craftColor.getItem(0).isEmpty())
         {
             ItemStack colorStack = craftColor.getItem(0);
-            if (colorStack.getItem() == Items.RED_DYE)
+            int dyeColor = dyeColorIndex(colorStack);
+            if (dyeColor >= 0)
             {
-                color = (byte)DanmakuConstants.SELECTABLE_COLOR[Math.floorMod(colorStack.getDamageValue(), 16)];
+                color = (byte)dyeColor;
             }
             else if (colorStack.getItem() == Items.GUNPOWDER)
             {
@@ -230,6 +232,32 @@ public class ContainerDanmakuCrafting extends AbstractContainerMenu
         {
             craftResult.setItem(0, ItemStack.EMPTY);
         }
+    }
+
+    /**
+     * 1.20.1 的 16 种染料物品 → 1.7.10 `Items.dye` 的 metadata（0=墨囊 … 15=骨粉）。
+     * 原版用 `getItemDamage() % 16` 查 {@link DanmakuConstants#SELECTABLE_COLOR}，1.20.1 染料拆成 16 个物品、
+     * damage 恒 0，若继续读 damage 会让「红染料」也变成白色（索引 0 → 7=白）。
+     */
+    private static final Item[] DYE_BY_LEGACY_META =
+    {
+            Items.BLACK_DYE, Items.RED_DYE, Items.GREEN_DYE, Items.BROWN_DYE,
+            Items.BLUE_DYE, Items.PURPLE_DYE, Items.CYAN_DYE, Items.LIGHT_GRAY_DYE,
+            Items.GRAY_DYE, Items.PINK_DYE, Items.LIME_DYE, Items.YELLOW_DYE,
+            Items.LIGHT_BLUE_DYE, Items.MAGENTA_DYE, Items.ORANGE_DYE, Items.WHITE_DYE
+    };
+
+    /** 染料物品 → 弹幕调色板索引（0-7，见 {@link DanmakuConstants#SELECTABLE_COLOR}）；不是染料返回 -1。 */
+    public static int dyeColorIndex(ItemStack stack)
+    {
+        for (int i = 0; i < DYE_BY_LEGACY_META.length; i++)
+        {
+            if (stack.getItem() == DYE_BY_LEGACY_META[i])
+            {
+                return DanmakuConstants.SELECTABLE_COLOR[i];
+            }
+        }
+        return -1;
     }
 
     /** 形状判定：返回 form（0=一点,1=前方随机,2=扇状,3=全方位,4=球状,5=环形,-1=无效）。激光工作台复用。 */
