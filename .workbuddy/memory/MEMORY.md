@@ -7,7 +7,7 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 铁律（完整 30 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
+## 铁律（完整 31 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/` 与 `textures/block/`（单数）**。复数目录→实体渲染正常但物品模型缺材质（指纹：latest.log 的 `Missing textures in model`）。符卡 35 张卡面曾因此全缺材质（d983d32 修）。
 3. **实体三大注册缺一不可**：EntityType + EntityAttributeCreationEvent + EntityRenderer。
@@ -29,11 +29,12 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 19. **禁大范围扫描清测试残留**（曾误删 141309 天然水域方块）；只清自己记录的坐标。
 20. `ticksExisted`→`tickCount`（时机不同，`<=X` 时停判断死锁）；`releaseUsing` 的 `timeLeft` 是剩余 tick，按住时长=`getUseDuration-timeLeft`；`setSize`/`isInRangeToRenderDist` 不存在（碰撞箱由 EntityType.Builder.sized 定；渲染距离覆写 `shouldRenderAtSqrDistance`）；`Properties.durability(N)` 优先于 `Tier.getUses()`。**1.20.1 的 `Item.getUseDuration` 默认返回 0**——凡 1.7.10 用 `setItemInUse` 的道具都必须覆写它，否则 `startUsingItem` 立即结束、蓄力/突进/射出全废（`1bdcc8b`）；原版 `player.inventory.getCurrentItem()` 要写 `getMainHandItem()`/`getOffhandItem()`，**不是** `getUseItem()`（松手瞬间即空 → 误判换手 → 弹体 `discard()`）。
 21. 诊断代码（启动自检/全链路日志）验完删除，javap 核对 jar 无残留字符串。
+22. **原版子类覆写的方法要逐个核对移植版是否也覆写**（`0ec5093`）：`EntityTHLaser` 在原版覆写了 `updateAngle()`（用 `angle` 算朝向、服务端专用），移植版漏掉 → 继承基类的「用 `deltaMovement` 算」版本 → 固定激光 `EntityTHSetLaser` 初速恒 0 → yaw/pitch 每 tick 归零 → 恋符「Non-Directional Laser」5 条激光全部同向（用户实测「形成一个圆筒」）。自检法：拿原版实体/道具类逐个 grep `@Override` 与 `void tick`，确认移植版有同名覆写。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
 
-## 进度快照（2026-10-17；HEAD `1bdcc8c`，jar md5 `649F56926DD15654586A80A4DA0FAF89`）
+## 进度快照（2026-10-17；HEAD `0ec5093`，jar md5 `2ABD4D54C15EBACBC8DF2EE6EC3694B1`）
 - ✅ 阶段 0/1/2（注册 107 物品/3 方块/配方 77/语言 5/模型 109/贴图 199）；阶段 3 实体层全完成（EntityType 44）；阶段 4 渲染全完成（含 4-8 保真度对齐 ff82ac8/f337d40/d7591f0/c85ea86）；阶段 5 GUI 4 套；阶段 6 已结清（服务器+联机实测通过）
 - 🔶 阶段 7：配置✅、触发物品✅；剩死亡事件/村民霖之助/发射器+loot/音效核对
 - ✅ 哑物品批次 1 22/22（f580315+395a03b）；用户实测后修复 3 处（`46d32cb`：楼观剑 `getUseDuration`、御币弹手持判定 + 专用 `RenderOnmyoudama`）；剩余真哑 31 项（批次 2 的 24 弹/激光素材 + 批次 3 的 7 重活），见 `哑物品清理任务书.md`
