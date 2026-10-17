@@ -14,6 +14,7 @@ import thKaguyaMod.item.ItemClosedThirdEye;
 import thKaguyaMod.item.ItemCursedDecoyDoll;
 import thKaguyaMod.item.ItemDeathScythe;
 import thKaguyaMod.item.ItemDragonNeckJewel;
+import thKaguyaMod.item.ItemFireRatRobe;
 import thKaguyaMod.item.ItemGapFoldingUmbrella;
 import thKaguyaMod.item.ItemIbukihyou;
 import thKaguyaMod.item.ItemHakurouken;
@@ -76,7 +77,7 @@ public class THKaguyaItems
     public static final RegistryObject<Item> BUDDHA_STONE_BOWL = register("buddha_stone_bowl");
 
     /** 火鼠の皮衣 */
-    public static final RegistryObject<Item> FIRE_RAT_ROBE = register("fire_rat_robe");
+    public static final RegistryObject<Item> FIRE_RAT_ROBE = register("fire_rat_robe", () -> new ItemFireRatRobe());
 
     /** 燕の子安貝 */
     public static final RegistryObject<Item> SWALLOW_COWRIE_SHELL = register("swallow_cowrie_shell");
