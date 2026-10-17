@@ -106,6 +106,42 @@ public class EntityTHLaser extends EntityTHShot
     }
 
     /**
+     * 激光朝向の更新：原版 EntityTHLaser はこのメソッドを上書きしている
+     * （1.7.10 `extract/sources/java/thKaguyaMod/entity/shot/EntityTHLaser.java:75-96`）。
+     *
+     * 原版ここは「方向ベクトル angle」から yaw/pitch を作る。EntityTHShot の基类版本は
+     * 代わりに motion から作るため、この覆写が抜けると固定激光の向きが壊れる。
+     *
+     * 为什么必须补回：固定激光 EntityTHSetLaser 的初速度恒为 0（`createLaserB` 传
+     * 0.0D/0.0D/0.0D），deltaMovement 始终是 (0,0,0)，于是基类 updateAngle() 每 tick
+     * 把 yaw/pitch 归零 → 恋符「Non-Directional Laser」的 5 条光束全部指向同一方向、
+     * 只在位置上围成一圈 = 看起来像一个圆筒。
+     *
+     * 守卫不能省：原版此处本就是服务端专用（if(!worldObj.isRemote)），客户端靠原版的
+     * 旋转同步拿到 yaw/pitch；移植版客户端的 angle 是普通字段、恒为 (0,0,0)
+     * （见 RenderTHLaser 顶部注释），若客户端也按 angle 计算会把朝向再次打成 0。
+     */
+    @Override
+    public void updateAngle()
+    {
+        if(!level().isClientSide)
+        {
+            float f = (float)Math.sqrt(angle.x * angle.x + angle.z * angle.z);
+            float yaw = (float)((Math.atan2(angle.x, angle.z) * 180D) / 3.1415927410125732D);
+            if(yaw >= 180F)
+            {
+                yaw = -180F + (yaw - 180F);
+            }
+            else if(yaw <= -180F)
+            {
+                yaw = 180F + (yaw + 180F);
+            }
+            setYRot(yaw);
+            setXRot((float)((Math.atan2(angle.y, f) * 180D) / 3.1415927410125732D));
+        }
+    }
+
+    /**
      * 特殊激光每 tick 处理（原版 EntityTHLaser.specialMotion 的 GUNGNIR case）
      *
      * 冈格尼尔之枪（special=GUNGNIR）的枪形激光初速度为 0，长度不靠 speed 增长，
