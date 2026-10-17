@@ -7,7 +7,7 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 铁律（完整 45 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
+## 铁律（完整 48 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/` 与 `textures/block/`（单数）**。复数目录→实体渲染正常但物品模型缺材质（指纹：latest.log 的 `Missing textures in model`）。符卡 35 张卡面曾因此全缺材质（d983d32 修）。
 3. **实体三大注册缺一不可**：EntityType + EntityAttributeCreationEvent + EntityRenderer。
@@ -49,10 +49,14 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 
 33. **原版被 `/* */` 注释掉的整段是死代码，别当需求搬**（`7749419`，万宝槌）：`ItemUchide.onItemRightClick` 前半段（潜行右键开 GUI + 3 格射线改造掉落物）整段注释掉，所以原版万宝槌打不开 GUI，活行为只有「饱食度>0 时 20 格内自己的弹幕 `setShotSize(+0.5F)`、播 bow、`setItemDamage(+30)`」+ `onUpdate` 每 tick 自愈 1 点。移植顺序：先分「注释行 / 活代码」，只搬活路径，类 Javadoc 写明「原版 GUI 是死代码，本版同样不开」。
 
+34. **盔甲（`ItemArmor`）移植=材质接口 + `getArmorTexture` + 回调改名**（`323fb3a`）：`EnumHelper.addArmorMaterial` → 实现 `ArmorMaterial`（接口 8 方法，`getEquipSound` 不能为 null）；`setMaxDamage(0)` → 材质对应槽位返回 0（`ArmorItem` 构造里 `defaultDurability` 有 `maxDamage==0` 守卫）；`getArmorTexture` 走 `IForgeItem`，返回完整路径 `thkaguya:textures/models/armor/<name>_layer_1.png`（原版 `textures/armor/*.png` 64×32 直接可用，裤子才要 layer_2）；`hitEntity→hurtEnemy`、`onUpdate→inventoryTick`、`extinguish→clearFire`（只在服务端）、`hasEffect→isFoil`、`isBookEnchantable` 必须显式 false。坑：旧移植版把 64×32 盔甲层贴图放在了 `textures/item/` 当物品图标（`fire_rat_robe`），图标要用原版 `textures/items/<name>.png`。
+
+35. **自定义盔甲模型必须挂在 `head` 之下、`head` 留空**（`e597eb1`）：`ModelBiped`+`addBox(...,scale)` → `HumanoidModel` + `CubeDeformation(scale)` + `PartPose.offset`，layer 在 `ClientRenderRegistry#registerLayerDefinitions` 注册，物品 `initializeClient` → `IClientItemExtensions#getHumanoidArmorModel`（只在 `EquipmentSlot.HEAD` 返回自定义模型）。Forge 先 `copyPropertiesTo` 再 `setPartVisibility`，覆盖 `head` 会让帽子不随头转。另：`Item` 上的可变字段在多玩家会串号（第三只眼原是 `hitEntity`/`check` 单例字段），改 `Map<UUID, LivingEntity>` 且只服务端读写。
+
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
 
-## 进度快照（2026-10-17；HEAD `7749419`；jar md5 每次构建都变，本次 `802AE1BD3A782EF0237EA7DDDED2C358`，版本标识只认 HEAD）
+## 进度快照（2026-10-17；HEAD `e597eb1`；jar md5 每次构建都变，本次 `A457556E703F4C084141B160BC150B83`，版本标识只认 HEAD）
 - ✅ 阶段 0/1/2（注册 107 物品/3 方块/配方 77/语言 5/模型 109/贴图 199）；阶段 3 实体层全完成（EntityType 44）；阶段 4 渲染全完成（含 4-8 保真度对齐 ff82ac8/f337d40/d7591f0/c85ea86）；阶段 5 GUI 4 套；阶段 6 已结清（服务器+联机实测通过）
 - 🔶 阶段 7：配置✅、触发物品✅；剩死亡事件/村民霖之助/发射器+loot/音效核对
 - ✅ 哑物品批次 1 22/22（f580315+395a03b）；用户实测后修复 3 处（`46d32cb`：楼观剑 `getUseDuration`、御币弹手持判定 + 专用 `RenderOnmyoudama`）；第二轮实测后修复 2 处（`7d4bb6c`：楼观剑突进斩击的位移判定、御币弹光效绘制顺序 + 补回 `bound()` 反弹，顺带修好 ScarletShoot 等 BOUND01/02/04 弹体）；第三轮实测后修掉御币弹的真正根因（`7c1de2b`：EntityType 串到 `TH_SHOT` 导致专用渲染器失效 + `userHit` 未武装导致无伤害 + 地面反射缺失，见铁律 25）；剩余真哑 31 项（批次 2 的 24 弹/激光素材 + 批次 3 的 7 重活），见 `哑物品清理任务书.md`
@@ -60,4 +64,5 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 - ✅ 小打磨（`e74b14b` 资源+语言、`08753c4` 删诊断）：19 张原版 `_2` 高光层 + 19 个模型加 `layer1`（layer0 染色/layer1 不着色）；五语言统一 **211 键**（ja_jp/ko_kr/zh_tw 从原版 `.lang` 取译者原文，含 `danmakuCrafting.*`/`laserCrafting.name`/`thKaguya.color.0-9`/`thKaguya.danmakuForm.0-6`/`entity.thkaguya.*`+刷怪蛋/`miracleMallet.*`/`thKaguya.gravityFree`/`laser_material`/`third_eye`/`Infinity`），剥 BOM；`ItemTHShot` tooltip 的 GFree/Infinity 改为可翻译组件；`EntityOnmyoudama` 的 `DBG_ON`/`[TH-dbg]` 诊断全部删除。实测清单：仓库根 `测试说明-批次2与小打磨.md`。**用户实测通过**（19 弹/3 激光形状与伤害全对、图标默认白 + 染色 + 高光层正常、弹幕之素可发射、回归全 OK）
 - ✅ 工作台产物修复（`3c45907` 产物/槽位、`fd4f634` 染料配色、`e2cb531` 参数槽即时刷新）：弹幕/激光工作台产物改为对应的 `*_shot`/`*_laser`（原版是 `shot_item`/`laser_item` + itemDamage），素材槽 type 2/5 同时接受成品与 `shot_material`/`laser_material` → 成品可放回去二次改弹数/速度/颜色/重力/反弹。**用户实测：放入/产出已通过；颜色槽曾把红染料读成白（`fd4f634` 修复，用户复测通过；「第一颗白、第二颗才对色」由 `e2cb531` 修掉）**
 - ✅ 万宝槌恢复原始功能（`7749419`）：原版 `ItemUchide` 的右键活行为（饱食度>0 时 20 格内自己的弹幕 `setShotSize(+0.5F)`、播 `random.bow`、每次 +30 耐久、每 tick 自愈 1 点、耐久 100）；新建 `thKaguyaMod/item/ItemMiracleMallet.java` 并替换注册（注册名 `thkaguya:miracle_mallet`，中文名「万宝槌」）。原版打开 GUI 的代码是被注释掉的死代码，本版同样不开 GUI（见铁律 33）。**待实测**
+- 🔶 哑物品批次 3 进行中（6/7，`43f0b8b` + `323fb3a` + `e597eb1`）：伊吹瓢（`ItemFood`，力量 15s/反胃 III 20s，11 耐久的葫芦，对水右键灌回 1 点）、嗜血阴阳玉（64 格视线把目标拉到身边 2 格，耐久 150，满了变回阴阳玉）、蓬莱玉枝（`ItemBow` 蓄力弓 → 普通 Item + `Charge` NBT：`shotNum=32+按住时长` 上限 72 再 /3，潜行打圆环、不潜行打三层环，每次 −50 充能，6 档图标 `CustomModelData`）、火鼠的皮衣（首套 `ArmorMaterial`）、第三只眼、泄矢的帽子（首个自定义 `HumanoidModel` 盔甲模型）；剩万宝槌待实测
 - 符卡 35 张已注册（ID 0-30/33/34/35/40；BrilliantDragonBullet 原版即注释，勿"补"）；逐卡弹幕形状比对**已做**（`符卡弹幕形状核验报告.md`：36 对 `THSC_*` 中 34/36 一致，2 张卡片偏差 + 4 项框架级发现，均待用户确认后再修）
