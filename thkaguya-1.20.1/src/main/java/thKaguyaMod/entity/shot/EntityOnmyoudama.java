@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.init.THKaguyaEntities;
@@ -101,7 +102,6 @@ public class EntityOnmyoudama extends EntityTHShot
 		lastShotMotionX = angle.x * shotSpeed;
 		lastShotMotionY = angle.y * shotSpeed;
 		lastShotMotionZ = angle.z * shotSpeed;
-		shotAcceleration = 1.0D;
 		// 原版 setSize(shotSize, shotSize)：1.20.1 は EntityType.Builder.sized() で
 		// 固定されるため按实例変更できない（当たり判定は hitCheck() が getShotSize() で行う）
 		shootingFlag = true;
@@ -134,10 +134,6 @@ public class EntityOnmyoudama extends EntityTHShot
 					user instanceof Player pl && pl.isUsingItem(), isAlive());
 		}
 
-		if(shootingFlag)
-		{
-			shotAcceleration = 0.0D;
-		}
 		if(user instanceof Player player)
 		{
 			if(player.isUsingItem() && !shootingFlag)
@@ -203,7 +199,7 @@ public class EntityOnmyoudama extends EntityTHShot
 			BlockHitResult groundHit = level().clip(new ClipContext(start, end,
 					ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
 
-			if(groundHit != null)
+			if(groundHit != null && groundHit.getType() == HitResult.Type.BLOCK)
 			{
 				int blockY = groundHit.getBlockPos().getY();
 				double diveY = blockY - (getY() + getShotSize());

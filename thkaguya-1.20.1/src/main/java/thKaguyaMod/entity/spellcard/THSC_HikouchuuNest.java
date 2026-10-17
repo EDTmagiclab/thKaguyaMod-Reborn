@@ -40,7 +40,8 @@ public class THSC_HikouchuuNest extends THSpellCard
 	    	vec3d = new Vec3(user.getX(), user.getY(), user.getZ());
 	    	vec3d1 = new Vec3(user.getX() + xVector, user.getY() + yVector, user.getZ() + zVector);
 	    	//何らかのブロックに当たっているなら
-	        if (movingObjectPosition != null)
+	    	// 1.20.1 の clip() は miss でも非 null を返すため Type を見る（原版 1.7.10 は null を返した）
+	        if (movingObjectPosition != null && movingObjectPosition.getType() != HitResult.Type.MISS)
 	        {
 	        	count ++;
 	        }

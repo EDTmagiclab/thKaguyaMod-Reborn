@@ -793,14 +793,24 @@ public class EntityTHShot extends Entity
         lastShotMotionZ = motionZ;
     }
 
-    /** ブロックとのレイトレース（原版 worldObj.rayTraceBlocks(v1, v2, true) 相当） */
+    /** ブロックとのレイトレース（原版 worldObj.rayTraceBlocks(v1, v2, true) 相当）
+     *
+     *  <p>1.20.1 の {@code Level#clip} は「当たらなかった」場合も例外を投げず、
+     *  また {@code null} も返さず {@code HitResult.Type.MISS} の {@link BlockHitResult} を返す。
+     *  原版 1.7.10 の {@code rayTraceBlocks} は miss で {@code null} を返すため、
+     *  {@link #bound} の {@code while(mop != null)} を正しく抜けられるよう、
+     *  ここで MISS を {@code null} に落とす（さもないと反射ループが returnCount 回まわり、
+     *  最後に {@code delete()} されて「跳ね返らず消える」）。
+     */
     private net.minecraft.world.phys.BlockHitResult clipBlocks(double x1, double y1, double z1,
                                                                double x2, double y2, double z2)
     {
-        return level().clip(new net.minecraft.world.level.ClipContext(
+        net.minecraft.world.phys.BlockHitResult result = level().clip(new net.minecraft.world.level.ClipContext(
                 new Vec3(x1, y1, z1), new Vec3(x2, y2, z2),
                 net.minecraft.world.level.ClipContext.Block.COLLIDER,
                 net.minecraft.world.level.ClipContext.Fluid.NONE, this));
+        return result != null && result.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK
+                ? result : null;
     }
 
     /** 特殊弾から普通の弾に戻す（原版 specialEnd） */
