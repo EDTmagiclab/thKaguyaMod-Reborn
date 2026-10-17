@@ -7,7 +7,7 @@
 ## 构建环境
 Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；Gradle 8.5 `/e/git/ad-coze/arcadian-dream-fix-1.20/gradle-9.2.1/gradle-8.5/bin/gradle`；代理 `127.0.0.1:16888`（6232 端口坏）；MCPRepo 抽风用 `--offline`。
 
-## 铁律（完整 34 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
+## 铁律（完整 35 条见 `移植任务书.md`「关键迁移约定」，此处只列最贵重的坑）
 1. **资源标识符全小写**（文件名+目录名）；`static final ResourceLocation` 类加载即校验，大写→启动崩溃。
 2. **贴图目录必须 `textures/item/` 与 `textures/block/`（单数）**。复数目录→实体渲染正常但物品模型缺材质（指纹：latest.log 的 `Missing textures in model`）。符卡 35 张卡面曾因此全缺材质（d983d32 修）。
 3. **实体三大注册缺一不可**：EntityType + EntityAttributeCreationEvent + EntityRenderer。
@@ -32,12 +32,13 @@ Forge 1.20.1 47.4.28 / ForgeGradle 6；JDK 17 `C:/Program Files/Java/jdk-17`；G
 22. **原版子类覆写的方法要逐个核对移植版是否也覆写**（`0ec5093`）：`EntityTHLaser` 在原版覆写了 `updateAngle()`（用 `angle` 算朝向、服务端专用），移植版漏掉 → 继承基类的「用 `deltaMovement` 算」版本 → 固定激光 `EntityTHSetLaser` 初速恒 0 → yaw/pitch 每 tick 归零 → 恋符「Non-Directional Laser」5 条激光全部同向（用户实测「形成一个圆筒」）。自检法：拿原版实体/道具类逐个 grep `@Override` 与 `void tick`，确认移植版有同名覆写。
 23. **玩家背包的 `Item.inventoryTick` 在移动之前调用**（`7d4bb6c`）：javap 实测 `Player.tick()` 中 `Inventory.tick()` 在 offset 113、`LivingEntity.tick()` 在 140，所以 `getDeltaMovement()` 拿的是上一 tick 末尾乘过摩擦的值（地上 6.0×0.546≒3.28），`getBoundingBox()` 也是移动前的位置。1.7.10 `onUpdate` 却在移动之后 → 照抄「速度门限 + 当前位置朝前伸判定盒」的写法会漏判整段位移（楼观剑突进斩击全空）。修法：用 `getX()-xo`（前 tick 实际位移）兜底门限，判定盒 `move(-d).expandTowards(2d).expandTowards(motion).inflate(1.0)`。
 24. **1.7.10 的反射混合不看顶点 alpha**（`7d4bb6c`）：`GL_ONE, GL_ONE_MINUS_SRC_COLOR` 只取 RGB，发光层若画在不透明本体之后，会把本体盖成一块近乎不透明的色盘（御币弹阴陽玉被红色 halo 盖死 → 看着像「巨大橙色子弹」）。1.20.1 的 `entity_translucent` 着色器把 rgb/alpha 分开输出，改「光效在前、本体在后」即可。另：临时诊断日志验完必须删干净（本次清了 5 处，自检 `grep -rn "一時診断|\[TH\]|\[thkaguya\]" src/main/java`）。
+25. **子类的便宜构造必须自己传 EntityType**（`7c1de2b`）：`EntityTHShot(Level, LivingEntity, ...)` 内部写死 `this(THKaguyaEntities.TH_SHOT.get(), ...)`（`EntityTHShot.java:163-173`）。`EntityOnmyoudama` 复用它 → 服务端实体类型是 `TH_SHOT` → 刷怪包让客户端生成**基类 `EntityTHShot`** → `ClientRenderRegistry.java:181` 给 `ONMYOUDAMA` 注册的 `RenderOnmyoudama` 成了死代码，画面一直走通用 `RenderTHShot`（「巨大的橙色子弹」）。修法：子类加 `EntityType<?>` 首参构造转发基类 `EntityTHShot(EntityType<?>, Level, ...)`，便宜构造 `this(THKaguyaEntities.<自己>.get(), ...)`。自检 `javap -p -c <jar> <实体类> | grep TH_SHOT`。**「换了实现症状一字未变」= 那段代码根本没执行**，先查对象是哪个类/哪个 EntityType，别再改渲染细节。
 
 ## 版本管理（用户约定）
 每批改动 `git add -A && git commit -m "中文 message（标注阶段/批次）"`。`.gitignore` 排除 build/run/日志/*.jar；`thkaguya-1.12.2`/`1.14.4` 独立上游仓库不纳入；`.gitattributes` `* -text`。
 
-## 进度快照（2026-10-17；HEAD `7d4bb6c`，jar md5 `0782AEA98F92B1DE6E3BF8D38F480CD6`）
+## 进度快照（2026-10-17；HEAD `7c1de2b`，jar md5 `D90B70E2834D619C00C5D60EA808831F`）
 - ✅ 阶段 0/1/2（注册 107 物品/3 方块/配方 77/语言 5/模型 109/贴图 199）；阶段 3 实体层全完成（EntityType 44）；阶段 4 渲染全完成（含 4-8 保真度对齐 ff82ac8/f337d40/d7591f0/c85ea86）；阶段 5 GUI 4 套；阶段 6 已结清（服务器+联机实测通过）
 - 🔶 阶段 7：配置✅、触发物品✅；剩死亡事件/村民霖之助/发射器+loot/音效核对
-- ✅ 哑物品批次 1 22/22（f580315+395a03b）；用户实测后修复 3 处（`46d32cb`：楼观剑 `getUseDuration`、御币弹手持判定 + 专用 `RenderOnmyoudama`）；第二轮实测后修复 2 处（`7d4bb6c`：楼观剑突进斩击的位移判定、御币弹光效绘制顺序 + 补回 `bound()` 反弹，顺带修好 ScarletShoot 等 BOUND01/02/04 弹体）；剩余真哑 31 项（批次 2 的 24 弹/激光素材 + 批次 3 的 7 重活），见 `哑物品清理任务书.md`
+- ✅ 哑物品批次 1 22/22（f580315+395a03b）；用户实测后修复 3 处（`46d32cb`：楼观剑 `getUseDuration`、御币弹手持判定 + 专用 `RenderOnmyoudama`）；第二轮实测后修复 2 处（`7d4bb6c`：楼观剑突进斩击的位移判定、御币弹光效绘制顺序 + 补回 `bound()` 反弹，顺带修好 ScarletShoot 等 BOUND01/02/04 弹体）；第三轮实测后修掉御币弹的真正根因（`7c1de2b`：EntityType 串到 `TH_SHOT` 导致专用渲染器失效 + `userHit` 未武装导致无伤害 + 地面反射缺失，见铁律 25）；剩余真哑 31 项（批次 2 的 24 弹/激光素材 + 批次 3 的 7 重活），见 `哑物品清理任务书.md`
 - 符卡 35 张已注册（ID 0-30/33/34/35/40；BrilliantDragonBullet 原版即注释，勿"补"）；逐卡弹幕形状比对**已做**（`符卡弹幕形状核验报告.md`：36 对 `THSC_*` 中 34/36 一致，2 张卡片偏差 + 4 项框架级发现，均待用户确认后再修）
