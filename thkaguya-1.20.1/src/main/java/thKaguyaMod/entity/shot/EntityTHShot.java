@@ -625,6 +625,18 @@ public class EntityTHShot extends Entity
         return !this.isRemoved();
     }
 
+    /**
+     * 描画距離。1.20.1 の {@code Entity#shouldRenderAtSqrDistance} は既定で
+     * 「当たり判定サイズ × 64」を距離にしてしまうため、弾（当たり判定 0.1〜0.3 格）は
+     * 6〜19 格で消えて見えなくなる。原版 1.7.10 の Render は 64 格まで描画していたので、
+     * 弾とレーザー（EntityTHLaser は本クラスを継承）は常に 64 格先まで見えるようにする。
+     */
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distance)
+    {
+        return distance < 4096.0D;
+    }
+
     /** 使用者に当たるかどうか（子类重写） */
     protected boolean isUserHit()
     {

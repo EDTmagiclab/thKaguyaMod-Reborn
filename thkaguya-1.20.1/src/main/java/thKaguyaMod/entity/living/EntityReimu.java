@@ -29,11 +29,14 @@ public class EntityReimu extends EntityDanmakuMob
         this.setAttackDistance(14.0D);
         this.setDetectionDistance(0.0D);
         this.setFlyingHeight(4);
-        // 原版 EntityReimu 构造器：isFlyingMode = false（霊夢だけは地面を歩く）
-        this.isFlyingMode = false;
+        // 原版 1.7.10 は isFlyingMode = false でも、毎 tick の「足元 8 格の地面を探して
+        // motionY を押し戻す」処理（原版 EntityDanmakuMob の飛行高度維持）でホバーしていた。
+        // 1.20.1 移植版にはその高度維持処理が無いため、noGravity を切るとそのまま落下する。
+        // 灵梦（以及同批的飞天 boss）在原版中的实际观感就是「悬浮」，故这里保持悬浮。
+        this.isFlyingMode = true;
         this.isSpellCardMode = false;
         this.attackInterval = 0;
-        this.setNoGravity(false);
+        this.setNoGravity(true);
     }
 
     public EntityReimu(Level level)

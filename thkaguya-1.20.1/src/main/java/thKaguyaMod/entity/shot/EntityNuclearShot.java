@@ -90,6 +90,11 @@ public class EntityNuclearShot extends EntityTHShot
 				setVector();
 				shotAcceleration = 0.2D;
 				shootingFlag = true;
+				// 原版 1.7.10 はここで ticksExisted = 1 に戻し、遅延演出（getAnimationCount() < 0 の
+				// 単発光弾描画）から通常の核弾描画へ即座に切り替えていた。
+				// 1.20.1 の animationCount は -delay から 0 まで戻るまで遅延扱いのままなので、
+				// 発射時に正の値へ進めておかないと「橙色の小さい弾」が出続けてしまう。
+				setAnimationCount(1);
 			}
 		}
 		else if(user == null)
