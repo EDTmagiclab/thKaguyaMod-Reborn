@@ -24,9 +24,18 @@ import thKaguyaMod.init.THKaguyaItems;
 /** 緋想の剣 */
 public class ItemHisou extends SwordItem
 {
+	/** 原版 ToolMaterial "hisou" の maxUses = 200 */
+	public static final int MAX_DAMAGE = 200;
+
 	public ItemHisou()
 	{
-		super(Tiers.IRON, 3, -2.4F, new Properties().stacksTo(1));
+		super(Tiers.IRON, 3, -2.4F, new Properties().stacksTo(1).durability(MAX_DAMAGE));
+	}
+
+	@Override
+	public int getMaxDamage(ItemStack stack)
+	{
+		return MAX_DAMAGE;
 	}
 
 	@Override

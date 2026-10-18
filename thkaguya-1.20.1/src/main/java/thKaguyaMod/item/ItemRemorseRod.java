@@ -35,6 +35,17 @@ public class ItemRemorseRod extends SwordItem
 		super(Tiers.IRON, 3, -2.4F, new Item.Properties().stacksTo(1));
 	}
 
+	/**
+	 * 原版 ItemKaigo は setMaxDamage(0)＝破壊不能。
+	 * damage 値（0/1）は耐久値ではなく「文字の有無」の状態ビットなので、
+	 * TieredItem が既定で入れる 250 を無効化する。
+	 */
+	@Override
+	public boolean canBeDepleted()
+	{
+		return false;
+	}
+
 	/** 命中時：体力 75% 超なら 75% まで落とす（damage 0 のときのみ、1 回限り） */
 	@Override
 	public boolean hurtEnemy(ItemStack itemStack, LivingEntity target, LivingEntity attacker)

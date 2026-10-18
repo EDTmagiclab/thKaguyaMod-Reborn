@@ -26,12 +26,15 @@ import thKaguyaMod.entity.effect.EntityCirnoIceBox;
  */
 public class ItemIcicleSword extends SwordItem
 {
+    /** 原版 ToolMaterial "icicle" の maxUses = 30 */
+    public static final int MAX_DAMAGE = 30;
+
     public ItemIcicleSword()
     {
         super(Tiers.IRON, 3, -2.4F,
                 new Item.Properties()
                         .stacksTo(1)
-                        .durability(250));
+                        .durability(MAX_DAMAGE));
     }
 
     public ItemIcicleSword(Tier tier)
@@ -39,7 +42,13 @@ public class ItemIcicleSword extends SwordItem
         super(tier, 3, -2.4F,
                 new Item.Properties()
                         .stacksTo(1)
-                        .durability(250));
+                        .durability(MAX_DAMAGE));
+    }
+
+    @Override
+    public int getMaxDamage(ItemStack stack)
+    {
+        return MAX_DAMAGE;
     }
 
     /** 攻击命中：生成冰柜冻结目标（原版 hitEntity） */

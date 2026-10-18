@@ -20,13 +20,14 @@ import thKaguyaMod.THShotLib;
  * 原版 ItemTenguFan：
  * - 右クリックで「使用開始」（弓アクション、24 tick）
  * - 離した瞬間に FORM_WIND の風弾を飛ばす。速度は引きの長さに比例
- *   （speed = (getMaxItemUseDuration - usedTime) / 7.0 = 残り時間 / 7.0）
+ *   （speed = (getMaxItemUseDuration - usedTime) / 7.0 = 引きの長さ / 7.0）
  * - special = WIND01：命中時に相手を弾き飛ばす（EntityTHShot 側で処理）
  *
  * 1.20.1 迁移要点：
  * - onItemRightClick + setItemInUse → use() + startUsingItem()
  * - onPlayerStoppedUsing(usedTime) → releaseUsing(timeLeft)
- *   timeLeft = getUseDuration - usedTicks なので、原版の (24 - usedTime) と等価
+ *   1.7.10 の usedTime も 1.20.1 の timeLeft も「残り tick」なので、
+ *   原版の (24 - usedTime) は (24 - timeLeft) = 引きの長さ と等価
  * - swingItem() → swing(InteractionHand)
  * - world.playSoundAtEntity("random.bow") → level.playSound(SoundEvents.ARROW_SHOOT)
  * - isFull3D() は 1.20.1 で廃止（モデル JSON の display が担当）
@@ -56,8 +57,8 @@ public class ItemTenguFan extends Item
 
 		ShotData shot = ShotData.shot(DanmakuConstants.FORM_WIND, DanmakuConstants.AQUA,
 				0, 20, DanmakuConstants.WIND01);
-		// 原版 speed = (getMaxItemUseDuration - usedTime) / 7.0D
-		double speed = (double)timeLeft / 7.0D;
+		// 原版 speed = (getMaxItemUseDuration - usedTime) / 7.0D = 引きの長さ / 7.0D
+		double speed = (double)(getUseDuration(itemStack) - timeLeft) / 7.0D;
 		THShotLib.createShot(player, THShotLib.pos_Living(player),
 				THShotLib.angle(player.getYRot(), player.getXRot()), speed, shot);
 		player.swing(InteractionHand.MAIN_HAND);

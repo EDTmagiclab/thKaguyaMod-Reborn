@@ -58,7 +58,9 @@ public class ItemYuyukoFan extends Item
 		}
 
 		// 原版 shotNum = 32 + (getMaxItemUseDuration - usedTime)（最低 32 / 最大 72 / 3 の倍数）
-		int shotNum = 32 + timeLeft;
+		// 1.7.10 の onPlayerStoppedUsing の第 4 引数は 1.20.1 の timeLeft と同じ「残り tick」なので
+		// 「押していた時間」= getUseDuration - timeLeft。押すほど弾数が増える。
+		int shotNum = 32 + (getUseDuration(itemStack) - timeLeft);
 		if(shotNum > 72)
 		{
 			shotNum = 72;
