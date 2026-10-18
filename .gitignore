@@ -48,3 +48,8 @@ extract/
 .workbuddy/
 .jarcheck/
 _tmp_b1.md
+
+# ===== 仅本地复盘：除 README 外的文档与项目主页不随仓库分发 =====
+*.md
+!README.md
+index.html
