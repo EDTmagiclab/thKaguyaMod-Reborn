@@ -430,16 +430,20 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         for (int i = 0; i < 9; i += 2)
         {
-            //星の枠部（彩色）
-            tri(consumer, poseStack.last(), COLOR_R[color], COLOR_G[color], COLOR_B[color], 178,
-                    xPos[i], yPos[i], 0F, 0F,
-                    xPos[i + 1], yPos[i + 1], 1F, 0F,
-                    xPos[i + 2], yPos[i + 2], 1F, 1F);
-            //星の中心部（白、0.7/0.95 縮小）
-            tri(consumer, poseStack.last(), 255, 255, 255, 178,
-                    xPos[i] * 0.7F, yPos[i] * 0.7F, 0F, 0F,
-                    xPos[i + 1] * 0.95F, yPos[i + 1] * 0.95F, 1F, 0F,
-                    xPos[i + 2] * 0.7F, yPos[i + 2] * 0.7F, 1F, 1F);
+            //星の枠部（彩色）—— 原版は扇形を「3 点 + 中心」の四角形として描く
+            //（中心頂点を省いて三角形 3 点で描くと、1 個あたり 30 頂点＝4 の倍数でなくなり、
+            //  QUADS の共有バッファで隣の弾の頂点と組になって弾同士を結ぶ「棒」が出る）
+            quad(consumer, poseStack.last(), COLOR_R[color], COLOR_G[color], COLOR_B[color], 178,
+                    xPos[i], yPos[i], 0F, 0F, 0F,
+                    xPos[i + 1], yPos[i + 1], 0F, 1F, 0F,
+                    xPos[i + 2], yPos[i + 2], 0F, 1F, 1F,
+                    0.0F, 0.0F, 0F, 0F, 1F);
+            //星の中心部（白、0.7/0.95 縮小、z=0.01 で手前）
+            quad(consumer, poseStack.last(), 255, 255, 255, 178,
+                    xPos[i] * 0.7F, yPos[i] * 0.7F, 0.01F, 0F, 0F,
+                    xPos[i + 1] * 0.95F, yPos[i + 1] * 0.95F, 0.01F, 1F, 0F,
+                    xPos[i + 2] * 0.7F, yPos[i + 2] * 0.7F, 0.01F, 1F, 1F,
+                    0.0F, 0.0F, 0.01F, 0F, 1F);
         }
         poseStack.popPose();
     }
@@ -1173,26 +1177,9 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
                 x3, y3, z3, 1.0F, 0.0F);
     }
 
-    /** 三角形（UV 付き）—— 五角星 / 結晶弾 */
-    private static void tri(VertexConsumer consumer, PoseStack.Pose pose, int r, int g, int b, int a,
-                            float ax, float ay, float uA, float vA,
-                            float bx, float by, float uB, float vB,
-                            float cx, float cy, float uC, float vC)
-    {
-        Matrix4f matrix = pose.pose();
-        Matrix3f normal = pose.normal();
-        consumer.vertex(matrix, ax, ay, 0.0F).color(r, g, b, a)
-                .uv(uA, vA).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, bx, by, 0.0F).color(r, g, b, a)
-                .uv(uB, vB).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, cx, cy, 0.0F).color(r, g, b, a)
-                .uv(uC, vC).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-    }
-
-    /** 三角形（3D 座標・UV なし＝中心 0.5,0.5）—— 結晶弾の面 */
+    /** 三角形を「退化四角形（最終頂点を複製）」で描く —— 結晶弾の面。
+     *  原版も 1.7.10 の startDrawingQuads に同じ頂点を 2 回入れて三角形を表現していた。
+     *  3 頂点だけ流すと QUADS の共有バッファで 4 頂点境界がずれ、隣の弾と混ざる。 */
     private static void tri3(VertexConsumer consumer, PoseStack.Pose pose, int r, int g, int b, int a,
                              float ax, float ay, float az,
                              float bx, float by, float bz,
@@ -1204,6 +1191,9 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
                 .uv(0.5F, 0.5F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix, bx, by, bz).color(r, g, b, a)
+                .uv(0.5F, 0.5F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
+                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+        consumer.vertex(matrix, cx, cy, cz).color(r, g, b, a)
                 .uv(0.5F, 0.5F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         consumer.vertex(matrix, cx, cy, cz).color(r, g, b, a)
