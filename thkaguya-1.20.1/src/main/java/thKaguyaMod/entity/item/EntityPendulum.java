@@ -40,6 +40,9 @@ public class EntityPendulum extends Entity
 	private int count;
 
 	private String searchBlockName;
+	/** 探しているブロックの descriptionId（例 "block.minecraft.iron_ore"）。
+	 *  名前の翻訳結果ではなく ID で比較するため、言語設定やサーバ側の lang 有無に影響されない。 */
+	private String searchBlockId;
 	private ItemStack searchItem;
 
 	public EntityPendulum(EntityType<?> type, Level level)
@@ -57,7 +60,7 @@ public class EntityPendulum extends Entity
 		this(THKaguyaEntities.PENDULUM.get(), world);
 	}
 
-	public EntityPendulum(Level world, Player player, int pmode, String name, ItemStack itemStack)
+	public EntityPendulum(Level world, Player player, int pmode, String blockDescriptionId, ItemStack itemStack)
 	{
 		this(world);
 
@@ -74,7 +77,8 @@ public class EntityPendulum extends Entity
 			searchLength = 12;
 		}
 
-		searchBlockName = name;
+		searchBlockId = blockDescriptionId;
+		searchBlockName = null;
 		searchItem = itemStack;
 	}
 
@@ -162,19 +166,20 @@ public class EntityPendulum extends Entity
 			searchMaxY = searchY + searchLength * 2 + 1;
 			searchMaxZ = searchZ + searchLength * 2 + 1;
 
-			String searchName;
-
 			for(int si = searchX; si < searchMaxX; si++)
 			{
 				for(int sk = searchZ; sk < searchMaxZ; sk++)
 				{
 					for(int sj = searchY; sj < searchMaxY; sj++)
 					{
-						// 原版: StatCollector.translateToLocal(getUnlocalizedName() + ".name")。
-						// 1.20.1 的 getDescriptionId() 已是 "block.minecraft.xxx"，再拼 ".name" 会得到不存在的键，
-						// 导致 searchCount 恒为 0（灵摆不旋转）。改用 Block#getName()。
-						searchName = level().getBlockState(new net.minecraft.core.BlockPos(si, sj, sk)).getBlock().getName().getString();
-						if(searchName.equals(searchBlockName))
+						// 原版: StatCollector.translateToLocal(block.getUnlocalizedName() + ".name") と、
+						//       アイテム側の同じ翻訳名を比較していた（＝ローカライズ名の一致判定）。
+						// 1.20.1 では翻訳結果に頼らず descriptionId（"block.minecraft.xxx"）を直接比較する。
+						// 意味は同じだが、言語設定・サーバ側 lang の有無・キー解決の違いに影響されない。
+						net.minecraft.world.level.block.Block searchBlock =
+								level().getBlockState(new net.minecraft.core.BlockPos(si, sj, sk)).getBlock();
+						if(searchBlockId != null ? searchBlockId.equals(searchBlock.getDescriptionId())
+								: searchBlock.getName().getString().equals(searchBlockName))
 						{
 							searchCount++;
 						}

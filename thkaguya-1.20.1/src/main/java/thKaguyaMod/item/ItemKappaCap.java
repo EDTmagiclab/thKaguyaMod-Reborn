@@ -48,6 +48,17 @@ public class ItemKappaCap extends ArmorItem
 		return MAX_DURABILITY;
 	}
 
+	/**
+	 * 素材 HINEZUMI の耐久係数が 0（火鼠の皮衣用に無敵扱い）なので Item の maxDamage は 0 のまま。
+	 * その結果 Item#canBeDepleted() が false を返し、getMaxDamage(stack) の上書き・耐久バー・
+	 * onArmorTick の増減処理がすべて無効になる。原版 setMaxDamage(500) 相当に戻すため true を返す。
+	 */
+	@Override
+	public boolean canBeDepleted()
+	{
+		return true;
+	}
+
 	@Override
 	public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type)
 	{

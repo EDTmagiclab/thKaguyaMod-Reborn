@@ -196,4 +196,22 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
     {
         return 1;
     }
+
+    /**
+     * 原版 EntitySanae.dropFewItems（:248 付近）。
+     * 弾素材 STAR（緑・BOUND02 反射 3 回）＋ 威力/得点アイテム。
+     * 原版は「直前にスペルカードを使っていた場合のみ」落とす。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (recentlyHit && this.getUsingSpellCardNo() != -1)
+        {
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.STAR,
+                    16 + this.getRandom().nextInt(2) + looting, 5, 32, THShotLib.GREEN, 0, THShotLib.BOUND02, 2);
+            this.dropPowerUpItem(25 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+            this.dropPointItem(25 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        }
+    }
 }

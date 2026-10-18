@@ -23,6 +23,8 @@ import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.entity.living.EntityDanmakuMob;
+import thKaguyaMod.entity.item.EntityShotMaterial;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.registry.SpecialShotRegistry;
@@ -229,6 +231,26 @@ public class EntityTHShot extends Entity
         }
     }
 
+    /**
+     * 原版 EntityTHShot の shotFinishBonus()（原版 :524-533）。
+     * 弾を消す代わりに「弾素材（EntityShotMaterial）」をその場に落とす。
+     * プレイヤーが弾を撃ち消した時・霊撃札で消した時・ボスが弾幕を撒き終えた時など、
+     * 1.7.10 では弾幕から素材が回収できた。移植版はこれが丸ごと欠けていたため
+     * shot_item（弾素材）の入手経路がクラフトレシピ以外に存在しなかった。
+     */
+    public void shotFinishBonus()
+    {
+        if(level().isClientSide)
+        {
+            return;
+        }
+        EntityShotMaterial shotMaterial = new EntityShotMaterial(
+                thKaguyaMod.init.THKaguyaEntities.SHOT_MATERIAL_ENTITY.get(),
+                level(), this.getX(), this.getY(), this.getZ());
+        level().addFreshEntity(shotMaterial);
+        discard();
+    }
+
     @Override
     public void tick()
     {
@@ -270,6 +292,15 @@ public class EntityTHShot extends Entity
                 setAnimationCount(getAnimationCount() + 1);
                 return;
             }
+        }
+
+        // 使用者（弾主）が死んでいるなら弾をアイテム化させて消滅させる（原版 EntityTHShot.java:600-614）。
+        // 原版は「使用者が EntityPlayer でない場合だけ」弾消しボーナスを出す。
+        // （プレイヤーの弾は撃ち手が死んでも寿命まで飛び続ける）
+        if(user != null && !level().isClientSide && user.isDeadOrDying() && !(user instanceof Player))
+        {
+            shotFinishBonus();
+            return;
         }
 
         // 时间停止逻辑（1.7 时停功能阶段 7 接入，此处简化为正常推进）
@@ -580,6 +611,18 @@ public class EntityTHShot extends Entity
         {
             discard();
         }
+    }
+
+    /**
+     * 1.7.10 の canBeCollidedWith() に相当する。原版 Entity は既定で true を返すため、
+     * 弾幕同士の相殺判定（hitEntityCheck）もプレイヤーの照準（GameRenderer#pick）も弾を拾えた。
+     * 1.20.1 の Entity#isPickable() は既定 false なので、ここで明示的に true を返す。
+     * （これが無いと弾-弾相殺と、プレイヤーによる弾の撃ち消しが両方とも成立しない）
+     */
+    @Override
+    public boolean isPickable()
+    {
+        return !this.isRemoved();
     }
 
     /** 使用者に当たるかどうか（子类重写） */
@@ -1010,20 +1053,36 @@ public class EntityTHShot extends Entity
             }
             else
             {
-                // 原版 1192 行：特殊弹的实体命中处理，返回 false 表示普通命中流程
-                if(entityHitSpecialProcess(hit))
+                // 原版 :1050 付近: FORM_FAMILIAR（使い魔形態）の弾は実体をすり抜ける
+                if(getShotForm() == DanmakuConstants.FORM_FAMILIAR)
                 {
                     return;
                 }
-                // 伤害倍率默认 1（原版在命中时设为 1.0F；字段默认 0，不设则无伤害）
-                damageRate = 1.0F;
-                float dmg = getShotDamageWithDifficulty() * damageRate;
-                // 原版 DamageSource.causeIndirectMagicDamage -> 1.20.1 DamageSources.indirectMagic
-                DamageSource dmgSource = user != null
-                        ? level().damageSources().indirectMagic(this, user)
-                        : level().damageSources().magic();
-                hit.hurt(dmgSource, dmg);
-                delete();
+                // 原版 1192 行：特殊弾の命中処理。戻り値 true は「弾を消さない」の意味で、
+                // ダメージは通常どおり入る（原版も isHitDelete を見た後で必ず攻撃している）。
+                boolean isHitDelete = entityHitSpecialProcess(hit);
+                if(isUserHit() || hit != user)
+                {
+                    // 原版: 妖怪・妖精・幽霊系の弾幕生物には与ダメージ 2 倍
+                    float damageRateEx = 1.0F;
+                    if(hit instanceof EntityDanmakuMob danmakuMob
+                            && (danmakuMob.isYoukai() || danmakuMob.isFairy() || danmakuMob.isPhantom()))
+                    {
+                        damageRateEx = 2.0F;
+                    }
+                    // 伤害倍率默认 1（原版在命中时设为 1.0F；字段默认 0，不设则无伤害）
+                    damageRate = 1.0F;
+                    float dmg = getShotDamageWithDifficulty() * damageRate * damageRateEx;
+                    // 原版 DamageSource.causeIndirectMagicDamage -> 1.20.1 DamageSources.indirectMagic
+                    DamageSource dmgSource = user != null
+                            ? level().damageSources().indirectMagic(this, user)
+                            : level().damageSources().magic();
+                    hit.hurt(dmgSource, dmg);
+                }
+                if(!isHitDelete)
+                {
+                    delete();
+                }
             }
         }
     }
@@ -1058,10 +1117,12 @@ public class EntityTHShot extends Entity
             {
                 if(!level().isClientSide)
                 {
-                    // 原版：shotFinishBonus()（弹→点道具，EntityShotMaterial 未移植）+ 击弹时
-                    // 消掉半径 shotSize*4 内的他人弹幕（"Other" 也包含自己这発）
+                    // 原版 attackEntityFrom :1715-1756：
+                    //   1) shotFinishBonus() で弾素材を落とす
+                    //   2) 半径 shotSize*4 の他人弾幕を消す（isDropBounus = true なので
+                    //      お互いの弾も素材に変わる）
+                    shotFinishBonus();
                     THShotLib.danmakuRemove(this, this.getShotSize() * 4.0F, "Other", true);
-                    delete();
                 }
                 return true;
             }

@@ -982,6 +982,35 @@ public abstract class EntityDanmakuMob extends Mob
     }
 
     /**
+     * 原版 EntityDanmakuMob :1509-1527 の dropShotItem。
+     * 弾素材（*_shot アイテム = ItemTHShot）を NBT 付きでその場に落とす。
+     *
+     * 1.7.10 は `ItemStack(shot_item, stackNumber, shotID)` の damage で弾種を表していたが、
+     * 1.20.1 では弾種ごとに独立アイテム（19 種）になっているので
+     * THKaguyaItems.shotItem(shotID) でアイテムを引く。NBT キーは原版と同名
+     * （"Number"/"Speed"/"Color"/"Gravity"/"Special"/"DanmakuForm"）で、
+     * ItemTHShot 側も同じキーを読む。
+     */
+    public ItemStack dropShotItem(int shotID, int stackNumber, int number, int speed, int color, int gravity, int special, int form)
+    {
+        if (this.level().isClientSide)
+        {
+            return ItemStack.EMPTY;
+        }
+        ItemStack shot = new ItemStack(THKaguyaItems.shotItem(shotID), stackNumber);
+        net.minecraft.nbt.CompoundTag nbt = shot.getOrCreateTag();
+        nbt.putShort("Number", (short)number);
+        nbt.putByte("Speed", (byte)(speed % 64));
+        nbt.putByte("Color", (byte)(color % 16));
+        nbt.putByte("Gravity", (byte)(gravity % 16));
+        nbt.putInt("Special", special);
+        nbt.putByte("DanmakuForm", (byte)(form % 8));
+        // 原版: entityDropItem(shot, 0.0F) → 足元に落とす
+        this.spawnAtLocation(shot);
+        return shot;
+    }
+
+    /**
      * 倒れたときに落とすアイテム（1.7.10 dropFewItems 等价物）。
      * 原版 EntityDanmakuMob.java:1390-1397:
      *   if(getUsingSpellCardNo() >= 0 && hasBeenAttackedByPlayer)

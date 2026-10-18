@@ -48,8 +48,11 @@ public class ItemPendulum extends Item
 			mode = 1;
 		}
 
-		String name = Component.translatable(searchItem.getDescriptionId()).getString();
-		EntityPendulum entityPendulum = new EntityPendulum(level, player, mode, name, searchItem);
+		// 探索対象の同定は descriptionId で行う（原版は翻訳名を比較していたが、
+		// ロケールやサーバ側 lang の有無で一致しなくなるため ID 比較に置き換え）。
+		String matchId = ((BlockItem)searchItem.getItem()).getBlock().getDescriptionId();
+		String name = Component.translatable(matchId).getString();
+		EntityPendulum entityPendulum = new EntityPendulum(level, player, mode, matchId, searchItem);
 		// 原版 "random.orb"
 		level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 0.9F);
 		if(!level.isClientSide)

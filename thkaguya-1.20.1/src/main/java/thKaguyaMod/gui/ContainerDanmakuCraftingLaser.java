@@ -212,6 +212,13 @@ public class ContainerDanmakuCraftingLaser extends AbstractContainerMenu
                 {
                     return ItemStack.EMPTY;
                 }
+                // 原版 transferStackInSlot は最後に必ず slot.onPickupFromSlot を呼び、
+                // そこで材料を消費していた。1.20.1 の moveItemStackTo は onTake を呼ばないので
+                // 明示的に呼ぶ（無いと Shift+クリックで材料を消費せず増殖できる）。
+                if (slot instanceof SlotLaserResult)
+                {
+                    slot.onTake(player, stack);
+                }
             }
             else
             {

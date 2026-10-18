@@ -131,4 +131,22 @@ public class EntityToziko extends EntityDanmakuMob
     {
         return 1;
     }
+
+    /**
+     * 原版 EntityToziko.dropFewItems（:142 付近）。
+     * 弾素材 ARROW（黄・SPECIAL_GAGOUJI01 曲がる矢）＋ 威力/得点アイテム。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (recentlyHit)
+        {
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.ARROW,
+                    8 + this.getRandom().nextInt(2) + looting, 5, 32, THShotLib.YELLOW, 0,
+                    THSC_GagoujiCyclone.SPECIAL_GAGOUJI01, 2);
+            this.dropPowerUpItem(8 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+            this.dropPointItem(8 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        }
+    }
 }

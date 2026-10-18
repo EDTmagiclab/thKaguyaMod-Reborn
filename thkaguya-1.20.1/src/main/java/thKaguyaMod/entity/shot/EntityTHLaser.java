@@ -14,6 +14,7 @@ import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.entity.item.EntityShotMaterial;
 import thKaguyaMod.init.THKaguyaEntities;
 
 /**
@@ -83,6 +84,34 @@ public class EntityTHLaser extends EntityTHShot
         super.defineSynchedData();
         this.entityData.define(LASER_LENGTH, 0);
         this.entityData.define(MAX_LASER_LENGTH, 0);
+    }
+
+    /**
+     * レーザーを消す。同時にレーザーが弾の素になる（原版 EntityTHLaser.java:99-116）。
+     *
+     * 原版はレーザーの根元から先端まで 1.5 ブロックおきに EntityShotMaterial を
+     * 発生させる。基类 EntityTHShot の実装（自分の位置に 1 個だけ）では
+     * 長いレーザーを消したときの素材量が桁違いに少なくなるため、ここで上書きする。
+     */
+    @Override
+    public void shotFinishBonus()
+    {
+        if(level().isClientSide)
+        {
+            return;
+        }
+
+        for(double zPos = 0.0D; zPos < getLaserLength(); zPos += 1.5D)
+        {
+            EntityShotMaterial shotMaterial = new EntityShotMaterial(
+                    THKaguyaEntities.SHOT_MATERIAL_ENTITY.get(), level(),
+                    this.getX() + angle.x * zPos,
+                    this.getY() + angle.y * zPos,
+                    this.getZ() + angle.z * zPos);
+            level().addFreshEntity(shotMaterial);
+        }
+
+        discard();
     }
 
     /** 毎 tick 処理：激光长度增长 */
@@ -281,12 +310,17 @@ public class EntityTHLaser extends EntityTHShot
                         : level().damageSources().magic();
                 hit.hurt(dmgSource, dmg);
 
-                // 命中后缩短激光长度
-                double hitDistance = this.distanceTo(hit);
-                if(hitDistance > 0.3D)
+                // 原版 :287-294：レーザーは実体に当たっても**長さを縮めない＝貫通する**。
+                // 代わりに「無敵時間が明けている時だけ」shotDamage を 1 減らし、最小 1 で止まる。
+                // （移植版はここで setLaserLength(hitDistance) していたため、最初の 1 体で
+                //   レーザーが切れ、後ろの敵に当たらなくなっていた）
+                if(hit instanceof LivingEntity living && living.invulnerableTime == 0)
                 {
-                    setLaserLength(hitDistance);
-                    setMaxLaserLength(hitDistance);
+                    shotDamage--;
+                }
+                if(shotDamage <= 0)
+                {
+                    shotDamage = 1;
                 }
             }
         }

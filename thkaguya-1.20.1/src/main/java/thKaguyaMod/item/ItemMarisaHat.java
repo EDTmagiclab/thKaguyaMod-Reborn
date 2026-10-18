@@ -49,6 +49,20 @@ public class ItemMarisaHat extends ArmorItem
 		return MAX_DURABILITY;
 	}
 
+	/**
+	 * 素材 MARISA の耐久係数が 0（他部位用に無敵扱い）なので、Item の maxDamage フィールドは 0 のまま。
+	 * その結果 Item#canBeDepleted() が false を返し、
+	 * ・getMaxDamage(stack) の上書きが無視される
+	 * ・ItemStack#isDamageableItem()/isDamaged() が常に false（耐久バーも出ない）
+	 * ・onArmorTick の「壊れる」判定が動かない
+	 * となるため、明示的に true を返す（原版 setMaxDamage(40) 相当）。
+	 */
+	@Override
+	public boolean canBeDepleted()
+	{
+		return true;
+	}
+
 	@Override
 	public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type)
 	{

@@ -314,6 +314,15 @@ public class ContainerDanmakuCrafting extends AbstractContainerMenu
                 {
                     return ItemStack.EMPTY;
                 }
+                // 原版 1.7.10 の transferStackInSlot は最後に必ず
+                // slot.onPickupFromSlot(player, itemstack1) を呼び、そこで材料を消費していた
+                // （原版 ContainerDanmakuCrafting.java:485）。
+                // 1.20.1 の AbstractContainerMenu#moveItemStackTo は onTake を呼ばないため、
+                // ここで明示的に呼ばないと **Shift+クリックで材料を消費せず増殖できる**。
+                if (slot instanceof SlotDanmakuResult)
+                {
+                    slot.onTake(player, stack);
+                }
             }
             else
             {

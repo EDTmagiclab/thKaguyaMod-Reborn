@@ -119,8 +119,9 @@ public class EntitySpiritualStrikeTalisman extends Entity
 						{
 							EntityTHShot shot = (EntityTHShot)entity;
 
-							// TODO(阶段4): shot.shotFinishBonus()（弾消 → 点アイテム変換）依赖 EntityShotMaterial，未迁移
-							shot.delete();
+							// 原版 :122 は shotFinishBonus()（弾を弾素材に変換して落とす）。
+							// EntityShotMaterial は既に移植済みなので、そちらへ置き換える。
+							shot.shotFinishBonus();
 						}
 					}
 				}

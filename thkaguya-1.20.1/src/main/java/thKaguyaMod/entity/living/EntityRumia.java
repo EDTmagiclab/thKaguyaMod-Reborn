@@ -152,4 +152,21 @@ public class EntityRumia extends EntityDanmakuMob
     {
         return 1;
     }
+
+    /**
+     * 原版 EntityRumia.dropFewItems（:160 付近）。
+     * 弾素材 SMALL（青）＋ 威力/得点アイテムを落とす。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (recentlyHit)
+        {
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.SMALL,
+                    8 + this.getRandom().nextInt(2) + looting, 5, 32, THShotLib.BLUE, 0, 0, 2);
+            this.dropPowerUpItem(8 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+            this.dropPointItem(8 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        }
+    }
 }

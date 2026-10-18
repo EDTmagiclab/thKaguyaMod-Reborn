@@ -189,4 +189,21 @@ public class EntityWriggle extends EntityDanmakuMob
     {
         return 1;
     }
+
+    /**
+     * 原版 EntityWriggle.dropFewItems（:212 付近）。
+     * 弾素材 RICE（黄）＋ 威力/得点アイテム。原版はスペルカード攻撃中のみ。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (recentlyHit && this.isSpellCardAttack())
+        {
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.RICE,
+                    8 + this.getRandom().nextInt(2) + looting, 5, 32, THShotLib.YELLOW, 0, 0, 2);
+            this.dropPowerUpItem(8 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+            this.dropPointItem(8 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        }
+    }
 }

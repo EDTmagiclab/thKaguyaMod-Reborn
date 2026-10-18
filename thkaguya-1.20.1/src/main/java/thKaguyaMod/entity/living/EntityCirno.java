@@ -225,6 +225,10 @@ public class EntityCirno extends EntityDanmakuMob
                 pitch = (float)Math.cos(yaw / 180F * Math.PI * 4F) * 20F - 60F;
                 this.dropPowerUpItem(this.position(), THShotLib.getVecFromAngle(yaw, pitch, 1.0F));
             }
+
+            // 原版 EntityCirno.java:368：弾素材 CRYSTAL（水色）を 17～18 個（＋搶奪）
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.CRYSTAL,
+                    17 + this.getRandom().nextInt(2) + looting, 5, 32, THShotLib.AQUA, 0, 0, 2);
         }
 
         if(recentlyHit && getDanmakuPattern() == SPELLCARD_ATTACK02)

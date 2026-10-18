@@ -202,10 +202,17 @@ public class EntitySilverKnife extends Entity
     {
         super.tick();
 
-        // 1.7 の時間停止判定（ticksExisted <= lastTime で return）は 1.20.1 では super.tick() が
-        // tickCount を先に増やすため成立せず死锁する。時停は段階7で再実装するため、ここでは通常通り進める。
         if(tickCount > 1)
         {
+        	// 時間停止空間（EntitySakuyaWatch#inPrivateSquare）の中では
+        	// hitEntity.tickCount-- で年齢が巻き戻される。その結果 tickCount が
+        	// 前 tick の値（lastTime）以下になるので「止まっている」と判定できる。
+        	// 原版 EntitySilverKnife.java:187-191 と同じ仕組み。
+        	if(tickCount <= lastTime)
+        	{
+        		setKnifeCount(getKnifeCount());
+        		return;
+        	}
 	        //時間が通常通り流れているなら
 			Vec3 motion = new Vec3(lastShotMotionX, lastShotMotionY, lastShotMotionZ);
 			setDeltaMovement(motion);

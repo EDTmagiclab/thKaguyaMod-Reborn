@@ -286,4 +286,37 @@ public class EntityTHFairy extends EntityDanmakuMob
     {
         return 10;
     }
+
+    /**
+     * 原版 EntityTHFairy.dropFewItems（:337-365）。
+     * form 未設定（-1）なら何も落とさない。最大体力 10 の「強い妖精」と
+     * それ以外で弾素材の量・速度が変わる。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (this.getForm() < 0)
+        {
+            return;
+        }
+        if (!recentlyHit)
+        {
+            return;
+        }
+        if (this.getMaxHealth() == 10.0F)
+        {
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.SMALL,
+                    this.getRandom().nextInt(12) + looting * 2, 7, 8, THShotLib.RED, 0, 0, 2);
+            this.dropPowerUpItem(this.getRandom().nextInt(20) + this.getRandom().nextInt(3 + looting * 2));
+            this.dropPointItem(this.getRandom().nextInt(20) + this.getRandom().nextInt(3 + looting * 2));
+        }
+        else
+        {
+            this.dropShotItem(thKaguyaMod.item.ItemTHShot.SMALL,
+                    this.getRandom().nextInt(2) + looting, 3, 0, THShotLib.RED, 0, 0, 2);
+            this.dropPowerUpItem(this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+            this.dropPointItem(this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        }
+    }
 }

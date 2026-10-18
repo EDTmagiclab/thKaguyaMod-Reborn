@@ -53,4 +53,32 @@ public class EntityTHPhantom extends EntityTHFairy
     {
         return 10;
     }
+
+    /**
+     * 原版 EntityTHPhantom.dropFewItems（:124 付近）。
+     * 弾素材 SMALL＋威力/得点アイテム＋魂の灯（soul_torch）。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (this.getForm() < 0)
+        {
+            return;
+        }
+        if (!recentlyHit)
+        {
+            return;
+        }
+        this.dropShotItem(thKaguyaMod.item.ItemTHShot.SMALL,
+                this.getRandom().nextInt(2) + looting, 3, 0, thKaguyaMod.THShotLib.RED, 0, 0, 2);
+        this.dropPowerUpItem(this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        this.dropPointItem(this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
+        int soulTorch = (this.getRandom().nextInt(10) / 9) + this.getRandom().nextInt(1 + looting);
+        if (soulTorch > 0)
+        {
+            this.spawnAtLocation(new net.minecraft.world.item.ItemStack(
+                    thKaguyaMod.init.THKaguyaItems.SOUL_TORCH.get(), soulTorch));
+        }
+    }
 }

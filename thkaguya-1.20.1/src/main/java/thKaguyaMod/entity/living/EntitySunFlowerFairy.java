@@ -44,4 +44,34 @@ public class EntitySunFlowerFairy extends EntityTHFairy
     {
         return 3;
     }
+
+    /**
+     * 原版 EntitySunFlowerFairy.dropFewItems（:110 付近）。
+     * 弾素材 MEDIUM（緑）＋ 威力/得点アイテム。さらに 5% で extend、25% でスペルカード。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (this.getForm() < 0)
+        {
+            return;
+        }
+        if (!recentlyHit)
+        {
+            return;
+        }
+        this.dropShotItem(thKaguyaMod.item.ItemTHShot.MEDIUM,
+                this.getRandom().nextInt(12) + looting * 2, 7, 8, thKaguyaMod.THShotLib.GREEN, 0, 0, 2);
+        this.dropPowerUpItem(this.getRandom().nextInt(20) + this.getRandom().nextInt(3 + looting * 2));
+        this.dropPointItem(this.getRandom().nextInt(20) + this.getRandom().nextInt(3 + looting * 2));
+        if (this.getRandom().nextInt(100) < 5)
+        {
+            this.dropExtendItem(1);
+        }
+        else if (this.getRandom().nextInt(100) < 25)
+        {
+            this.dropSpellCardItem(1);
+        }
+    }
 }

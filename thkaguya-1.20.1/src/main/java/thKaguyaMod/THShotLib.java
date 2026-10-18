@@ -1907,7 +1907,16 @@ public static void playShotSound(Entity entity)
 
 			if (match)
 			{
-				shot.discard();
+				// 原版 danmakuRemove :1680 付近: isDropBounus が true なら
+				// shotFinishBonus()（弾素材を落とす）、false なら単に消す。
+				if (isDropBonus)
+				{
+					shot.shotFinishBonus();
+				}
+				else
+				{
+					shot.discard();
+				}
 				count++;
 			}
 		}
