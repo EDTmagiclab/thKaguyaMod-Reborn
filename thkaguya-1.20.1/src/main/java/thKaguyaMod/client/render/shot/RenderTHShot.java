@@ -303,7 +303,9 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         poseStack.scale(2.0F, 2.0F, 1.0F);   // 原版 width = 1.0F
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
 
-        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glow(TEX_LIGHT));
+        // musoufuuin.png は透明部分の RGB が赤のまま（1.7.10 の alpha test 前提アセット）なので、
+        // 発光混合（alpha を見ない）で描く際は alpha discard 付きパスを使う。
+        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glowCutout(TEX_LIGHT));
         billboard(consumer, poseStack.last(), COLOR_R[color], COLOR_G[color], COLOR_B[color], 128, uMin, uMax);
         poseStack.popPose();
     }
@@ -632,7 +634,9 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
     {
         int color = entity.getShotColor() % 8;
         double timeR = (double) anim / 180.0D * Math.PI;
-        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.doubleAdd(TEX_LIGHT));
+        // 純加算 (ONE, ONE) は alpha も無視するため、透明部の RGB が残る musoufuuin.png では
+        // alpha discard 付きパスが必要（さもないと弾全体が赤い四角になる）。
+        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.doubleAddCutout(TEX_LIGHT));
 
         poseStack.pushPose();
         poseStack.scale(1.0F, 1.0F, 1.0F);

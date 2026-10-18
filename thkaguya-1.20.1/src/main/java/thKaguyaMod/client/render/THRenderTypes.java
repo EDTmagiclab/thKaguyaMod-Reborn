@@ -156,6 +156,64 @@ public final class THRenderTypes
         return get(texture, BLEND_ADDITIVE, cull, true, true);
     }
 
+    /**
+     * 「カットアウト（alpha discard）+ 混合」パス。
+     *
+     * <p>原版テクスチャは 1.7.10 の {@code GL_ALPHA_TEST} 前提で作られており、透明部分の RGB が
+     * 残っていることがある（例 {@code musoufuuin.png} は透明部が <b>(255,0,0,0)</b> の赤）。
+     * 現代の混合式 {@code GL_ONE, GL_ONE_MINUS_SRC_COLOR} / {@code GL_ONE, GL_ONE} は alpha を
+     * 一切見ないため、その赤がそのまま加算されて「赤い四角」＝デフォルトの赤弾に見えてしまう。
+     * カットアウトシェーダ（alpha&lt;0.1 を discard）と混合ステートを併用することで、
+     * 1.7.10 の「アルファテスト + 発光混合」をそのまま再現する。
+     */
+    public static RenderType blendCutout(ResourceLocation texture, int blend, boolean cull, boolean depthWrite)
+    {
+        return getCutoutBlend(texture, blend, cull, depthWrite);
+    }
+
+    /** 発光混合（GL_ONE, GL_ONE_MINUS_SRC_COLOR）+ alpha discard + 両面 + 不写深度 */
+    public static RenderType glowCutout(ResourceLocation texture)
+    {
+        return blendCutout(texture, BLEND_GLOW, false, false);
+    }
+
+    /** 純加算（GL_ONE, GL_ONE）+ alpha discard + 両面 + 不写深度 */
+    public static RenderType doubleAddCutout(ResourceLocation texture)
+    {
+        return blendCutout(texture, BLEND_DOUBLE_ADD, false, false);
+    }
+
+    private static RenderType getCutoutBlend(ResourceLocation texture, int blend, boolean cull, boolean depthWrite)
+    {
+        String key = texture + "|cb|" + blend + "|" + cull + "|" + depthWrite;
+        RenderType cached = CACHE.get(key);
+        if (cached != null)
+        {
+            return cached;
+        }
+        RenderType created = createCutoutBlend(texture, blend, cull, depthWrite);
+        CACHE.put(key, created);
+        return created;
+    }
+
+    private static RenderType createCutoutBlend(ResourceLocation texture, int blend, boolean cull, boolean depthWrite)
+    {
+        RenderType.CompositeState state = RenderType.CompositeState.builder()
+                .setShaderState(cull ? SHADER_ENTITY_CUTOUT : SHADER_ENTITY_CUTOUT_NO_CULL)
+                .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                .setTransparencyState(BLENDS[blend])
+                .setWriteMaskState(depthWrite ? COLOR_DEPTH_WRITE : COLOR_WRITE)
+                .setCullState(cull ? CULL : NO_CULL)
+                .setDepthTestState(LEQUAL)
+                .setLightmapState(LIGHTMAP)
+                .setOverlayState(OVERLAY)
+                .createCompositeState(false);
+
+        String name = "thkaguya_cutblend" + blend + (cull ? "_cull" : "_nocull")
+                + (depthWrite ? "_dwrite" : "_dnowrite") + "_" + texture.getPath().replace('/', '_');
+        return RenderType.create(name, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true, state);
+    }
+
     private static RenderType get(ResourceLocation texture, int blend, boolean cull, boolean depthWrite, boolean alphaTest)
     {
         String key = texture + "|" + blend + "|" + cull + "|" + depthWrite + "|" + alphaTest;

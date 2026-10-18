@@ -76,7 +76,9 @@ public class RenderNuclearShot extends EntityRenderer<EntityNuclearShot>
             poseStack.scale(size2, size2, size2);
             poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
 
-            VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glow(LIGHT_TEXTURE));
+            // 遅延演出も musoufuuin.png（透明部の RGB が赤）を発光混合で描くため、
+            // alpha discard 付きパスでないと赤い四角＝「橙色の小弾」に見えてしまう。
+            VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glowCutout(LIGHT_TEXTURE));
             int r = (int)(COLOR_R[color] * 255F);
             int g = (int)(COLOR_G[color] * 255F);
             int b = (int)(COLOR_B[color] * 255F);

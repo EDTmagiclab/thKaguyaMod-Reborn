@@ -78,7 +78,10 @@ public class EntityNuclearShot extends EntityTHShot
 			}
 			else if(!shootingFlag)
 			{
-				if(player.getUseItem().getItem() != THKaguyaItems.NUCLEAR_CONTROL_ROD.get())
+				// 原版は player.inventory.getCurrentItem()（＝手に持っている物）を見る。
+				// getUseItem() は「使用中でなければ EMPTY」を返すため、離した直後に
+				// EMPTY != 制御棒 となって自爆してしまい、核弾が発射されない。
+				if(player.getMainHandItem().getItem() != THKaguyaItems.NUCLEAR_CONTROL_ROD.get())
 				{
 					if(!level().isClientSide)
 					{

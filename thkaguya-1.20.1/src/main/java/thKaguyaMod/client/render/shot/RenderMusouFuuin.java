@@ -59,7 +59,10 @@ public class RenderMusouFuuin extends net.minecraft.client.renderer.entity.Entit
         poseStack.scale(size, size, size);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
 
-        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glow(TEXTURE));
+        // musoufuuin.png は透明部分の RGB が赤 (255,0,0,0) のまま残っている（1.7.10 の
+        // GL_ALPHA_TEST 前提アセット）。発光混合は alpha を見ないので、alpha discard 付きの
+        // パスで描かないと全体が赤い四角＝「デフォルトの赤弾」に見えてしまう。
+        VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glowCutout(TEXTURE));
 
         // 外殻（±0.6、α0.60）
         quad(consumer, poseStack.last(), cr, cg, cb, 153, 0.6F, uMin, uMax);
