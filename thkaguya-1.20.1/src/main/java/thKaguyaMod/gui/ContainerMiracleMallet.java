@@ -21,18 +21,17 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
     private final Container craftResult;
 
     /*
-     * TODO(D1・未実装・保留)：万宝槌コンテナの潜在的な原版乖離 4 点。
-     * （現在この GUI は openScreen されないため到達不能。実装可否は後日判断）
+     * 原版との意図的な差異（実験的機能として復活させた際の判断。報告書 13.10 参照）
      *
-     *   1. 原版 ContainerMiracleMallet.java:251-254 は
-     *      {@code if(player.experienceLevel >= 30)} を満たすときだけ産物を返す（レベル 30 制限）。
-     *      移植版は無条件に産物を組み立てる。
-     *   2. 原版 :100-108 は {@code alicedoll.bare} を {@code cursed_decoy_doll} に写像する分岐を持つ。
-     *      移植版はこの分岐が無く {@code originID} が常に -1 のため、
-     *      ItemCursedDecoyDoll 側の OriginalItemID/OriginalDamage 復元処理が休眠状態。
-     *   3. 移植版 {@code removed()} は {@code level().isClientSide} を判定せずに素材をドロップする
-     *      （他の 2 コンテナは判定済み）。
-     *   4. 移植版 GuiMiracleMallet は原版の {@code miracleMallet.material} ラベル（原版 134,6）を描かない。
+     *   1. 原版 ContainerMiracleMallet.java:251-254 は {@code if(player.experienceLevel >= 30)} を
+     *      満たすときだけ産物を返す（レベル 30 制限）。ただし素材が入った時点で
+     *      CraftingInventory のリスナーが既に産物を組んでおり、この分岐はクリック後の再計算に
+     *      しか効かないため、移植版は制限を課さない（原版でも実質無制限）。
+     *   2. 原版 :100-108 は {@code alicedoll.bare} を {@code cursed_decoy_doll} に写像する分岐を持つが、
+     *      参照先は外部 mod「Alice's Dolls」のアイテムで、本 mod 単体では存在しない。
+     *      移植版はこの分岐を持たず {@code originID} は常に -1 のため、
+     *      ItemCursedDecoyDoll 側の OriginalItemID/OriginalDamage 復元処理は休眠状態になる。
+     *   3. 原版の slotClick は 30 レベル時に選択スロットを再計算して返すが、1 と同理由で移植しない。
      */
 
     /** 素材槽改动 → 重算产物（结果槽不挂监听器，故不会递归）。 */
@@ -137,12 +136,22 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
 
             if (stack.isEmpty())
             {
-                slot.set(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             }
             else
             {
                 slot.setChanged();
             }
+
+            // 什么都没移动なら终了（原版 AbstractContainerMenu 同判定）
+            if (stack.getCount() == result.getCount())
+            {
+                return ItemStack.EMPTY;
+            }
+
+            // 原版 1.7.10 的 transferStackInSlot 末尾有 slot.onPickupFromSlot(...)，
+            // 结果槽靠这次调用消耗素材；1.20.1 的等价物是 onTake。
+            slot.onTake(player, stack);
         }
         return result;
     }
@@ -151,6 +160,13 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
     public void removed(Player player)
     {
         super.removed(player);
+
+        // 客户端也会调用 removed()，素材只在服务端掉落（原版即如此，另 2 个容器同样判定）
+        if (player.level().isClientSide)
+        {
+            return;
+        }
+
         ItemStack stack = craftMaterial.getItem(0);
         if (!stack.isEmpty())
         {

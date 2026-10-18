@@ -1,16 +1,27 @@
 package thKaguyaMod.item;
 
+import java.util.List;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import thKaguyaMod.THKaguyaAdvancements;
 import thKaguyaMod.entity.shot.EntityTHShot;
+import thKaguyaMod.gui.ContainerMiracleMallet;
+import thKaguyaMod.init.THKaguyaConfig;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 打ち出の小槌（万宝槌，1.20.1 移植版）
@@ -23,7 +34,9 @@ import thKaguyaMod.entity.shot.EntityTHShot;
  *  - 最大堆叠 1、耐久 100。
  *
  * 原版的 GUI（{@code guiMiracleMalletID} → {@code ContainerMiracleMallet}）在原作者代码里
- * 是**被注释掉的死代码**，物品从不打开它；本移植版同样不打开（端口里的 Container/Gui 保留备用）。
+ * 是**被注释掉的死代码**，物品从不打开它；本移植版把它作为「实验的機能」加以复原：
+ * 只有 {@link THKaguyaConfig#enableMalletGui} 打开时，潜行 + 右键才会打开界面
+ * （默认关闭，可在设置里经由 {@code ConfigScreenHandler} 的万宝槌开关启用）。
  */
 public class ItemMiracleMallet extends Item
 {
@@ -45,6 +58,31 @@ public class ItemMiracleMallet extends Item
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
+
+        // 実験的機能：潜行 + 右クリックで、原版では神隠しにされた万宝槌の界面を開く。
+        // 設定が無効なら何もしない（耐久も消費しない）。
+        if (player.isShiftKeyDown())
+        {
+            if (!THKaguyaConfig.enableMalletGui)
+            {
+                return InteractionResultHolder.pass(stack);
+            }
+
+            if (!level.isClientSide)
+            {
+                // 有効化済みセーブで実際に界面を開いた時点でも実績を付与する
+                // （設定画面で後から有効化した場合、再ログインを待たずに取れるように）
+                if (player instanceof ServerPlayer serverPlayer)
+                {
+                    THKaguyaAdvancements.awardMiracleMalletGui(serverPlayer);
+                }
+
+                player.openMenu(new SimpleMenuProvider(
+                        (windowId, playerInventory, p) -> new ContainerMiracleMallet(windowId, playerInventory),
+                        Component.translatable("container.thkaguya.miracle_mallet")));
+            }
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        }
 
         // 原版：空腹ゲージが 0 だと使えない
         if (player.getFoodData().getFoodLevel() <= 0)
@@ -89,5 +127,23 @@ public class ItemMiracleMallet extends Item
     public boolean isBarVisible(ItemStack stack)
     {
         return stack.getDamageValue() > 0;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag)
+    {
+        tooltip.add(Component.translatable("tooltip.thkaguya.miracle_mallet.use")
+                .withStyle(ChatFormatting.GRAY));
+
+        if (THKaguyaConfig.enableMalletGui)
+        {
+            tooltip.add(Component.translatable("tooltip.thkaguya.miracle_mallet.gui_on")
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
+        else
+        {
+            tooltip.add(Component.translatable("tooltip.thkaguya.miracle_mallet.gui_off")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 }

@@ -219,5 +219,19 @@
   "item.thkaguya.wriggle_spawn_egg": "리글 생성 알",
   "entity.thkaguya.danmaku_creeper": "탄막 크리퍼",
   "item.thkaguya.danmaku_creeper_spawn_egg": "탄막 크리퍼 생성 알",
-  "thKaguya.item.kishitu": "기질"
+  "thKaguya.item.kishitu": "기질",
+  "config.thkaguya.experimental.title": "실험적 기능",
+  "config.thkaguya.experimental.hint": "원작자가 주석 처리한 기능을 되살립니다. 동작은 보장되지 않습니다.",
+  "config.thkaguya.mallet_gui": "만보추 개조대: %s",
+  "config.thkaguya.suppress_warning": "활성화 경고 표시 안 함: %s",
+  "config.thkaguya.mallet_gui.warning.title": "신隠し 기능의 부활",
+  "config.thkaguya.mallet_gui.warning.body": "이것은 이미 신隠し(원작자가 주석 처리)된 기능입니다. 정말로 활성화하시겠습니까?",
+  "config.thkaguya.mallet_gui.warning.detail": "활성화하면 만보추를 들고 웅크리기+우클릭으로 개조대가 열립니다.",
+  "config.thkaguya.mallet_gui.warning.dont_ask": "다시 표시하지 않기: %s",
+  "advancements.thkaguya.miracle_mallet_gui.title": "거꾸로 매달린 천수각 속에서",
+  "advancements.thkaguya.miracle_mallet_gui.description": "원작자가 신隠し한 만보추 개조대를 활성화했다.",
+  "container.thkaguya.miracle_mallet": "만보추",
+  "tooltip.thkaguya.miracle_mallet.use": "우클릭: 자신이 발사한 탄막을 거대화",
+  "tooltip.thkaguya.miracle_mallet.gui_on": "웅크리기+우클릭: 개조대 열기 (실험적 기능)",
+  "tooltip.thkaguya.miracle_mallet.gui_off": "개조대는 설정에서 활성화하면 사용할 수 있다 (실험적 기능)"
 }

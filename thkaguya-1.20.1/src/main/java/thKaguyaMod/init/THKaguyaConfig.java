@@ -37,6 +37,12 @@ public class THKaguyaConfig
     public static int shotMaxNumber;
     public static int laserMaxNumber;
 
+    /* ============ 実験的機能 ============ */
+    /** 万宝槌の改造台（原作者がコメントアウトした機能）を有効にする */
+    public static boolean enableMalletGui;
+    /** 実験的機能の警告ダイアログを再度表示しない */
+    public static boolean suppressMalletGuiWarning;
+
     public static final ForgeConfigSpec SPEC;
 
     private static final ForgeConfigSpec.BooleanValue USING_MASTER_SPARK;
@@ -59,6 +65,8 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.BooleanValue SPAWN_HANABEEPER;
     private static final ForgeConfigSpec.IntValue DANMAKU_LEVEL;
     private static final ForgeConfigSpec.IntValue DANMAKU_ACCURACY;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_MALLET_GUI;
+    private static final ForgeConfigSpec.BooleanValue SUPPRESS_MALLET_GUI_WARNING;
 
     static
     {
@@ -97,6 +105,19 @@ public class THKaguyaConfig
 
         builder.push("Other");
         SPAWN_HANABEEPER = builder.define("Spawn Hanabeeper", false);
+        builder.pop();
+
+        // 実験的機能（実験的玩法）
+        // 元の 1.7.10 作者がコメントアウトした「神隠し」機能を、ユーザーが明示的に有効化する。
+        builder.push("Experimental");
+        ENABLE_MALLET_GUI = builder
+                .comment("Enable the Miracle Mallet crafting table (the feature the original author commented out).",
+                        "This is a 'kamikakushi' (god-hidden) feature: the original 1.7.10 code never opened this GUI.",
+                        "When enabled: sneak + right-click with the mallet to open it. Default: false")
+                .define("Enable Miracle Mallet GUI", false);
+        SUPPRESS_MALLET_GUI_WARNING = builder
+                .comment("Do not show the experimental feature warning dialog again.")
+                .define("Suppress Miracle Mallet GUI Warning", false);
         builder.pop();
 
         SPEC = builder.build();
@@ -171,5 +192,35 @@ public class THKaguyaConfig
         spawnHanabeeper = SPAWN_HANABEEPER.get();
         danmakuLevel = DANMAKU_LEVEL.get();
         danmakuAccuracy = 360F * (1F - (DANMAKU_ACCURACY.get() / 100F));
+
+        enableMalletGui = ENABLE_MALLET_GUI.get();
+        suppressMalletGuiWarning = SUPPRESS_MALLET_GUI_WARNING.get();
+    }
+
+    /**
+     * 実験的機能：万宝槌の改造台の有効／無効を書き換える（設定画面から呼ぶ）。
+     *
+     * <p>{@link ForgeConfigSpec.ConfigValue#set} は値を保持するだけでファイルには書かないため、
+     * ここで {@code SPEC.save()} まで行い、静的フィールドも即時同期する（再起動不要）。</p>
+     */
+    public static void setEnableMalletGui(boolean value)
+    {
+        ENABLE_MALLET_GUI.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        enableMalletGui = value;
+    }
+
+    /** 実験的機能：警告ダイアログの「今後表示しない」を書き換える。 */
+    public static void setSuppressMalletGuiWarning(boolean value)
+    {
+        SUPPRESS_MALLET_GUI_WARNING.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        suppressMalletGuiWarning = value;
     }
 }

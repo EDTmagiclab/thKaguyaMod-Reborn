@@ -28,6 +28,7 @@ public class GuiMiracleMallet extends AbstractContainerScreen<ContainerMiracleMa
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
         guiGraphics.drawString(this.font, Component.translatable("item.thkaguya.miracle_mallet"), 6, 6, 4210752, false);
+        guiGraphics.drawString(this.font, Component.translatable("miracleMallet.material"), 134, 6, 4210752, false);
         guiGraphics.drawString(this.font, Component.translatable("miracleMallet.result"), 192, 6, 4210752, false);
         guiGraphics.drawString(this.font, Component.translatable("danmakuCrafting.material"), 26, 22, 4210752, false);
         guiGraphics.drawString(this.font, Component.translatable("container.inventory"), 48, this.imageHeight - 96 + 2, 4210752, false);

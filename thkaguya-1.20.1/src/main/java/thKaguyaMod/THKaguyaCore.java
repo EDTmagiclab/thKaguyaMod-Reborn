@@ -42,6 +42,13 @@ public class THKaguyaCore
         // 配置系统（阶段 3b）
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, THKaguyaConfig.SPEC);
 
+        // 実験的機能の設定画面（Mod 一覧の「Config」ボタン）はクライアント専用。
+        // FMLEnvironment.dist を見て分岐するので、専用サーバーではクラス参照が発生しない。
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT)
+        {
+            thKaguyaMod.client.gui.ExperimentalConfigScreen.register();
+        }
+
         // 注册层：物品 / 方块 / 方块实体 / 创造标签 / 实体 / GUI 菜单
         THKaguyaItems.ITEMS.register(modEventBus);
         THKaguyaBlocks.BLOCKS.register(modEventBus);

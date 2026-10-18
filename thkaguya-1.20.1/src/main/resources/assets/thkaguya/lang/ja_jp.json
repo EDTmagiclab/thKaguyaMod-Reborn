@@ -219,5 +219,19 @@
   "item.thkaguya.wriggle_spawn_egg": "リグルのスポーンエッグ",
   "entity.thkaguya.danmaku_creeper": "弾幕クリーパー",
   "item.thkaguya.danmaku_creeper_spawn_egg": "弾幕クリーパーのスポーンエッグ",
-  "thKaguya.item.kishitu": "気質"
+  "thKaguya.item.kishitu": "気質",
+  "config.thkaguya.experimental.title": "実験的機能",
+  "config.thkaguya.experimental.hint": "原作で神隠しにされた機能を復活させます。動作は保証されません。",
+  "config.thkaguya.mallet_gui": "打ち出の小槌の改造台: %s",
+  "config.thkaguya.suppress_warning": "有効化の警告を表示しない: %s",
+  "config.thkaguya.mallet_gui.warning.title": "神隠し機能の復活",
+  "config.thkaguya.mallet_gui.warning.body": "これはすでに神隠し（原作者がコメントアウト）にされた機能です。本当に有効にしますか？",
+  "config.thkaguya.mallet_gui.warning.detail": "有効にすると、打ち出の小槌を持ってしゃがみ＋右クリックで改造台が開きます。",
+  "config.thkaguya.mallet_gui.warning.dont_ask": "次回から表示しない: %s",
+  "advancements.thkaguya.miracle_mallet_gui.title": "逆さまに吊るされた天守閣の中で",
+  "advancements.thkaguya.miracle_mallet_gui.description": "原作者が神隠しにした打ち出の小槌の改造台を有効にした。",
+  "container.thkaguya.miracle_mallet": "打ち出の小槌",
+  "tooltip.thkaguya.miracle_mallet.use": "右クリック：自分が撃った弾幕を巨大化させる",
+  "tooltip.thkaguya.miracle_mallet.gui_on": "しゃがみ＋右クリック：改造台を開く（実験的機能）",
+  "tooltip.thkaguya.miracle_mallet.gui_off": "改造台は設定で有効にすると使える（実験的機能）"
 }
