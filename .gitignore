@@ -11,6 +11,7 @@ crash-reports/
 *.mca
 *.mcr
 *.log
+.mixin.out/
 
 # ===== IDE / 编辑器 =====
 .idea/
@@ -25,6 +26,7 @@ crash-reports/
 # ===== Java 编译产物 / 二进制 =====
 *.class
 *.jar
+*.bak-*
 
 # ===== 系统 / 临时 =====
 Thumbs.db
@@ -36,3 +38,13 @@ thkaguya-1.12.2/
 thkaguya-1.14.4/
 tools/crashreport-1015/
 .acl-recovery/
+
+# ===== 原版反编译源码与素材：版权归原作者，仅本地对照，不随仓库分发 =====
+extract/
+
+# ===== 本地工作产物 / 临时文件 =====
+.audit_tmp/
+.ingore/
+.workbuddy/
+.jarcheck/
+_tmp_b1.md
