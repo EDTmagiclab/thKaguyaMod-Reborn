@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add("js");</script>
+<title>辉夜姬的五难题·重铸 — beta-0.1.0 发布页</title>
+<meta name="description" content="东方 Project 同人 Mod「五つの難題MOD+」从 1.7.10 到 1.20.1 Forge 的完整移植记录：四天、188 个提交、34,414 行 Java。">
+<style>
+  :root{
+    --bg:#080a14;
+    --bg-2:#0d1020;
+    --panel:#111527;
+    --panel-2:#161b30;
+    --line:#242a44;
+    --line-2:#333b5e;
+    --text:#e8ebf7;
+    --dim:#98a0bd;
+    --dim-2:#6d7595;
+    --violet:#8b7bff;
+    --pink:#ff6ec7;
+    --cyan:#5eead4;
+    --gold:#f5c46b;
+    --red:#ff5566;
+    --radius:16px;
+    --mono:ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,"Courier New",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;overflow-x:clip}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:clip;
+  }
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+  ::selection{background:rgba(139,123,255,.35)}
+
+  /* ---------- top reading progress ---------- */
+  #readbar{
+    position:fixed;inset:0 auto auto 0;height:2px;width:0;z-index:120;
+    background:linear-gradient(90deg,var(--violet),var(--pink),var(--gold));
+    box-shadow:0 0 12px rgba(255,110,199,.7);
+    transition:width .08s linear;
+  }
+
+  /* ---------- danmaku canvas ---------- */
+  #danmaku{
+    position:fixed;inset:0;width:100%;height:100%;
+    z-index:0;pointer-events:none;
+    opacity:.85;
+  }
+  .veil{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(60% 45% at 50% 0%,rgba(139,123,255,.20),transparent 70%),
+      radial-gradient(45% 35% at 85% 20%,rgba(255,110,199,.14),transparent 70%),
+      radial-gradient(45% 35% at 10% 30%,rgba(94,234,212,.10),transparent 70%);
+  }
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;gap:18px;
+    padding:12px 26px;
+    backdrop-filter:blur(14px);
+    background:linear-gradient(180deg,rgba(8,10,20,.85),rgba(8,10,20,.35));
+    border-bottom:1px solid rgba(36,42,68,.6);
+  }
+  .nav .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+  .nav .mark{
+    width:26px;height:26px;border-radius:8px;flex:0 0 auto;
+    background:conic-gradient(from 210deg,var(--violet),var(--pink),var(--gold),var(--cyan),var(--violet));
+    box-shadow:0 0 18px rgba(139,123,255,.5);
+  }
+  .nav .ver{
+    font-family:var(--mono);font-size:11px;color:var(--gold);
+    border:1px solid rgba(245,196,107,.35);border-radius:999px;padding:2px 9px;
+    background:rgba(245,196,107,.08);
+  }
+  .nav .links{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .nav .links a{
+    color:var(--dim);font-size:13.5px;padding:6px 11px;border-radius:9px;
+    text-decoration:none;transition:.2s;
+  }
+  .nav .links a:hover,.nav .links a.on{color:var(--text);background:rgba(139,123,255,.14)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;z-index:2;
+    min-height:100svh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:120px 26px 70px;
+    max-width:1120px;margin:0 auto;
+  }
+  .kicker{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:22px;
+  }
+  .kicker::before{content:"";width:34px;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+  h1{
+    margin:0 0 8px;font-size:clamp(38px,7vw,84px);line-height:1.04;
+    letter-spacing:-.02em;font-weight:800;
+    background:linear-gradient(100deg,#fff 10%,#cbbcff 38%,#ff9ada 62%,#ffe1a8 88%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 6px 34px rgba(139,123,255,.28));
+  }
+  .hero .latin{
+    font-family:var(--mono);font-size:clamp(12px,1.5vw,15px);
+    color:var(--dim-2);letter-spacing:.16em;margin-bottom:26px;
+  }
+  .hero .lead{
+    max-width:720px;font-size:clamp(15px,1.7vw,18px);color:#c3c9e2;margin:0 0 30px;
+  }
+  .hero .lead b{color:#fff;font-weight:600}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:12px 20px;border-radius:12px;font-size:14.5px;font-weight:600;
+    border:1px solid var(--line-2);color:var(--text);background:rgba(22,27,48,.7);
+    text-decoration:none;transition:.22s;cursor:pointer;
+  }
+  .btn:hover{transform:translateY(-2px);border-color:var(--violet);text-decoration:none;
+    box-shadow:0 10px 30px rgba(139,123,255,.22)}
+  .btn.primary{
+    background:linear-gradient(120deg,var(--violet),var(--pink));
+    border-color:transparent;color:#12061a;
+    box-shadow:0 10px 34px rgba(255,110,199,.32);
+  }
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn .sub{font-family:var(--mono);font-size:11px;opacity:.72;font-weight:400}
+  .hero-meta{
+    margin-top:34px;display:flex;flex-wrap:wrap;gap:10px 20px;
+    font-family:var(--mono);font-size:12px;color:var(--dim-2);
+  }
+  .hero-meta span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+  .scroll-hint{
+    position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--dim-2);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .scroll-hint i{
+    width:1px;height:34px;background:linear-gradient(180deg,var(--violet),transparent);
+    animation:drip 1.9s ease-in-out infinite;
+  }
+  @keyframes drip{0%,100%{opacity:.25;transform:translateY(-4px)}50%{opacity:1;transform:translateY(4px)}}
+
+  /* ---------- shared section ---------- */
+  section.block{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:0 26px}
+  .sec-head{margin:96px 0 34px}
+  .sec-head .tag{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;color:var(--violet);
+    text-transform:uppercase;
+  }
+  .sec-head h2{
+    margin:10px 0 8px;font-size:clamp(24px,3.4vw,38px);letter-spacing:-.01em;line-height:1.2;
+  }
+  .sec-head p{margin:0;color:var(--dim);max-width:760px;font-size:15px}
+
+  /* ---------- stats strip ---------- */
+  .stats{
+    position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:0 26px;
+  }
+  .stat-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  }
+  .stat{background:linear-gradient(180deg,rgba(17,21,39,.94),rgba(13,16,32,.94));padding:22px 20px}
+  .stat .n{
+    font-family:var(--mono);font-size:clamp(22px,2.6vw,30px);font-weight:700;color:#fff;
+    letter-spacing:-.02em;
+  }
+  .stat .n em{font-style:normal;color:var(--gold);font-size:.6em;margin-left:2px}
+  .stat .k{font-size:12.5px;color:var(--dim-2);margin-top:2px}
+
+  /* ---------- release card ---------- */
+  .release{
+    position:relative;z-index:2;max-width:1120px;margin:34px auto 0;padding:0 26px;
+  }
+  .release-card{
+    border:1px solid var(--line);border-radius:20px;overflow:hidden;
+    background:
+      linear-gradient(180deg,rgba(22,27,48,.92),rgba(13,16,32,.94));
+    box-shadow:0 30px 80px -40px rgba(0,0,0,.9);
+  }
+  .release-top{
+    display:flex;flex-wrap:wrap;align-items:center;gap:14px;
+    padding:18px 22px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,rgba(139,123,255,.12),rgba(255,110,199,.07),transparent);
+  }
+  .release-top .v{font-family:var(--mono);font-size:14px;color:#fff;font-weight:700}
+  .release-top .b{
+    font-size:11px;font-family:var(--mono);color:var(--cyan);
+    border:1px solid rgba(94,234,212,.32);background:rgba(94,234,212,.08);
+    padding:2px 9px;border-radius:999px;
+  }
+  .release-top .when{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--dim-2)}
+  .release-body{display:grid;grid-template-columns:1.25fr 1fr;gap:0}
+  .release-body>div{padding:22px}
+  .release-body>div+div{border-left:1px solid var(--line)}
+  .release h3{margin:0 0 12px;font-size:14px;color:var(--dim);font-weight:600;letter-spacing:.04em}
+  .kv{display:grid;grid-template-columns:78px 1fr;gap:6px 12px;font-size:13px;margin:0}
+  .kv dt{color:var(--dim-2);font-family:var(--mono);font-size:11.5px;padding-top:2px}
+  .kv dd{margin:0;color:#cfd5ea;word-break:break-all}
+  .kv dd.mono{font-family:var(--mono);font-size:11.5px;color:#a9b2d0}
+  .steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px}
+  .steps li{
+    counter-increment:s;position:relative;padding-left:30px;font-size:13.5px;color:#c8cee4;
+  }
+  .steps li::before{
+    content:counter(s);position:absolute;left:0;top:1px;
+    width:21px;height:21px;border-radius:7px;display:grid;place-items:center;
+    font-family:var(--mono);font-size:11px;color:#0b0e1a;font-weight:700;
+    background:linear-gradient(140deg,var(--cyan),var(--violet));
+  }
+  .steps code{font-family:var(--mono);font-size:12px;background:rgba(139,123,255,.14);
+    padding:1px 6px;border-radius:6px;color:#dcd6ff}
+
+  /* ---------- timeline ---------- */
+  .tl-wrap{
+    position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:0 26px;
+    display:grid;grid-template-columns:64px 1fr;gap:8px;
+  }
+  .rail{
+    position:sticky;top:96px;height:calc(100svh - 160px);
+    align-self:start;margin-top:12px;
+  }
+  .rail-track{
+    position:absolute;left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%);
+    background:linear-gradient(180deg,rgba(36,42,68,.2),var(--line),rgba(36,42,68,.2));
+    border-radius:2px;
+  }
+  .rail-fill{
+    position:absolute;left:0;top:0;width:100%;height:0;
+    background:linear-gradient(180deg,var(--violet),var(--pink),var(--gold));
+    border-radius:2px;transition:height .12s linear;
+    box-shadow:0 0 14px rgba(255,110,199,.5);
+  }
+  .rail-orb{
+    position:absolute;left:50%;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;
+    border-radius:50%;background:#fff;
+    box-shadow:0 0 0 4px rgba(139,123,255,.24),0 0 22px 6px rgba(255,110,199,.55);
+    transition:top .12s linear;
+  }
+  .rail-orb::after{
+    content:"";position:absolute;inset:-13px;border-radius:50%;
+    border:1px dashed rgba(139,123,255,.35);
+    animation:spin 9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .rail-dots{position:absolute;inset:0}
+  .rail-dot{
+    position:absolute;left:50%;transform:translate(-50%,-50%);
+    width:11px;height:11px;border-radius:50%;
+    background:#141a30;border:1px solid rgba(139,123,255,.42);cursor:pointer;padding:0;
+    box-shadow:0 0 0 3px rgba(8,10,20,.9),0 0 10px rgba(139,123,255,.18);
+    transition:.25s;
+  }
+  .rail-dot::after{
+    content:attr(data-label);position:absolute;left:22px;top:50%;transform:translateY(-50%);
+    font-family:var(--mono);font-size:10.5px;color:var(--dim-2);white-space:nowrap;
+    opacity:0;transition:.2s;pointer-events:none;
+  }
+  .rail-dot:hover::after{opacity:1}
+  .rail-dot:hover{border-color:var(--violet);transform:translate(-50%,-50%) scale(1.25)}
+  .rail-dot.on{
+    background:linear-gradient(140deg,var(--gold),var(--pink));
+    border-color:transparent;box-shadow:0 0 16px rgba(255,110,199,.65);
+    transform:translate(-50%,-50%) scale(1.3);
+  }
+
+  .ms{
+    position:relative;padding:26px 0 40px 6px;
+    border-bottom:1px solid rgba(36,42,68,.55);
+  }
+  .ms:last-child{border-bottom:0}
+  .ms .head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .ms .no{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--violet);
+    border:1px solid rgba(139,123,255,.3);background:rgba(139,123,255,.08);
+    padding:2px 9px;border-radius:999px;
+  }
+  .ms .date{font-family:var(--mono);font-size:11.5px;color:var(--dim-2)}
+  .ms h3{
+    margin:0 0 8px;font-size:clamp(19px,2.3vw,26px);letter-spacing:-.01em;line-height:1.3;
+  }
+  .ms .lead{margin:0 0 14px;color:#b9c0da;font-size:14.5px;max-width:760px}
+  .ms ul{margin:0 0 16px;padding:0;list-style:none;display:grid;gap:7px;max-width:800px}
+  .ms ul li{
+    position:relative;padding-left:20px;font-size:13.8px;color:#a9b2d0;
+  }
+  .ms ul li::before{
+    content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;
+    border-radius:2px;transform:rotate(45deg);
+    background:linear-gradient(140deg,var(--cyan),var(--violet));
+    box-shadow:0 0 8px rgba(94,234,212,.5);
+  }
+  .ms ul li b{color:#e6e9f7;font-weight:600}
+  .ms .foot{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .chip{
+    font-family:var(--mono);font-size:11px;color:#c3b8ff;
+    background:rgba(139,123,255,.1);border:1px solid rgba(139,123,255,.22);
+    padding:2px 8px;border-radius:7px;
+  }
+  .chip.tag{color:var(--dim);background:rgba(36,42,68,.5);border-color:var(--line)}
+  .chip.hot{color:var(--gold);background:rgba(245,196,107,.1);border-color:rgba(245,196,107,.28)}
+
+  /* ---------- deep dive grid ---------- */
+  .deep-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .card{
+    border:1px solid var(--line);border-radius:16px;padding:20px;
+    background:linear-gradient(180deg,rgba(22,27,48,.72),rgba(13,16,32,.72));
+    transition:.25s;
+  }
+  .card:hover{border-color:rgba(139,123,255,.45);transform:translateY(-2px)}
+  .card .ic{
+    font-family:var(--mono);font-size:11px;color:var(--pink);letter-spacing:.12em;margin-bottom:8px;
+  }
+  .card h4{margin:0 0 8px;font-size:16px;line-height:1.4}
+  .card p{margin:0;font-size:13.5px;color:#a9b2d0}
+  .card .fix{
+    margin-top:12px;font-size:12.5px;color:var(--cyan);
+    padding-left:14px;border-left:2px solid rgba(94,234,212,.35);
+  }
+  .card code{font-family:var(--mono);font-size:12px;color:#dcd6ff;
+    background:rgba(139,123,255,.12);padding:1px 5px;border-radius:5px}
+
+  /* ---------- scale bars ---------- */
+  .bars{border:1px solid var(--line);border-radius:18px;padding:22px;background:rgba(13,16,32,.7)}
+  .bar-row{display:grid;grid-template-columns:120px 1fr 46px;gap:12px;align-items:center;
+    font-size:12.5px;color:var(--dim);padding:7px 0}
+  .bar-row .t{font-family:var(--mono);font-size:11.5px;color:var(--dim-2)}
+  .bar-row .track{height:9px;border-radius:6px;background:rgba(36,42,68,.7);overflow:hidden}
+  .bar-row .fill{
+    height:100%;width:0;border-radius:6px;
+    background:linear-gradient(90deg,var(--violet),var(--pink));
+    transition:width 1.1s cubic-bezier(.2,.7,.2,1);
+  }
+  .bar-row .v{font-family:var(--mono);font-size:11.5px;color:#cfd5ea;text-align:right}
+  .grid-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  .gnum{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(17,21,39,.65)}
+  .gnum .n{font-family:var(--mono);font-size:20px;color:#fff;font-weight:700}
+  .gnum .k{font-size:12px;color:var(--dim-2)}
+
+  /* ---------- experimental ---------- */
+  .exp{
+    border:1px solid rgba(245,196,107,.3);border-radius:20px;padding:26px;
+    background:
+      radial-gradient(70% 120% at 0% 0%,rgba(245,196,107,.12),transparent 60%),
+      linear-gradient(180deg,rgba(22,27,48,.9),rgba(13,16,32,.92));
+  }
+  .exp .warn{
+    font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.14em;margin-bottom:10px;
+  }
+  .exp blockquote{
+    margin:16px 0;padding:14px 18px;border-left:3px solid var(--gold);
+    background:rgba(245,196,107,.06);border-radius:0 12px 12px 0;
+    color:#f0dfbb;font-size:14px;
+  }
+  .exp .twocol{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .exp h4{margin:0 0 8px;font-size:14px;color:#e9dcc0}
+  .exp p,.exp li{font-size:13.5px;color:#b9b0a0}
+  .exp ol{margin:0;padding-left:20px}
+
+  /* ---------- known issues ---------- */
+  .known{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .known .card h4{font-size:15px}
+  .known ul{margin:0;padding-left:18px}
+  .known li{font-size:13.5px;color:#a9b2d0;margin:5px 0}
+  .known .ok{border-color:rgba(94,234,212,.28)}
+
+  /* ---------- footer ---------- */
+  footer{
+    position:relative;z-index:2;margin-top:96px;padding:44px 26px 60px;
+    border-top:1px solid var(--line);background:rgba(8,10,20,.85);
+  }
+  .foot-in{max-width:1120px;margin:0 auto;display:flex;flex-wrap:wrap;gap:26px;justify-content:space-between}
+  .foot-in .col{min-width:200px}
+  .foot-in .h{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--dim-2);margin-bottom:8px}
+  .foot-in p,.foot-in li{font-size:12.5px;color:var(--dim);margin:3px 0}
+  .foot-in ul{list-style:none;padding:0;margin:0}
+  .foot-note{
+    max-width:1120px;margin:28px auto 0;padding-top:18px;border-top:1px solid rgba(36,42,68,.5);
+    font-size:11.5px;color:var(--dim-2);display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;
+  }
+
+  #totop{
+    position:fixed;right:22px;bottom:22px;z-index:110;
+    width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(22,27,48,.9);border:1px solid var(--line-2);color:var(--dim);
+    cursor:pointer;opacity:0;pointer-events:none;transition:.25s;font-size:15px;
+  }
+  #totop.show{opacity:1;pointer-events:auto}
+  #totop:hover{color:#fff;border-color:var(--violet);transform:translateY(-3px)}
+
+  /* reveal — 只有 JS 可用时才藏，避免脚本失效导致内容不可见 */
+  .js .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .js .rv.in{opacity:1;transform:none}
+  .h1-orn{font-size:.34em;vertical-align:.62em;opacity:.55;margin:0 .22em;letter-spacing:0}
+
+  @media (max-width:900px){
+    .stat-grid{grid-template-columns:repeat(2,1fr)}
+    .release-body{grid-template-columns:1fr}
+    .release-body>div+div{border-left:0;border-top:1px solid var(--line)}
+    .deep-grid,.known,.exp .twocol{grid-template-columns:1fr}
+    .tl-wrap{grid-template-columns:1fr}
+    .rail{display:none}
+    .grid-nums{grid-template-columns:repeat(2,1fr)}
+    .nav .links{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+    .js .rv{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="readbar"></div>
+<canvas id="danmaku" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<nav class="nav">
+  <div class="brand"><span class="mark"></span>辉夜姬的五难题 · 重铸</div>
+  <span class="ver">β 0.1.0</span>
+  <div class="links">
+    <a href="#timeline">时间线</a>
+    <a href="#deep">技术</a>
+    <a href="#scale">规模</a>
+    <a href="#exp">实验性</a>
+    <a href="#known">已知问题</a>
+  </div>
+</nav>
+
+<main>
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="kicker">Touhou Project · Unofficial Port</div>
+    <h1>辉夜姬的五难题<br><span class="h1-orn">·</span>重铸<span class="h1-orn">·</span></h1>
+    <div class="latin">THKAGUYA REBORN &nbsp;/&nbsp; 五つの難題MOD+ 1.7.10 → 1.20.1 FORGE</div>
+    <p class="lead">
+      把 2014 年那款 <b>1.7.10 Forge</b> 时代的东方同人 Mod，整包搬到 <b>Minecraft 1.20.1</b>。
+      118 件物品、48 个实体、35 张符卡、109 条配方、整套弹幕合成系统——以及四天里 <b>188 个提交</b>所记录的每一次踩坑。
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="dist/thkaguya-beta-0.1.0.jar" download>
+        ⬇ 下载 beta-0.1.0 <span class="sub">1.68 MB</span>
+      </a>
+      <a class="btn" href="dist/发布说明-beta-0.1.0.md">发布说明</a>
+      <a class="btn" href="移植检查报告-复核轮.md">差异复核报告</a>
+    </div>
+    <div class="hero-meta">
+      <span><i class="dot"></i>Minecraft 1.20.1</span>
+      <span><i class="dot" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></i>Forge 47.4.28+</span>
+      <span><i class="dot" style="background:var(--pink);box-shadow:0 0 10px var(--pink)"></i>Java 17</span>
+      <span><i class="dot" style="background:var(--violet);box-shadow:0 0 10px var(--violet)"></i>无前置</span>
+      <span>2026-10-18 发布</span>
+    </div>
+    <div class="scroll-hint">SCROLL<i></i></div>
+  </header>
+
+  <!-- ============ STATS ============ -->
+  <div class="stats">
+    <div class="stat-grid">
+      <div class="stat"><div class="n"><span data-count="188">0</span></div><div class="k">git 提交</div></div>
+      <div class="stat"><div class="n"><span data-count="255">0</span></div><div class="k">Java 类文件</div></div>
+      <div class="stat"><div class="n"><span data-count="34414">0</span><em>行</em></div><div class="k">Java 代码</div></div>
+      <div class="stat"><div class="n"><span data-count="4">0</span><em>天</em></div><div class="k">从建仓到公测</div></div>
+    </div>
+  </div>
+
+  <!-- ============ RELEASE CARD ============ -->
+  <div class="release">
+    <div class="release-card">
+      <div class="release-top">
+        <span class="v">thkaguya-beta-0.1.0.jar</span>
+        <span class="b">首个公测版</span>
+        <span class="b" style="color:var(--gold);border-color:rgba(245,196,107,.32);background:rgba(245,196,107,.08)">全功能覆盖</span>
+        <span class="when">2026-10-18 · 1,763,567 bytes</span>
+      </div>
+      <div class="release-body">
+        <div>
+          <h3>这个包是什么</h3>
+          <dl class="kv">
+            <dt>modid</dt><dd class="mono">thkaguya</dd>
+            <dt>适用</dt><dd>Minecraft 1.20.1 + Forge 47.4.28 及以上</dd>
+            <dt>前置</dt><dd>无（Forge 本体即可）</dd>
+            <dt>服务端</dt><dd>客户端与服务端都要装</dd>
+            <dt>SHA-256</dt><dd class="mono" title="4058D68CE2FE67E2330BEF25D962B352F1822DB468B8376DEF2E33756097B671">4058D68C…7B671</dd>
+            <dt>许可</dt><dd>All rights reserved（沿用原版）</dd>
+          </dl>
+        </div>
+        <div>
+          <h3>安装</h3>
+          <ol class="steps">
+            <li>装好 Minecraft <code>1.20.1</code> + Forge <code>47.4.28</code>（或更高 47.x）</li>
+            <li>把 <code>thkaguya-beta-0.1.0.jar</code> 放进 <code>mods/</code></li>
+            <li>启动游戏，首次进入会生成 <code>config/thkaguya-common.toml</code></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TIMELINE ============ -->
+  <section class="block" id="timeline">
+    <div class="sec-head rv">
+      <div class="tag">Changelog / 2026.10.15 → 2026.10.18</div>
+      <h2>四天，188 个提交</h2>
+      <p>每一天都在「编译通过 → 进游戏 → 发现新的看不见 → 修」之间循环。下面是这条线上真正改变结构的那几个节点。</p>
+    </div>
+  </section>
+
+  <div class="tl-wrap">
+    <aside class="rail" aria-hidden="true">
+      <div class="rail-track"><div class="rail-fill" id="railFill"></div></div>
+      <div class="rail-orb" id="railOrb"></div>
+      <div class="rail-dots" id="railDots"></div>
+    </aside>
+
+    <div class="cards" id="cards">
+
+      <article class="ms rv" data-label="立项">
+        <div class="head"><span class="no">PHASE 01</span><span class="date">2026-10-15 · 48 commits</span></div>
+        <h3>拆包、立骨架</h3>
+        <p class="lead">先判断可行性，再把 1.7.10 的源码、mapping、贴图整个拆出来，立起 1.20.1 Forge 工程。</p>
+        <ul>
+          <li>反编译 <b>「五つの難題MOD+ ver2.90.1-1.7.10」</b>，得到可检索的 1.7.10 源码树作为唯一对照物</li>
+          <li>建立工作约定：<b>每完成一版一个提交</b>，jar 必须同步进游戏目录再实测</li>
+          <li>首个可编译里程碑：<b>13 个 ItemXxx 物品类</b> + 物品右键生成实体</li>
+        </ul>
+        <div class="foot"><span class="chip">4adc8ca</span><span class="chip">b5e8b5f</span><span class="chip">6103942</span><span class="chip tag">基石</span></div>
+      </article>
+
+      <article class="ms rv" data-label="实体">
+        <div class="head"><span class="no">PHASE 02</span><span class="date">2026-10-15</span></div>
+        <h3>一天之内，把实体层搬完</h3>
+        <p class="lead">符卡、生物、特效三块同时落地——这是整个移植里体量最集中的一次。</p>
+        <ul>
+          <li><b>36 个 THSC_* 符卡类</b>，3,698 行，一次性接手</li>
+          <li><b>12 个 living 实体</b>：琪露诺 / 灵梦 / 神子 / 咲夜 / 早苗 / 露米娅 / 屠自古 / 莉格露 / 幻灵 / 向日葵妖精 / 使魔 / 弹幕苦力怕</li>
+          <li><b>5 个 effect 实体</b>收口，实体层宣布达标</li>
+        </ul>
+        <div class="foot"><span class="chip">bef53c6</span><span class="chip">d4d99a8</span><span class="chip">fe13d0f</span><span class="chip tag">3698 行</span></div>
+      </article>
+
+      <article class="ms rv" data-label="渲染">
+        <div class="head"><span class="no">PHASE 03</span><span class="date">2026-10-15</span></div>
+        <h3>把 GL 固定管线翻译成 RenderType</h3>
+        <p class="lead">1.7.10 的弹幕是直接用 <code>GL11</code> 画 quad 和三角扇的。1.20.1 没有这套东西，只能按 form 逐种重写几何。</p>
+        <ul>
+          <li>矢弹 14 quad 的 3D 模型、苦无、光弹双 pass（光晕 + 白心）、辉针、幻影三层、程序化五角星、蝶翼挥动、符札三维旋转、八面体结晶、使魔 billboard</li>
+          <li>激光：梭形圆柱体 + MasterSpark 彩虹光柱 + 蓄力光效；冈格尼尔与莱瓦汀的双 pass 变换</li>
+          <li>符卡魔法阵、5 个 effect 实体渲染、10 个物品的 3D 模型（替换 billboard）</li>
+        </ul>
+        <div class="foot"><span class="chip">beac041</span><span class="chip">e5752bf</span><span class="chip">81e6bbe</span><span class="chip">3b55e43</span></div>
+      </article>
+
+      <article class="ms rv" data-label="GUI">
+        <div class="head"><span class="no">PHASE 04</span><span class="date">2026-10-15 夜</span></div>
+        <h3>四套 GUI 与配方体系</h3>
+        <p class="lead">弹幕工作台、激光弹幕工作台、奇迹小槌、早苗商店——MenuType + AbstractContainerMenu + Screen + 自定义 Slot 全套重写。</p>
+        <ul>
+          <li>1.7.10 的 <code>GuiContainer</code> + <code>Container</code> 在 1.20.1 拆成了更细的四个抽象层</li>
+          <li>方块 <code>openScreen</code> 接线，右键方块就能开界面</li>
+          <li>这一层之后，合成链才第一次真正跑通</li>
+        </ul>
+        <div class="foot"><span class="chip">2eb2682</span><span class="chip tag">4 套界面</span></div>
+      </article>
+
+      <article class="ms rv" data-label="实测">
+        <div class="head"><span class="no">PHASE 05</span><span class="date">2026-10-16</span></div>
+        <h3>实测地狱：看不见的、黑色的、飞不起来的</h3>
+        <p class="lead">编译通过不代表能玩。这一天修的全是「代码看起来对、进游戏就是不对」的问题。</p>
+        <ul>
+          <li>物品模型全黑：<b><code>.color(1,1,1,1)</code> 用了 int 字面量</b>，实际是 1/255 的近黑 → 必须写 <code>255</code></li>
+          <li>光弹等面向相机的弹幕<b>被背面剔除</b>，完全不可见 → 全部改用 NoCull</li>
+          <li>扫帚 rubber-band：服务端在自走玩家操控的载具；WASD 分支<b>从来没被进入过</b></li>
+          <li>弹幕 / 激光混合模式整体对齐原版：自定义 RenderType 全量替换固定管线状态</li>
+        </ul>
+        <div class="foot"><span class="chip">33c7e42</span><span class="chip">f337d40</span><span class="chip">ff82ac8</span><span class="chip">8d22dc6</span><span class="chip tag">渲染不变量</span></div>
+      </article>
+
+      <article class="ms rv" data-label="哑物品">
+        <div class="head"><span class="no">PHASE 06</span><span class="date">2026-10-16 → 10-17</span></div>
+        <h3>哑物品：把 118 件东西逐个点亮</h3>
+        <p class="lead">移植到中段时，大半物品已经注册、能拿到手，但右键没有任何反应。于是按批次三公开火。</p>
+        <ul>
+          <li><b>批次 1（22/22 结清）</b>：御币 ×2、楼观剑、楼观旋风刃、隙间折伞、豊聡耳の宝剣……并补齐 homing / diffusion 库函数</li>
+          <li><b>批次 2</b>：19 种弹 + 3 种激光 + 弹幕之素可发射；图标高光层与五语言 211 键</li>
+          <li><b>批次 3</b>：万宝槌、伊吹瓢、嗜血阴阳玉、蓬莱玉枝、火鼠的皮衣、第三只眼、泄矢的帽子</li>
+        </ul>
+        <div class="foot"><span class="chip">8c0671f</span><span class="chip">b7234f7</span><span class="chip">7749419</span><span class="chip">e597eb1</span><span class="chip tag">22 项</span></div>
+      </article>
+
+      <article class="ms rv" data-label="完整度">
+        <div class="head"><span class="no">PHASE 07</span><span class="date">2026-10-17</span></div>
+        <h3>阶段 7：让它像一个完整的 Mod</h3>
+        <p class="lead">从「能放技能」到「有世界、有交易、有掉落链」。</p>
+        <ul>
+          <li>符卡宣言闸门 + 符卡专用创造标签；<b>28 张符卡配方</b>（NBT Damage 写卡号）</li>
+          <li>村民<b>霖之助</b>（职业 + 弹幕工作台兴趣点 + 8 条交易）、早苗 / 咲夜真实交易界面</li>
+          <li>发射器行为、音效注册化、Boss 血条、<b>掉落链</b>（得分 / 威力 / 符卡道具）</li>
+          <li>11 类怪走 <code>biome_modifier</code> 自然生成；时停时天空反色</li>
+        </ul>
+        <div class="foot"><span class="chip">c4b51e2</span><span class="chip">ae3eae7</span><span class="chip">24790d4</span><span class="chip">1264ebe</span><span class="chip">719001e</span></div>
+      </article>
+
+      <article class="ms rv" data-label="复核">
+        <div class="head"><span class="no">PHASE 08</span><span class="date">2026-10-18 · 收尾</span></div>
+        <h3>复核轮：246 条差异，和三个真因</h3>
+        <p class="lead">最后一天不再加功能，而是逐条比对 1.7.10 的行为。大部分差异一句话就能解释，只有三个根因藏得很深。</p>
+        <ul>
+          <li><b>真因一：EntityType 由构造器决定。</b>子类的便利构造器把类型写死成 <code>TH_SHOT</code>，客户端就按普通弹实例化——梦想封印永远是 5 颗默认红弹，专用渲染器一次都没被调用</li>
+          <li><b>真因二：透明像素是红的。</b>1.7.10 靠 <code>GL_ALPHA_TEST</code> 丢掉 alpha=0 的像素，现代混合直接加算 → 整片红 / 橙方块</li>
+          <li><b>真因三：<code>getUseItem()</code> 不是手持物。</b>松手瞬间返回 EMPTY，「还拿着制御棒吗」必判错 → 核弹在手里自爆</li>
+          <li>顺带复活原作者注释掉的<b>万宝槌改造台</b>，做成可开关的实验性玩法 + 一个成就</li>
+        </ul>
+        <div class="foot"><span class="chip">a6c0292</span><span class="chip">8551e66</span><span class="chip">44c120b</span><span class="chip">dffb18e</span><span class="chip hot">557e99e · HEAD</span></div>
+      </article>
+
+    </div>
+  </div>
+
+  <!-- ============ DEEP DIVE ============ -->
+  <section class="block" id="deep">
+    <div class="sec-head rv">
+      <div class="tag">Post-mortem</div>
+      <h2>六个把时间烧掉的坑</h2>
+      <p>这些不是「写错了一个方法」，而是两个版本的运行模型不同，导致「照抄源码」必然失败的地方。</p>
+    </div>
+    <div class="deep-grid">
+      <div class="card rv">
+        <div class="ic">01 / ENTITY TYPE</div>
+        <h4>实体的类型由构造器决定，而不是由类决定</h4>
+        <p>1.20.1 的客户端拿到网络包里的类型 id，用注册表里的工厂<b>新建</b>一个实体——它不会知道你原本 new 的是子类。便利构造器若把类型写死成基类，子类的渲染器、同步数据、碰撞箱全部失效。</p>
+        <div class="fix">4 个子类改为传入自己的 <code>EntityType</code>，梦想封印与核弹立刻恢复正常。</div>
+      </div>
+      <div class="card rv">
+        <div class="ic">02 / ALPHA</div>
+        <h4>1.7.10 贴图的透明像素是红色的</h4>
+        <p>老贴图把背景涂成 <code>(255,0,0,0)</code>，靠 alpha test 丢弃。现代混合模式不看 alpha 通道，那些像素被当成纯红加了上去——于是「梦想封印」变成一个红方块。</p>
+        <div class="fix">新增 cutout + 自定义混合的 RenderType，恢复 alpha test 语义。</div>
+      </div>
+      <div class="card rv">
+        <div class="ic">03 / REGISTRY</div>
+        <h4>不能在运行期 new Item</h4>
+        <p>原版 1.7.10 允许随手 <code>new ItemXxx()</code> 当数据载体用。1.20.1 的注册表在启动后就冻结，运行期 new 出来的物品没有 id、没有贴图，还会让分发逻辑静默失败。</p>
+        <div class="fix">改为引用已注册的 <code>Item</code> 单例；空 <code>catch</code> 是当时最大的帮凶。</div>
+      </div>
+      <div class="card rv">
+        <div class="ic">04 / CULLING</div>
+        <h4>面向相机的 quad 必须关掉背面剔除</h4>
+        <p>billboard 的顶点绕序取决于相机位置，一半视角下面朝相机的那面是「背面」，被 GPU 直接丢掉。表现是「某些角度完全看不见」。</p>
+        <div class="fix">所有 billboard 一律改用 NoCull 的 RenderType，成为一条硬性不变量。</div>
+      </div>
+      <div class="card rv">
+        <div class="ic">05 / ITEM USE</div>
+        <h4><code>getUseItem()</code> ≠ 手上拿的东西</h4>
+        <p><code>getUseItem()</code> 只在「正在使用」期间有值。松手那一刻它已经是 EMPTY，用它判断「玩家还拿着制御棒吗」永远为假——核弹于是在手里炸了。</p>
+        <div class="fix">改用 <code>getMainHandItem()</code>，与原版 <code>inventory.getCurrentItem()</code> 对齐。</div>
+      </div>
+      <div class="card rv">
+        <div class="ic">06 / VEHICLE</div>
+        <h4>服务端不要驱动玩家操控的载具</h4>
+        <p>扫帚上玩家一直「moved wrongly」并被拽回原位：服务端每 tick 自行给它一个速度，和客户端输入打架。WASD 读键分支又因为一个 <code>isEmpty</code> 判断从未进入。</p>
+        <div class="fix">客户端负责输入、服务端只做校验；控制分支改用 <code>getControllingPassenger</code>。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCALE ============ -->
+  <section class="block" id="scale">
+    <div class="sec-head rv">
+      <div class="tag">By the numbers</div>
+      <h2>规模</h2>
+      <p>四天的提交分布并不均匀——第二天几乎全在修实测问题，第三天是内容量最大的一天。</p>
+    </div>
+    <div class="bars rv">
+      <div class="bar-row"><span class="t">10-15</span><div class="track"><div class="fill" data-w="58"></div></div><span class="v">48</span></div>
+      <div class="bar-row"><span class="t">10-16</span><div class="track"><div class="fill" data-w="52"></div></div><span class="v">43</span></div>
+      <div class="bar-row"><span class="t">10-17</span><div class="track"><div class="fill" data-w="100"></div></div><span class="v">82</span></div>
+      <div class="bar-row"><span class="t">10-18</span><div class="track"><div class="fill" data-w="18"></div></div><span class="v">15</span></div>
+      <div class="grid-nums">
+        <div class="gnum"><div class="n">118</div><div class="k">物品（含 14 刷怪蛋）</div></div>
+        <div class="gnum"><div class="n">48</div><div class="k">实体</div></div>
+        <div class="gnum"><div class="n">35</div><div class="k">符卡</div></div>
+        <div class="gnum"><div class="n">109</div><div class="k">配方</div></div>
+        <div class="gnum"><div class="n">45</div><div class="k">渲染器类</div></div>
+        <div class="gnum"><div class="n">236</div><div class="k">语言键 × 5 语言</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPERIMENTAL ============ -->
+  <section class="block" id="exp">
+    <div class="sec-head rv">
+      <div class="tag">Experimental</div>
+      <h2>被原作者注释掉的那张工作台</h2>
+      <p>1.7.10 的源码里，万宝槌改造台的界面调用整段被 <code>/* */</code> 包着——三个「N SWING」按钮连 <code>actionPerformed</code> 都没有。移植版把它按「实验性玩法」复活，默认关闭。</p>
+    </div>
+    <div class="exp rv">
+      <div class="warn">⚠ 神隐功能复活</div>
+      <blockquote>这是已经神隐（被原作者注释掉）的功能，你确定要开启吗？</blockquote>
+      <div class="twocol">
+        <div>
+          <h4>开关与提示</h4>
+          <p>Forge 模组列表里的 <b>Config</b> → 实验性玩法，可单独开关；首次开启会弹一次警告页，可勾选「不再提示」。配置由服务端判定，多人服需要管理员开启。</p>
+          <p>启用后潜行 + 右键万宝槌，进入<b>「妖器化」</b>界面。</p>
+        </div>
+        <div>
+          <h4>三条炼成规则</h4>
+          <ol>
+            <li>阴阳玉 → 渴望鲜血的阴阳玉</li>
+            <li>隙间 → 隙间的折叠伞</li>
+            <li>楼观剑 → 楼观旋风刃</li>
+          </ol>
+          <p style="margin-top:8px">第四条「素体人偶 → 被诅咒的诱饵人偶」依赖外部 Mod「Alice's Dolls」，未实现。</p>
+        </div>
+      </div>
+      <p style="margin:14px 0 0;color:var(--gold);font-size:13px">🏆 启用后获得成就「在倒悬的天守阁中」（图标为万宝槌）</p>
+    </div>
+  </section>
+
+  <!-- ============ KNOWN ISSUES ============ -->
+  <section class="block" id="known">
+    <div class="sec-head rv">
+      <div class="tag">Known issues</div>
+      <h2>公测版的诚实清单</h2>
+      <p>功能覆盖完整，但与 1.7.10 仍存在一批行为 / 数值差异。完整清单见 <a href="移植检查报告-复核轮.md">差异复核报告</a>（12 章，246 条）。</p>
+    </div>
+    <div class="known">
+      <div class="card rv">
+        <h4>仍存在的差异</h4>
+        <ul>
+          <li>弹幕会命中动物与村民</li>
+          <li>贴墙目标可能免伤</li>
+          <li>追踪弹比原版更「咬人」</li>
+          <li>固定激光被方块挡住后会永久变短</li>
+          <li>激光撞弹会直接消除对方（原版互相削伤害）</li>
+          <li>灵梦 / 咲夜 / 神子暂不掉落 power / point 素材</li>
+          <li>时停不冻结弹幕生物</li>
+        </ul>
+      </div>
+      <div class="card ok rv">
+        <h4>有意为之的改动</h4>
+        <ul>
+          <li>Boss 血条改用 1.20.1 的 <code>ServerBossEvent</code></li>
+          <li>自然生成改为 <code>biome_modifier</code> + 配置门控</li>
+          <li>2026-10-18 收尾轮已修：弹幕素材配方产量、双扇蓄力方向、工具耐久</li>
+        </ul>
+        <h4 style="margin-top:18px">反馈请附</h4>
+        <p>游戏版本 / Forge 版本 / <code>logs/latest.log</code> / 复现步骤（维度、坐标、手持物品）。数值类问题请附原版对照数值。</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <div class="col">
+      <div class="h">原作</div>
+      <p>thKaguyaMod</p>
+      <p>五つの難題MOD+ ver2.90.1 (1.7.10)</p>
+    </div>
+    <div class="col">
+      <div class="h">移植</div>
+      <p>Minecraft 1.20.1 · Forge 47.4.28</p>
+      <p>Gradle 8.1.1 · JDK 17 · ForgeGradle 6</p>
+    </div>
+    <div class="col">
+      <div class="h">文档</div>
+      <ul>
+        <li><a href="移植检查报告-复核轮.md">差异复核报告（246 条）</a></li>
+        <li><a href="移植检查报告.md">移植检查报告</a></li>
+        <li><a href="移植任务书.md">移植任务书</a></li>
+        <li><a href="dist/发布说明-beta-0.1.0.md">beta-0.1.0 发布说明</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="h">时间</div>
+      <p>2026-10-15 → 2026-10-18</p>
+      <p>188 commits · HEAD 557e99e</p>
+    </div>
+  </div>
+  <div class="foot-note">
+    <span>辉夜姬的五难题 · 重铸 — 非官方同人移植，内容版权归属原作者。</span>
+    <span>本页由 git 提交记录与移植报告整理生成。</span>
+  </div>
+</footer>
+
+<button id="totop" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------- danmaku background ---------------- */
+  var cv = document.getElementById("danmaku");
+  var ctx = cv.getContext("2d");
+  var W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var COLORS = ["#8b7bff","#ff6ec7","#5eead4","#f5c46b","#7aa2ff","#ffffff"];
+  var bullets = [], visible = true;
+
+  function resize(){
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.floor(W * DPR);
+    cv.height = Math.floor(H * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+
+  function makeBullet(anywhere){
+    var r = 1.2 + Math.random() * 3.2;
+    return {
+      x: Math.random() * W,
+      y: anywhere ? Math.random() * H : H + 20,
+      r: r,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: -(0.25 + Math.random() * 0.75) - r * 0.08,
+      c: COLORS[(Math.random() * COLORS.length) | 0],
+      a: 0.25 + Math.random() * 0.5,
+      tw: Math.random() * Math.PI * 2
+    };
+  }
+
+  function seed(){
+    var n = Math.min(110, Math.max(38, Math.round(W * H / 16000)));
+    bullets = [];
+    for (var i = 0; i < n; i++) bullets.push(makeBullet(true));
+  }
+
+  var last = 0;
+  function loop(t){
+    if (!visible) { requestAnimationFrame(loop); return; }
+    var dt = last ? Math.min(48, t - last) : 16;
+    last = t;
+    var k = dt / 16.67;
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < bullets.length; i++){
+      var b = bullets[i];
+      b.x += b.vx * k;
+      b.y += b.vy * k;
+      b.tw += 0.02 * k;
+      if (b.y < -30 || b.x < -40 || b.x > W + 40){
+        bullets[i] = makeBullet(false);
+        continue;
+      }
+      var tw = 0.72 + 0.28 * Math.sin(b.tw);
+      ctx.globalAlpha = b.a * tw;
+      ctx.fillStyle = b.c;
+      ctx.shadowColor = b.c;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, 6.2832);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(loop);
+  }
+
+  resize(); seed();
+  if (!reduce) requestAnimationFrame(loop);
+  window.addEventListener("resize", function(){
+    resize(); seed();
+    measure();
+  });
+  document.addEventListener("visibilitychange", function(){ visible = !document.hidden; });
+
+  /* ---------------- timeline rail ---------------- */
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".ms"));
+  var railFill = document.getElementById("railFill");
+  var railOrb  = document.getElementById("railOrb");
+  var railDots = document.getElementById("railDots");
+  var wrap = document.querySelector(".tl-wrap");
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav .links a"));
+  var tlTop = 0, tlHeight = 1, dots = [];
+
+  cards.forEach(function(card, i){
+    var d = document.createElement("button");
+    d.className = "rail-dot";
+    d.type = "button";
+    d.style.top = ((i + 0.5) / cards.length * 100) + "%";
+    d.setAttribute("data-label", (i < 9 ? "0" : "") + (i + 1) + " " + (card.getAttribute("data-label") || ""));
+    d.setAttribute("aria-label", "跳到第 " + (i + 1) + " 阶段");
+    d.addEventListener("click", function(){
+      card.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    });
+    railDots.appendChild(d);
+    dots.push(d);
+  });
+
+  function measure(){
+    var r = wrap.getBoundingClientRect();
+    tlTop = r.top + window.scrollY;
+    tlHeight = Math.max(1, wrap.offsetHeight);
+    resize();
+  }
+
+  var ticking = false, active = -1;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  function update(){
+    ticking = false;
+    var y = window.scrollY;
+    var vh = window.innerHeight;
+
+    /* reading bar */
+    var max = document.documentElement.scrollHeight - vh;
+    var p = max > 0 ? y / max : 0;
+    document.getElementById("readbar").style.width = (p * 100).toFixed(2) + "%";
+
+    /* fade danmaku after hero */
+    cv.style.opacity = Math.max(0, 0.85 - y / (vh * 0.9)).toFixed(3);
+
+    /* timeline progress: 以视口中线为游标 */
+    var prog = (y + vh * 0.5 - tlTop) / tlHeight;
+    prog = Math.max(0, Math.min(1, prog));
+    railFill.style.height = (prog * 100).toFixed(2) + "%";
+    railOrb.style.top = (prog * 100).toFixed(2) + "%";
+
+    /* active milestone */
+    var probe = y + vh * 0.42;
+    var idx = 0;
+    for (var i = 0; i < cards.length; i++){
+      var cr = cards[i].getBoundingClientRect();
+      if (cr.top + window.scrollY <= probe) idx = i;
+    }
+    if (idx !== active){
+      active = idx;
+      for (var j = 0; j < dots.length; j++) dots[j].classList.toggle("on", j === idx);
+    }
+
+    /* nav highlight */
+    var sections = ["timeline","deep","scale","exp","known"];
+    var current = "";
+    for (var s = 0; s < sections.length; s++){
+      var el = document.getElementById(sections[s]);
+      if (el && el.getBoundingClientRect().top <= vh * 0.35) current = sections[s];
+    }
+    navLinks.forEach(function(a){
+      a.classList.toggle("on", a.getAttribute("href") === "#" + current);
+    });
+
+    /* back to top */
+    document.getElementById("totop").classList.toggle("show", y > vh * 1.2);
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("load", function(){ measure(); update(); });
+
+  /* ---------------- reveal ---------------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+
+  document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+
+  /* ---------------- counters ---------------- */
+  function animateCount(el){
+    var target = parseInt(el.getAttribute("data-count"), 10) || 0;
+    if (reduce){ el.textContent = target.toLocaleString("en-US"); return; }
+    var start = performance.now(), dur = 1200;
+    function step(t){
+      var k = Math.min(1, (t - start) / dur);
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(target * e).toLocaleString("en-US");
+      if (k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ animateCount(e.target); cio.unobserve(e.target); }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll("[data-count]").forEach(function(el){ cio.observe(el); });
+
+  /* ---------------- bars ---------------- */
+  var bio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (!e.isIntersecting) return;
+      e.target.querySelectorAll(".fill").forEach(function(f){
+        f.style.width = f.getAttribute("data-w") + "%";
+      });
+      bio.unobserve(e.target);
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll(".bars").forEach(function(el){ bio.observe(el); });
+
+  /* ---------------- top button ---------------- */
+  document.getElementById("totop").addEventListener("click", function(){
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  });
+
+  measure();
+  update();
+})();
+</script>
+</body>
+</html>

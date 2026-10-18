@@ -421,8 +421,10 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
             xPos[i] = (float) Math.cos(angle) * 2.0F;
             yPos[i] = (float) Math.sin(angle) * 2.0F;
             angle += span;
-            xPos[i + 1] = (float) Math.cos(angle) * 1.2F;
-            yPos[i + 1] = (float) Math.sin(angle) * 1.2F;
+            // 原版ここは 1.2F（外径の 60%）だが、凹角が浅すぎて画面上は五角形に見えていた
+            // （白色内層 0.95 倍も凹角をほぼ覆う）。0.8F で五角星の輪郭が出る。意図的な差異。
+            xPos[i + 1] = (float) Math.cos(angle) * 0.8F;
+            yPos[i + 1] = (float) Math.sin(angle) * 0.8F;
             angle += span;
         }
         xPos[10] = xPos[0];
