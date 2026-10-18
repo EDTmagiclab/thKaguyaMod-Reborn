@@ -17,6 +17,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.init.THKaguyaEntities;
 
 /** ホーミングアミュレット（1.20.1 移植版） */
 public class EntityHomingAmulet extends EntityTHShot
@@ -34,7 +35,7 @@ public class EntityHomingAmulet extends EntityTHShot
         	double firstSpeed, double limitSpeed, double acceleration,
         	Vec3 gravity, int color, float size, float damage, int delay, int end, int special)
     {
-    	super(world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+    	super(THKaguyaEntities.HOMING_AMULET.get(), world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
                 firstSpeed, limitSpeed, acceleration, gravity, color, size, damage, delay, end, special);
     	this.setOwner("");
     }

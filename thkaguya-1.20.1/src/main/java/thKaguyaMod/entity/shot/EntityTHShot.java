@@ -186,6 +186,23 @@ public class EntityTHShot extends Entity
                 shot.form * 8 + shot.color, shot.size, shot.damage, shot.delay, shot.end, shot.special);
     }
 
+    /**
+     * 完全版（指定 EntityType + ShotData）。子类用自己的便利构造器时必须走这一支，
+     * 否则实体类型会退化成 TH_SHOT，客户端创建出来的实例是普通 EntityTHShot，
+     * 专用渲染器（RenderMusouFuuin / RenderNuclearShot 等）永远不会被调用。
+     */
+    public EntityTHShot(EntityType<?> type, Level level, LivingEntity entityUser, Entity entity,
+            Vec3 pos, Vec3 angle, float slope,
+            Vec3 rotate, float rotationSpeed, int rotationEnd,
+            double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
+            ShotData shot)
+    {
+        this(type, level, entityUser, entity, pos, angle, slope,
+                rotate, rotationSpeed, rotationEnd,
+                firstSpeed, limitSpeed, acceleration, gravity,
+                shot.form * 8 + shot.color, shot.size, shot.damage, shot.delay, shot.end, shot.special);
+    }
+
     /** 位置ベクトル */
     public Vec3 pos()
     {

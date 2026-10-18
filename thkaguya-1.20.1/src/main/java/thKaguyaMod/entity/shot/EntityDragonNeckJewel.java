@@ -11,6 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.init.THKaguyaEntities;
 
 /** 龍の頸の玉 着弾地点に雷を落とす（1.20.1 移植版） */
 public class EntityDragonNeckJewel extends EntityTHShot
@@ -26,7 +27,7 @@ public class EntityDragonNeckJewel extends EntityTHShot
 
     public EntityDragonNeckJewel(Level world, LivingEntity user, Vec3 angle, float cr, float cg, float cb)
     {
-        super(world, user, user, THShotLib.pos_Living(user), angle, 0F, THShotLib.rotate_Default(), 0F, 9999,
+        super(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), world, user, user, THShotLib.pos_Living(user), angle, 0F, THShotLib.rotate_Default(), 0F, 9999,
                 0.9D, 0.9D, 0.0D, THShotLib.gravity_Default(), ShotData.shot(0, 0, 1.0F, 7.0F));
         color_r = cr;
         color_g = cg;
@@ -35,7 +36,7 @@ public class EntityDragonNeckJewel extends EntityTHShot
 
     public EntityDragonNeckJewel(Level world, LivingEntity user, Entity source, Vec3 pos, Vec3 angle, float cr, float cg, float cb)
     {
-        super(world, user, source, pos, angle, 0F, THShotLib.rotate_Default(), 0F, 9999,
+        super(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), world, user, source, pos, angle, 0F, THShotLib.rotate_Default(), 0F, 9999,
                 0.9D, 0.9D, 0.0D, THShotLib.gravity_Default(), ShotData.shot(0, 0, 1.0F, 7.0F));
         color_r = cr;
         color_g = cg;

@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
 
 /**
@@ -35,7 +36,7 @@ public class EntityNuclearShot extends EntityTHShot
     	double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity,
     	int color, float size, float damage, int delay, int end, int special)
     {
-        super(world, user, entity, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+        super(THKaguyaEntities.NUCLEAR_SHOT.get(), world, user, entity, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
                 firstSpeed, limitSpeed, acceleration, gravity, color, size, damage, delay, end, special);
         shootingFlag = false;
     }

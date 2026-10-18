@@ -6,6 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.init.THKaguyaEntities;
 
 /** 夢想封印の光弾（1.20.1 移植版） */
 public class EntityMusouFuuin extends EntityTHShot
@@ -22,7 +23,7 @@ public class EntityMusouFuuin extends EntityTHShot
     		Vec3 rotate, float rotationSpeed, int rotationEnd,
     		double firstSpeed, double limitSpeed, double acceleration, Vec3 gravity, float size, float damage, LivingEntity target)
     {
-        super(world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+        super(THKaguyaEntities.MUSOU_FUUIN.get(), world, user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
                 firstSpeed, limitSpeed, acceleration, gravity, 0, size, damage, 0, 40, 0);
         maxSize = size;
         this.setShotSize(0.1F);
