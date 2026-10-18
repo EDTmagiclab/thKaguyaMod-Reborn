@@ -400,10 +400,10 @@ public class THKaguyaItems
     public static final RegistryObject<Item> POWER_UP_ITEM_BIG = register("power_up_item_big");
 
     /* ==================== type → 物品（工作台产物用）==================== */
-    /** 弹 type（`ItemTHShot` 的 0-18）→ 物品。原版靠 itemDamage，1.20.1 拆成 19 个独立物品。 */
+    /** 弹 type（`ItemTHShot` 的 0-18：0=SMALL、1=TINY）→ 物品。原版靠 itemDamage，1.20.1 拆成 19 个独立物品。 */
     private static final RegistryObject<Item>[] SHOT_BY_TYPE = new RegistryObject[]
     {
-            TINY_SHOT, SMALL_SHOT, MEDIUM_SHOT, BIG_SHOT, STAR_SHOT, SMALL_STAR_SHOT,
+            SMALL_SHOT, TINY_SHOT, MEDIUM_SHOT, BIG_SHOT, STAR_SHOT, SMALL_STAR_SHOT,
             CIRCLE_SHOT, SCALE_SHOT, BUTTERFLY_SHOT, LIGHT_SHOT, KNIFE_SHOT, HEART_SHOT,
             KUNAI_SHOT, TALISMAN_SHOT, BIG_LIGHT_SHOT, RICE_SHOT, OVAL_SHOT, CRYSTAL_SHOT,
             ARROW_SHOT
@@ -433,7 +433,7 @@ public class THKaguyaItems
         return LASER_BY_TYPE[Math.floorMod(type, LASER_BY_TYPE.length)].get();
     }
 
-    /** 素材槽里的物品 → 弹 type。已定型的 `*_shot` 用自身 type，弹幕之素沿用 damage（默认 0＝粒弾）。 */
+    /** 素材槽里的物品 → 弹 type。已定型的 `*_shot` 用自身 type，弹幕之素沿用 damage（默认 0＝小弾）。 */
     public static int shotTypeOf(ItemStack stack)
     {
         if (stack.getItem() instanceof ItemTHShot shot)
