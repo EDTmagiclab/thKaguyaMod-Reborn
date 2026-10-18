@@ -222,16 +222,17 @@
   "thKaguya.item.kishitu": "Temperament",
   "config.thkaguya.experimental.title": "Experimental Features",
   "config.thkaguya.experimental.hint": "Revives features the original author commented out. Stability is not guaranteed.",
-  "config.thkaguya.mallet_gui": "Miracle Mallet crafting GUI: %s",
+  "config.thkaguya.mallet_gui": "Miracle Mallet demon tool conversion: %s",
   "config.thkaguya.suppress_warning": "Hide the enable warning: %s",
   "config.thkaguya.mallet_gui.warning.title": "Reviving a Kamikakushi Feature",
   "config.thkaguya.mallet_gui.warning.body": "This is a kamikakushi feature (commented out by the original author). Do you really want to enable it?",
-  "config.thkaguya.mallet_gui.warning.detail": "When enabled, sneak + right-click while holding the miracle mallet to open the crafting GUI.",
+  "config.thkaguya.mallet_gui.warning.detail": "When enabled, sneak + right-click while holding the miracle mallet to open the demon tool conversion GUI.",
   "config.thkaguya.mallet_gui.warning.dont_ask": "Don't ask again: %s",
   "advancements.thkaguya.miracle_mallet_gui.title": "Inside the Upside-Down Keep",
   "advancements.thkaguya.miracle_mallet_gui.description": "Enabled the miracle mallet crafting GUI that the original author had commented out.",
   "container.thkaguya.miracle_mallet": "Miracle Mallet",
   "tooltip.thkaguya.miracle_mallet.use": "Right-click: enlarge the danmaku you fired",
-  "tooltip.thkaguya.miracle_mallet.gui_on": "Sneak + right-click: open the crafting GUI (experimental)",
-  "tooltip.thkaguya.miracle_mallet.gui_off": "The crafting GUI can be enabled in the mod config (experimental)"
+  "tooltip.thkaguya.miracle_mallet.gui_on": "Sneak + right-click: open the demon tool conversion GUI (experimental)",
+  "tooltip.thkaguya.miracle_mallet.gui_off": "The demon tool conversion GUI can be enabled in the mod config (experimental)",
+  "gui.thkaguya.miracle_mallet.title": "Demon Tool Conversion"
 }

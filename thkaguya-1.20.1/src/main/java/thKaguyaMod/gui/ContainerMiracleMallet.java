@@ -43,9 +43,11 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
         this.craftMaterial = new SimpleContainer(1);
         this.craftResult = new SimpleContainer(1);
 
+        // 坐标必须与 client/gui/GuiMiracleMallet 的 MATERIAL_X/Y・RESULT_X/Y 一致
+        // （原版是 (228,35) 与 (8,17)，这里为了「妖器化」专用外观改成居中的 素材→結果 布局）
         addSlot(new SlotMiracleMalletResult(playerInventory.player, this.craftMaterial,
-                this.craftResult, 0, 228, 35));
-        addSlot(new Slot(this.craftMaterial, 0, 8, 17));
+                this.craftResult, 0, 139, 35));
+        addSlot(new Slot(this.craftMaterial, 0, 99, 35));
 
         // SimpleContainer 不会自己通知 menu（只有 TransientCraftingContainer 会），必须手动挂，
         // 否则往素材槽放东西后产物不会刷新。

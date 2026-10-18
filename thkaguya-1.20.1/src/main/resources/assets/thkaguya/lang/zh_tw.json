@@ -222,16 +222,17 @@
   "thKaguya.item.kishitu": "氣質",
   "config.thkaguya.experimental.title": "實驗性玩法",
   "config.thkaguya.experimental.hint": "這些是被原作者神隱（註解掉）的功能，啟用後不保證穩定。",
-  "config.thkaguya.mallet_gui": "萬寶槌改造台：%s",
+  "config.thkaguya.mallet_gui": "萬寶槌·妖器化：%s",
   "config.thkaguya.suppress_warning": "不再顯示啟用提示：%s",
   "config.thkaguya.mallet_gui.warning.title": "神隱功能復活",
   "config.thkaguya.mallet_gui.warning.body": "這是已經神隱（被原作者註解掉）的功能，你確定要開啟嗎？",
-  "config.thkaguya.mallet_gui.warning.detail": "啟用後，手持萬寶槌潛行＋右鍵即可打開改造台。",
+  "config.thkaguya.mallet_gui.warning.detail": "啟用後，手持萬寶槌潛行＋右鍵即可打開妖器化界面。",
   "config.thkaguya.mallet_gui.warning.dont_ask": "不再提示：%s",
   "advancements.thkaguya.miracle_mallet_gui.title": "在倒懸的天守閣中",
   "advancements.thkaguya.miracle_mallet_gui.description": "啟用了被原作者神隱的萬寶槌改造台。",
   "container.thkaguya.miracle_mallet": "萬寶槌",
   "tooltip.thkaguya.miracle_mallet.use": "右鍵：讓自己發射的彈幕變大",
-  "tooltip.thkaguya.miracle_mallet.gui_on": "潛行＋右鍵：打開改造台（實驗性玩法）",
-  "tooltip.thkaguya.miracle_mallet.gui_off": "改造台需在設定中啟用（實驗性玩法）"
+  "tooltip.thkaguya.miracle_mallet.gui_on": "潛行＋右鍵：打開妖器化界面（實驗性玩法）",
+  "tooltip.thkaguya.miracle_mallet.gui_off": "妖器化界面需在設定中啟用（實驗性玩法）",
+  "gui.thkaguya.miracle_mallet.title": "妖器化"
 }

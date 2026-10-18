@@ -79,7 +79,7 @@ public class ItemMiracleMallet extends Item
 
                 player.openMenu(new SimpleMenuProvider(
                         (windowId, playerInventory, p) -> new ContainerMiracleMallet(windowId, playerInventory),
-                        Component.translatable("container.thkaguya.miracle_mallet")));
+                        Component.translatable("gui.thkaguya.miracle_mallet.title")));
             }
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
