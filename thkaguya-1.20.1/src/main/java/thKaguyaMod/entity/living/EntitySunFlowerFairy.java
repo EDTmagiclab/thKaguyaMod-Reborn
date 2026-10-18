@@ -1,10 +1,16 @@
 package thKaguyaMod.entity.living;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import thKaguyaMod.init.THKaguyaEntities;
-
 /** ひまわり妖精（1.20.1 移植版） */
 public class EntitySunFlowerFairy extends EntityTHFairy
 {
@@ -25,6 +31,25 @@ public class EntitySunFlowerFairy extends EntityTHFairy
     public static AttributeSupplier.Builder createAttributes()
     {
         return EntityDanmakuMob.createAttributes();
+    }
+
+    /**
+     * 原版 EntitySunFlowerFairy.onSpawnWithEgg：生成時に使い魔を出し、この妖精に騎乗させる。
+     * 使い魔は騎乗主を失うと自滅するので、妖精を倒すと一緒に消える。
+     */
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
+                                        @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        if(!level.isClientSide())
+        {
+            EntityFamiliar familiar = new EntityFamiliar(level.getLevel());
+            familiar.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+            level.addFreshEntity(familiar);
+            familiar.startRiding(this, true);
+        }
+        return result;
     }
 
     @Override

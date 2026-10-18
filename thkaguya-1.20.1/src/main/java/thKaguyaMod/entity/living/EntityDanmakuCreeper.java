@@ -87,17 +87,42 @@ public class EntityDanmakuCreeper extends Creeper
         }
     }
 
+    /**
+     * 原版 EntityDanmakuCreeper.java:49-68 の die()：
+     * 死亡時に XP を撒いたあと、爆発粒子（"explode"）を 20 個出す。
+     * 移植版はこの粒子を出していなかった。
+     */
+    @Override
+    public void die(net.minecraft.world.damagesource.DamageSource source)
+    {
+        super.die(source);
+        if(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)
+        {
+            for(int i = 0; i < 20; ++i)
+            {
+                double dx = this.random.nextGaussian() * 0.02D;
+                double dy = this.random.nextGaussian() * 0.02D;
+                double dz = this.random.nextGaussian() * 0.02D;
+                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION,
+                        this.getX() + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(),
+                        this.getY() + (double)(this.random.nextFloat() * this.getBbHeight()),
+                        this.getZ() + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(),
+                        1, dx, dy, dz, 0.0D);
+            }
+        }
+    }
+
     private void fireDanmaku()
     {
-        int level = Math.max(1, Math.min(THKaguyaConfig.danmakuLevel, 4));
+        int level = Math.max(0, Math.min(THKaguyaConfig.danmakuLevel, 4));
         float size = 0.1F + level * 0.1F;
-        // 原版 ways = {8,12,20,32,44} 按 level 索引；44 超出迁移版 ways 数组范围，改用 level-1 索引（8/12/20/32）
-        int[] ways = {8, 12, 20, 32};
-        int way = ways[level - 1];
+        // 原版 ways = {8,12,20,32,44}，直接用 danmakuLevel(0..4) 索引（EASY/NORMAL/HARD/LUNATIC/第 5 档）
+        int[] ways = {8, 12, 20, 32, 44};
+        int way = ways[level];
         float damage = 5.0F;
 
         Vec3 angle = THShotLib.angle_Random();
-        ShotData shot = ShotData.shot(FORM_LIGHT, GREEN, size, damage);
+        ShotData shot = ShotData.shot(FORM_LIGHT, GREEN, size, this.isPowered() ? damage * 2F : damage);
 
         if(this.isPowered())
         {

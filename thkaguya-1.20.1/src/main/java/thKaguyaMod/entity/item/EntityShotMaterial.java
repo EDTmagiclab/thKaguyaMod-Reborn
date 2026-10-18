@@ -225,10 +225,7 @@ public class EntityShotMaterial extends Entity
 		{
 			return;
 		}
-		if (this.target != null && this.target != player)
-		{
-			return;
-		}
+		// 原版 onCollideWithPlayer は「触れたプレイヤー全員」が拾える（target は磁力で寄せる相手の話）
 		this.onPickup(player);
 		this.discard();
 	}
@@ -249,8 +246,10 @@ public class EntityShotMaterial extends Entity
 
 	protected void playPickupSound(Player player)
 	{
-		player.playSound(SoundEvents.ITEM_PICKUP, 0.2F,
-				((this.random.nextFloat() - this.random.nextFloat()) * 0.7F + 1.0F) * 0.3F * 4.0F);
+		// 原版：worldObj.playSoundAtEntity(this, "random.pop", 4.0F, ((rand-rand)*0.7+1)*0.3F)
+		// → 音量 4.0F、ピッチは 0.3 倍（移植版は音量 0.2 に落としてピッチを 4 倍していた）
+		player.playSound(SoundEvents.ITEM_PICKUP, 4.0F,
+				((this.random.nextFloat() - this.random.nextFloat()) * 0.7F + 1.0F) * 0.3F);
 		player.take(this, 1);
 	}
 }

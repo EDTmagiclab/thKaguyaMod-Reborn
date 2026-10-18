@@ -71,7 +71,9 @@ public class EntityMiko extends EntityDanmakuMob
             moveDanmakuAttack(SPELLCARD_ATTACK01, 40, 60.0F, 160);
             return true;
         case SPELLCARD_ATTACK01:
-            return false;  // 最终阶段：真正死亡
+            // 原版 EntityMiko.java:68：スペルカードを破壊されると ATTACK_END へ移行（死亡演出）
+            moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
+            return true;
         default:
             return false;
         }
@@ -151,5 +153,32 @@ public class EntityMiko extends EntityDanmakuMob
     public int getMaxSpawnClusterSize()
     {
         return 1;
+    }
+
+    /**
+     * 無敵かどうか（原版 EntityMiko.java:171-179）。
+     * 非攻撃状態（NOT_ATTACK）のときは無敵。基类は attackInterval しか見ないため、
+     * この覆写が無いと待機中の神子を直接殴り殺せてしまう。
+     */
+    @Override
+    public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource source)
+    {
+        if(getDanmakuPattern() == NOT_ATTACK)
+        {
+            return true;
+        }
+        return super.isInvulnerableTo(source);
+    }
+
+    /** 原版 EntityMiko.java:155-166：無敵状態なら受けるダメージを 5% に軽減。 */
+    @Override
+    protected float getDamageAfterMagicAbsorb(net.minecraft.world.damagesource.DamageSource source, float damage)
+    {
+        damage = super.getDamageAfterMagicAbsorb(source, damage);
+        if(isInvulnerableTo(source))
+        {
+            damage = (float)((double)damage * 0.05D);
+        }
+        return damage;
     }
 }

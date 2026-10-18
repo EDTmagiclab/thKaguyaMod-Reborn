@@ -28,6 +28,8 @@ public class EntityTHFairy extends EntityDanmakuMob
     {
         super(type, level);
         this.lastTime = 0;
+        // 原版 EntityTHFairy 构造器：experienceValue = 5（移植版曾漏设，导致妖精掉 0 经验）
+        this.danmakuXpReward = 5;
         this.setSpeed(0.3D);
         this.setSpecies(this.SPECIES_FAIRY);
         // 妖精形态：原版 setForm(rand.nextInt(3))，随机 0/1/2（僵尸形态 -1 由 onDeathUpdate 在万圣节/地狱设定）

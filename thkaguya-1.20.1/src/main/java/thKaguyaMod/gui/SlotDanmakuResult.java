@@ -70,7 +70,22 @@ public class SlotDanmakuResult extends Slot
             ItemStack matrixStack = craftMatrix.getItem(i);
             if (!matrixStack.isEmpty())
             {
+                // 原版 SlotDanmakuResult.java:114-146 は hasContainerItem の分岐を持つが、
+                // 本体が「itemstack2 = itemstack1」になっていて容器アイテムを返せていなかった。
+                // ここでは 1.20.1 の getCraftingRemainingItem で正しく残り物（バケツ等）を返す。
+                ItemStack remaining = matrixStack.getCraftingRemainingItem();
                 craftMatrix.removeItem(i, 1);
+                if (!remaining.isEmpty())
+                {
+                    if (craftMatrix.getItem(i).isEmpty())
+                    {
+                        craftMatrix.setItem(i, remaining);
+                    }
+                    else if (!player.getInventory().add(remaining))
+                    {
+                        player.drop(remaining, false);
+                    }
+                }
             }
         }
 

@@ -59,6 +59,20 @@ public class RenderSpiritualStrikeTalisman extends EntityRenderer<EntitySpiritua
                 rvl, rul, rvr, rul, rvr, rur, rvl, rur);
 
         poseStack.popPose();
+
+        // 原版 RenderSpiritualStrikeTalisman.renderSpiritualStrikeTalisman の暗幕：
+        // useTimeStopEffect が有効なら、大きさ ticksExisted*3（上限 240）の闇球を
+        // SRC_ALPHA / ONE（加算）で描く。移植版ではこれが丸ごと欠けていた。
+        if(thKaguyaMod.init.THKaguyaConfig.useTimeStopEffect)
+        {
+            double size = Math.min((double)talisman.tickCount * 3.0D, 240.0D);
+            if(size > 0.0D)
+            {
+                thKaguyaMod.client.render.DarkSphereRenderer.render(poseStack, (float)size, 0.4F,
+                        thKaguyaMod.client.render.DarkSphereRenderer.Blend.ADDITIVE);
+            }
+        }
+
         super.render(talisman, yaw, partialTick, poseStack, buffer, packedLight);
     }
 

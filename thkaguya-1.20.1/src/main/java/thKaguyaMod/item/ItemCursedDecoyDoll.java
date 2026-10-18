@@ -43,7 +43,27 @@ public class ItemCursedDecoyDoll extends Item
 		itemStack.setDamageValue(itemStack.getDamageValue() + 1);
 		if(itemStack.getDamageValue() >= itemStack.getMaxDamage())
 		{
-			// TODO(阶段X): 原版在这里把诅咒人偶恢复成被诅咒前的原始物品（依赖 1.7 的 Item ID 系统）
+			// 原版 ItemCursedDecoyDoll.java:62-77：耐久が尽きたら「呪われる前のアイテム」に戻す。
+			// OriginalItemID / OriginalDamage は万宝槌の作業台（ContainerMiracleMallet）が書き込む。
+			int originalDamage = 0;
+			int originID = -1;
+			if(itemStack.hasTag())
+			{
+				originalDamage = itemStack.getTag().getInt("OriginalDamage");
+				originID = itemStack.getTag().getInt("OriginalItemID");
+			}
+
+			Item originalItem = originID >= 0
+					? net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(originID)
+					: null;
+			if(originalItem != null && originalItem != net.minecraft.world.item.Items.AIR)
+			{
+				ItemStack restored = new ItemStack(originalItem);
+				restored.setDamageValue(originalDamage);
+				return InteractionResultHolder.success(restored);
+			}
+
+			// NBT が無い（万宝槌を経由していない）場合は原版同様に消滅させる
 			itemStack.shrink(1);
 		}
 

@@ -196,6 +196,12 @@ public class THKaguyaCore
                     (type, level, reason, pos, random) -> true);
             SpawnPlacements.register(THKaguyaEntities.SAKUYA.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                     (type, level, reason, pos, random) -> true);
+            // A15：原版 registerEntitySpawn 里霊夢/神子两条 addSpawn 存在，但 1.20.1 之前没注册 SpawnPlacements，
+            // 会落到「无生成规则」的默认分支。这里按原版 ambient 类别的语义补上（任何光照都允许）。
+            SpawnPlacements.register(THKaguyaEntities.REIMU.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> true);
+            SpawnPlacements.register(THKaguyaEntities.MIKO.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> true);
 
             // ディスペンサー挙動（原版 CommonProxy.registerDispenser，阶段 7 补完）
             //   銀のナイフ 4 色 → EntitySilverKnife 射出 / 弾アイテム 19 種 → 弾幕発射

@@ -107,8 +107,9 @@ public class THKaguyaItems
     public static final RegistryObject<Item> DIFFUSION_AMULET = register("diffusion_amulet",
             () -> new ItemHomingAmulet(ItemHomingAmulet.TYPE_DIFFUSION));
 
-    /** 陰陽玉 */
-    public static final RegistryObject<Item> YIN_YANG_ORB = register("yin_yang_orb");
+    /** 陰陽玉（原版 ItemOnmyoudama：maxStackSize = 1） */
+    public static final RegistryObject<Item> YIN_YANG_ORB = register("yin_yang_orb",
+            () -> new Item(new Item.Properties().stacksTo(1)));
 
     /** 血に餓えた陰陽玉 */
     public static final RegistryObject<Item> BLOODTHIRSTY_YIN_YANG_ORB = register("bloodthirsty_yin_yang_orb", () -> new ItemBloodthirstyOnmyoudama());
@@ -245,8 +246,9 @@ public class THKaguyaItems
     /** ボムアイテム */
     public static final RegistryObject<Item> BOMB_ITEM = register("bomb_item");
 
-    /** エクステンドアイテム */
-    public static final RegistryObject<Item> EXTEND_ITEM = register("extend_item");
+    /** エクステンドアイテム（原版 ItemTHExtendItem：maxStackSize = 8） */
+    public static final RegistryObject<Item> EXTEND_ITEM = register("extend_item",
+            () -> new Item(new Item.Properties().stacksTo(8)));
 
     /** スペルカード（damage 値 = 符卡 No。符卡専用クリエイティブタブに並ぶ） */
     public static final RegistryObject<Item> SPELL_CARD = register("spell_card", () -> new ItemTHSpellCard());

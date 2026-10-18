@@ -72,7 +72,9 @@ public class ItemSpearTheGungnir extends Item
 
             if(!player.getAbilities().instabuild)
             {
-                itemStack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(hand));
+                // 原版 ItemSpearTheGungnir.java:52-56 は setItemDamage(damage + 1) のみで、
+                // damageItem（＝破壊処理）はコメントアウトされている → 耐久上限を超えても壊れない。
+                itemStack.setDamageValue(itemStack.getDamageValue() + 1);
             }
         }
 

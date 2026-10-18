@@ -61,11 +61,11 @@ public class ItemBuddhaStoneBowl extends Item
 		return false;
 	}
 
-	/** 原版 getDigSpeed：可採掘なら 4F、それ以外は 1F */
+	/** 原版 getDigSpeed：常に 4F（採掘可否に関係なく一定） */
 	@Override
 	public float getDestroySpeed(ItemStack stack, BlockState state)
 	{
-		return isHarvestable(state) ? 4.0F : 1.0F;
+		return 4.0F;
 	}
 
 	/** 原版 func_150897_b の採掘判定 */
@@ -76,8 +76,14 @@ public class ItemBuddhaStoneBowl extends Item
 	}
 
 	/**
-	 * 原版 func_150897_b をそのまま移植：
-	 * 岩質（= 1.20.1 の pickaxe 採掘対象）で、かつ金/ダイヤ/エメラルド/ラピス/レッドストーン/黒曜石ではない。
+	 * 原版 func_150897_b をそのまま移植（toolMaterial = STONE / harvestLevel = 1）：
+	 * <ul>
+	 *   <li>黒曜石は level 3 必要 → 不可</li>
+	 *   <li>ダイヤ／エメラルド／金 は level 2 必要 → 不可</li>
+	 *   <li>鉄／ラピス は level 1 で可 → <b>可</b>（ここを不可にしていたのが「鉄鉱石が掘れない」不具合の原因）</li>
+	 *   <li>赤石は level 2 必要 → 不可</li>
+	 *   <li>それ以外の岩質（pickaxe 対象）は可</li>
+	 * </ul>
 	 */
 	private static boolean isHarvestable(BlockState state)
 	{
@@ -88,8 +94,6 @@ public class ItemBuddhaStoneBowl extends Item
 				|| state.is(Blocks.EMERALD_BLOCK)
 				|| state.is(Blocks.GOLD_ORE) || state.is(Blocks.DEEPSLATE_GOLD_ORE)
 				|| state.is(Blocks.GOLD_BLOCK)
-				|| state.is(Blocks.LAPIS_ORE) || state.is(Blocks.DEEPSLATE_LAPIS_ORE)
-				|| state.is(Blocks.LAPIS_BLOCK)
 				|| state.is(Blocks.REDSTONE_ORE) || state.is(Blocks.DEEPSLATE_REDSTONE_ORE))
 		{
 			return false;

@@ -88,7 +88,9 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
         case SPELLCARD_ATTACK02:
         case SPELLCARD_ATTACK03:
         case SPELLCARD_ATTACK04:
-            return false;  // 最终阶段：真正死亡
+            // 原版 EntitySanae.java:113-122：スペルカードを破壊されると ATTACK_END へ移行（死亡演出）
+            moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
+            return true;
         default:
             return false;
         }
@@ -213,5 +215,31 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
             this.dropPowerUpItem(25 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
             this.dropPointItem(25 + this.getRandom().nextInt(5) + this.getRandom().nextInt(1 + looting));
         }
+    }
+
+    /**
+     * 無敵かどうか（原版 EntitySanae.java:312-320）。
+     * 非攻撃状態（NOT_ATTACK）では無敵。基类只判 attackInterval。
+     */
+    @Override
+    public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource source)
+    {
+        if(getDanmakuPattern() == NOT_ATTACK)
+        {
+            return true;
+        }
+        return super.isInvulnerableTo(source);
+    }
+
+    /** 原版 EntitySanae.java:296-307：無敵状態ならダメージを 5% に軽減。 */
+    @Override
+    protected float getDamageAfterMagicAbsorb(net.minecraft.world.damagesource.DamageSource source, float damage)
+    {
+        damage = super.getDamageAfterMagicAbsorb(source, damage);
+        if(isInvulnerableTo(source))
+        {
+            damage = (float)((double)damage * 0.05D);
+        }
+        return damage;
     }
 }

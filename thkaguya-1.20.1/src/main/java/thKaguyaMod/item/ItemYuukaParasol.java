@@ -64,7 +64,9 @@ public class ItemYuukaParasol extends Item implements ISpecialShot
 				}
 			}
 
-			EntityYuukaParasol entityYuukaParasol = new EntityYuukaParasol(level, player, 0);
+			// 原版 ItemYuukaParasol.java:75 は itemStack.getItemDamageForDisplay() を渡す。
+			// 移植版は 0 固定で、アイテムを出し入れすると耐久（使用回数）がリセットされていた。
+			EntityYuukaParasol entityYuukaParasol = new EntityYuukaParasol(level, player, itemStack.getDamageValue());
 			if(!level.isClientSide)
 			{
 				level.addFreshEntity(entityYuukaParasol);

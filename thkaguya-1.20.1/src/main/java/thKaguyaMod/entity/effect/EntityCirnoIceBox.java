@@ -116,15 +116,29 @@ public class EntityCirnoIceBox extends Entity
     /** 時間操作空間に入っていた時の処理：被冻结实体回退到上一帧状态并停住 */
     protected void frozenInIce()
     {
-        frozen.setPos(frozen.xo, frozen.yo, frozen.zo);
+        // 原版 EntityCirnoIceBox.java:226-236：プレイヤーは playerNetServerHandler.setPlayerLocation で
+        // サーバー側から位置を書き戻す。1.20.1 では ServerPlayer#connection#teleport が相当。
+        // （Entity#setPos だけではプレイヤーの移動がクライアント権威のため止まらない）
+        if(frozen instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+        {
+            serverPlayer.connection.teleport(serverPlayer.xo, serverPlayer.yo, serverPlayer.zo,
+                    serverPlayer.getYRot(), serverPlayer.getXRot());
+        }
+        else
+        {
+            frozen.setPos(frozen.xo, frozen.yo, frozen.zo);
+            frozen.setYRot(frozen.yRotO);
+            frozen.setXRot(frozen.xRotO);
+        }
         frozen.setDeltaMovement(Vec3.ZERO);
-        frozen.setYRot(frozen.yRotO);
-        frozen.setXRot(frozen.xRotO);
 
         if(frozen instanceof Creeper creeper)
         {
             creeper.setSwellDir(-1);
         }
+
+        // 原版は Ghast の attackCounter を戻していたが、1.20.1 の Ghast に公開カウンタが無い
+        // （private な内部 Goal の chargeTime に移った）ため移植不可。
     }
 
     @Override

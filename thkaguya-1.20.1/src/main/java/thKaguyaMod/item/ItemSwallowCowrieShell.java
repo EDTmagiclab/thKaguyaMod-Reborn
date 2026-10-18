@@ -91,7 +91,9 @@ public class ItemSwallowCowrieShell extends Item
 			}
 		}
 
-		// 個数消費・統計・FoodProperties の効果処理は既定実装に任せる
-		return super.finishUsingItem(stack, level, living);
+		// 原版 ItemSwallowCowrieShell.java:27-70 の onEaten は itemStack をそのまま返し、
+		// stackSize-- を行わない（＝何度でも食べられる）。既定実装 super.finishUsingItem は
+		// 個数を 1 減らしてしまうため、ここでは呼ばずに同じスタックを返す。
+		return stack;
 	}
 }

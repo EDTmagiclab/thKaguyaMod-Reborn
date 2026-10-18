@@ -68,8 +68,10 @@ public class ItemNuclearControlRod extends Item
 			return;
 		}
 
-		// 原版 time = getMaxItemUseDuration - usedTime（= 1.20.1 の timeLeft）
-		int time = timeLeft;
+		// 原版 time = getMaxItemUseDuration - usedTime。
+		// 1.20.1 の timeLeft は「残り」なので、逆に引いて使った tick 数を求める
+		// （移植版は timeLeft をそのまま使っていたため、押した瞬間に最大反動が出ていた）。
+		int time = this.getUseDuration(itemStack) - timeLeft;
 		if(time > 100)
 		{
 			time = 100;

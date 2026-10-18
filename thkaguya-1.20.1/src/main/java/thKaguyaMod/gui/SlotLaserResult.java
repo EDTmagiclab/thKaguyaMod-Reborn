@@ -60,9 +60,24 @@ public class SlotLaserResult extends Slot
 
         for (int i = 0; i < craftMatrix.getContainerSize(); ++i)
         {
-            if (!craftMatrix.getItem(i).isEmpty())
+            ItemStack matrixStack = craftMatrix.getItem(i);
+            if (!matrixStack.isEmpty())
             {
+                // 原版 SlotLaserResult も容器アイテムを返せていなかった。1.20.1 の
+                // getCraftingRemainingItem で残り物（バケツ等）を正しく返す。
+                ItemStack remaining = matrixStack.getCraftingRemainingItem();
                 craftMatrix.removeItem(i, 1);
+                if (!remaining.isEmpty())
+                {
+                    if (craftMatrix.getItem(i).isEmpty())
+                    {
+                        craftMatrix.setItem(i, remaining);
+                    }
+                    else if (!this.thePlayer.getInventory().add(remaining))
+                    {
+                        this.thePlayer.drop(remaining, false);
+                    }
+                }
             }
         }
 

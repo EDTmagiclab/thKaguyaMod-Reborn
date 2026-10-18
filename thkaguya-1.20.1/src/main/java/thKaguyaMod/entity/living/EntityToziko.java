@@ -69,10 +69,19 @@ public class EntityToziko extends EntityDanmakuMob
             this.setFlyingHeight(2);
             return true;
         case SPELLCARD_ATTACK01:
-            return false;  // 最终阶段：真正死亡
+            // 原版 EntityToziko.java:73：最終スペルカードを破壊されると ATTACK_END へ移行（死亡演出）
+            moveDanmakuAttack(ATTACK_END, 30, 0F, 60);
+            return true;
         default:
             return false;
         }
+    }
+
+    /** 原版 EntityToziko の死亡演出は 9 tick 間隔で爆発（他ボスは 6）。 */
+    @Override
+    protected int deathExplosionInterval()
+    {
+        return 9;
     }
 
     @Override

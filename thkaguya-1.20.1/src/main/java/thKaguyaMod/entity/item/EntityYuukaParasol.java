@@ -57,7 +57,8 @@ public EntityYuukaParasol(EntityType<?> type, Level level)
     {
         this(level);
     	setParasolMode(0);
-    	this.startRiding(entityPlayer);
+    	// force = true：プレイヤーを載せ替える際、canAddPassenger の既定判定に弾かれないようにする
+    	this.startRiding(entityPlayer, true);
     	user = entityPlayer;
     	double newX = user.getX() - Math.sin((user.getYRot() - 23F) / 180F * 3.141593F) * Math.cos(user.getXRot() / 180F * 3.141593F) * 0.5D;
     	double newY = user.getY() - Math.sin(user.getXRot() / 180F * 3.141593F) * Math.cos(-23F / 180F * 3.141593F) * 0.5D + user.getEyeHeight() + 1.6D;
@@ -97,11 +98,18 @@ public EntityYuukaParasol(EntityType<?> type, Level level)
 
 	/**
 	 * 当たり判定を設定
+	 *
+	 * <p>原版は {@code setSize(0.1F, 0.1F)} したうえで {@code getBoundingBox()} を
+	 * 「posX±1.0 / posY±1.0 / posZ±1.0」の 2×2×2 に上書きしていた。
+	 * 1.20.1 では {@code getBoundingBox()} の上書きが衝突判定に効かず（各所が {@code this.bb} を直接参照）、
+	 * さらに {@code getBoundingBoxForPose} は {@code refreshDimensions()} の時しか評価されないため、
+	 * 実際の寸法を {@link #getDimensions(Pose)} で与える。
+	 * これにより当たり判定 2×2×2 と描画距離（{@code getSize()*4*64} → 512 格）も原版どおりになる。
 	 */
     @Override
-    protected AABB getBoundingBoxForPose(Pose pose)
+    public net.minecraft.world.entity.EntityDimensions getDimensions(Pose pose)
     {
-    	return new AABB(getX() - 1.0D, getY() - 1.0D, getZ() - 1.0D, getX() + 1.0D, getY() + 1.0D, getZ() + 1.0D);
+    	return net.minecraft.world.entity.EntityDimensions.scalable(2.0F, 2.0F);
     }
 
 	/**
@@ -141,6 +149,13 @@ public EntityYuukaParasol(EntityType<?> type, Level level)
     	//使用者がいるなら
     	if(user != null)
     	{
+    		// 何らかの理由でプレイヤーから降ろされてしまった場合は載せ直す。
+    		// これがないと、乗客として同期されない（＝その場に取り残される）ことがある。
+    		if(!level().isClientSide && !this.isPassenger())
+    		{
+    			this.startRiding(user, true);
+    		}
+
 			if(getParasolMode() == 0)
 			{
 				distance = 0.5F;

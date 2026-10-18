@@ -3,6 +3,7 @@ package thKaguyaMod.entity.living;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.level.Level;
 import thKaguyaMod.init.THKaguyaEntities;
@@ -71,5 +72,54 @@ public class EntityFamiliar extends EntityTHFairy
     public int getMaxSpawnClusterSize()
     {
         return 1;
+    }
+
+    /** 原版 EntityFamiliar.onDeathUpdate は setDead() のみ（死亡演出なし）。 */
+    @Override
+    protected boolean hasDeathExplosion()
+    {
+        return false;
+    }
+
+    /**
+     * 原版 EntityFamiliar.onUpdate：騎乗主がいない使い魔は自滅し、
+     * 騎乗している Mob のターゲットを引き継ぐ。
+     */
+    @Override
+    public void tick()
+    {
+        if(!this.level().isClientSide)
+        {
+            if(this.tickCount >= 1 && !(this.getVehicle() instanceof LivingEntity))
+            {
+                this.discard();
+                return;
+            }
+            if(this.getVehicle() instanceof Mob vehicle)
+            {
+                this.setTarget(vehicle.getTarget());
+            }
+        }
+        super.tick();
+    }
+
+    /* ===== 音：原版 EntityFamiliar は getLivingSound/getHurtSound/getDeathSound が全て null（無音） ===== */
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getAmbientSound()
+    {
+        return null;
+    }
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getHurtSound(net.minecraft.world.damagesource.DamageSource source)
+    {
+        return null;
+    }
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getDeathSound()
+    {
+        return null;
     }
 }

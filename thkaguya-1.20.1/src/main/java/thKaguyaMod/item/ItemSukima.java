@@ -29,7 +29,9 @@ public class ItemSukima extends Item
 {
 	public ItemSukima()
 	{
-		super(new Item.Properties().stacksTo(1));
+		// 原版 ItemSukima は maxStackSize を設定していない＝既定の 64。
+		// 移植版は 1 に絞っていたが、原版どおりスタック可能に戻す。
+		super(new Item.Properties());
 	}
 
 	private static float getSetAngle(Player player, double setX, double setZ)

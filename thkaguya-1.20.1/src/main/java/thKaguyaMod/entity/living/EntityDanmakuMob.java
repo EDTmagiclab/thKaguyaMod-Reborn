@@ -569,6 +569,47 @@ public abstract class EntityDanmakuMob extends Mob
         super.die(source);
     }
 
+    /**
+     * 死亡演出の爆発間隔（原版：早苗/神子/咲夜/霊夢は 6 tick、チルノ/ルーミア/屠自古/リグルは 9 tick）。
+     */
+    protected int deathExplosionInterval()
+    {
+        return 6;
+    }
+
+    /**
+     * 死亡演出を出すか。原版 EntityTHPhantom / EntityFamiliar は onDeathUpdate で
+     * 即 setDead() していたため爆発演出がない。
+     */
+    protected boolean hasDeathExplosion()
+    {
+        return true;
+    }
+
+    /**
+     * 原版 EntityDanmakuMob.onDeathUpdate（:1376-1385）＋各ボス default 分岐の移植。
+     * 死亡アニメーション中（deathTime 0..19）に爆発音・パーティクルを出し、
+     * deathTime==7 で花火音の大爆発と周囲の妖精へのダメージ（banishExplosion）を与える。
+     */
+    @Override
+    protected void tickDeath()
+    {
+        super.tickDeath();
+        if(this.level().isClientSide || !this.hasDeathExplosion())
+        {
+            return;
+        }
+        if(this.deathTime % deathExplosionInterval() == 0)
+        {
+            THShotLib.explosionEffect(this.level(), getX(), getY(), getZ(), 1.0F + this.deathTime * 0.1F);
+        }
+        if(this.deathTime == 7)
+        {
+            THShotLib.explosionEffect2(this.level(), getX(), getY(), getZ(), 1.0F + this.deathTime * 0.1F);
+            THShotLib.banishExplosion(this, 5.0F, 5.0F);
+        }
+    }
+
     // ------------------------------------------------------------------
     // ボスバー（1.20.1 ではバニラのボスバーを使う）
     //
@@ -783,6 +824,23 @@ public abstract class EntityDanmakuMob extends Mob
             if(player != null)
             {
                 this.setTarget(player);
+
+                // 原版 EntityDanmakuMob.java:968-985：索敵成功時、周囲の妖精にも同じターゲットを共有させる
+                if(canFairyCall())
+                {
+                    double callDistance = getFairyCallDistance();
+                    List<Entity> nearby = this.level().getEntities(this,
+                            this.getBoundingBox().inflate(callDistance, callDistance, callDistance),
+                            e -> e instanceof EntityTHFairy);
+                    for(Entity entity1 : nearby)
+                    {
+                        EntityTHFairy fairy = (EntityTHFairy)entity1;
+                        if(fairy.getTarget() == null)
+                        {
+                            fairy.setTarget(player);
+                        }
+                    }
+                }
             }
         }
 
@@ -884,6 +942,88 @@ public abstract class EntityDanmakuMob extends Mob
             return true;
         }
         return false;
+    }
+
+    /**
+     * 原版 EntityDanmakuMob.writeEntityToNBT（:1768-1783）。
+     * 移植版曾未实现，导致形态・弾幕パターン・射程・飛行高さがワールド再入時に初期化されていた。
+     */
+    @Override
+    public void addAdditionalSaveData(CompoundTag nbt)
+    {
+        super.addAdditionalSaveData(nbt);
+        nbt.putByte("Form", getForm());
+        nbt.putInt("Danmaku", getDanmakuPattern());
+        nbt.putShort("Span", (short)danmakuSpan);
+        nbt.putByte("ShotForm", shotForm);
+        nbt.putByte("ShotColor", shotColor);
+        nbt.putFloat("Speed", speedRate);
+        nbt.putByte("AttackRange", (byte)getAttackDistance());
+        nbt.putByte("DetectRange", (byte)getDetectionDistance());
+        nbt.putByte("Flying", getFlyingHeight());
+        nbt.putShort("Special", special);
+    }
+
+    /** 原版 EntityDanmakuMob.readEntityFromNBT（:1725-1762）。キー名・clamp とも原版どおり。 */
+    @Override
+    public void readAdditionalSaveData(CompoundTag nbt)
+    {
+        super.readAdditionalSaveData(nbt);
+        setForm(nbt.getByte("Form"));
+        setDanmakuPattern(nbt.getInt("Danmaku"));
+        danmakuSpan = nbt.getShort("Span");
+        shotForm = nbt.getByte("ShotForm");
+        shotColor = nbt.getByte("ShotColor");
+        speedRate = nbt.getFloat("Speed");
+        setAttackDistance(nbt.getByte("AttackRange"));
+        setDetectionDistance(nbt.getByte("DetectRange"));
+        setFlyingHeight(nbt.getByte("Flying"));
+        special = nbt.getShort("Special");
+        if(shotForm < 0 || shotForm >= 32)
+        {
+            shotForm = 0;
+        }
+        if(shotColor < 0 || shotColor >= 10)
+        {
+            shotColor = 8;
+        }
+    }
+
+    /* ===== 音（原版 EntityDanmakuMob.java:1547-1580。弾幕 MOB は蝙蝠の音を変調して使う） ===== */
+    /** 原版 :1547 発する音の大きさ */
+    @Override
+    protected float getSoundVolume()
+    {
+        return 0.3F;
+    }
+
+    /** 原版 :1554 音のピッチ（蝙蝠の甲高い声）。
+     *  1.20.1 では getSoundPitch() が無く、対応するのは getVoicePitch()。 */
+    @Override
+    public float getVoicePitch()
+    {
+        return super.getVoicePitch() * 1.95F;
+    }
+
+    /** 原版 :1561 生きているときに出す音（4 回に 1 回だけ鳴く） */
+    @Override
+    protected net.minecraft.sounds.SoundEvent getAmbientSound()
+    {
+        return this.random.nextInt(4) != 0 ? null : net.minecraft.sounds.SoundEvents.BAT_AMBIENT;
+    }
+
+    /** 原版 :1568 攻撃を受けたときの音 */
+    @Override
+    protected net.minecraft.sounds.SoundEvent getHurtSound(DamageSource source)
+    {
+        return net.minecraft.sounds.SoundEvents.BAT_HURT;
+    }
+
+    /** 原版 :1575 倒れたときの音 */
+    @Override
+    protected net.minecraft.sounds.SoundEvent getDeathSound()
+    {
+        return net.minecraft.sounds.SoundEvents.BAT_DEATH;
     }
 
     /** 弾幕パターン（子类实现） */

@@ -20,6 +20,21 @@ public class ContainerMiracleMallet extends AbstractContainerMenu
     private final Container craftMaterial;
     private final Container craftResult;
 
+    /*
+     * TODO(D1・未実装・保留)：万宝槌コンテナの潜在的な原版乖離 4 点。
+     * （現在この GUI は openScreen されないため到達不能。実装可否は後日判断）
+     *
+     *   1. 原版 ContainerMiracleMallet.java:251-254 は
+     *      {@code if(player.experienceLevel >= 30)} を満たすときだけ産物を返す（レベル 30 制限）。
+     *      移植版は無条件に産物を組み立てる。
+     *   2. 原版 :100-108 は {@code alicedoll.bare} を {@code cursed_decoy_doll} に写像する分岐を持つ。
+     *      移植版はこの分岐が無く {@code originID} が常に -1 のため、
+     *      ItemCursedDecoyDoll 側の OriginalItemID/OriginalDamage 復元処理が休眠状態。
+     *   3. 移植版 {@code removed()} は {@code level().isClientSide} を判定せずに素材をドロップする
+     *      （他の 2 コンテナは判定済み）。
+     *   4. 移植版 GuiMiracleMallet は原版の {@code miracleMallet.material} ラベル（原版 134,6）を描かない。
+     */
+
     /** 素材槽改动 → 重算产物（结果槽不挂监听器，故不会递归）。 */
     private final ContainerListener recalcListener = this::slotsChanged;
 

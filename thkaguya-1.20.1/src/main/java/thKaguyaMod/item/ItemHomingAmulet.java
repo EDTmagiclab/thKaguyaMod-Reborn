@@ -89,7 +89,8 @@ public class ItemHomingAmulet extends Item
 		level.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS,
 				0.5F, 0.4F / (level.random.nextFloat() * 4F + 0.8F));
 
-		if(!player.isCreative())
+		// 原版 ItemHomingAmulet.java:102-105：サーバー側で無条件に stackSize--（クリエイティブでも減る）
+		if(!level.isClientSide)
 		{
 			itemStack.shrink(1);
 		}

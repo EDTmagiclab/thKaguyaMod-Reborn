@@ -56,7 +56,10 @@ public class EntitySakuyaWatch extends Entity
     public EntitySakuyaWatch(EntityType<?> type, Level level)
     {
         super(type, level);
-        // 原版：ignoreFrustumCheck = true（渲染阶段处理）、preventEntitySpawning / setSize(1.0F,1.0F) / yOffset（注册设定）
+        // 原版：ignoreFrustumCheck = true（体の中心が画面外でも描画され続ける）
+        // 1.20.1 では Entity#noCulling が EntityRenderDispatcher の視錐台カリングを無効化する。
+        this.noCulling = true;
+        // 原版：preventEntitySpawning / setSize(1.0F,1.0F) / yOffset（注册设定）
     	mode = 2;
     	// 原版：shouldRenderInPass(-2)（Forge 1.7 渲染通道，已废除）
     }

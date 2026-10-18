@@ -398,7 +398,7 @@ public class THKaguyaEntities
                     () -> EntityType.Builder.of(
                                     (EntityType.EntityFactory<EntityShotMaterial>) (type, level) -> new EntityShotMaterial(type, level),
                                     MobCategory.MISC)
-                            .sized(0.5F, 0.5F).clientTrackingRange(64).build("shot_material_entity"));
+                            .sized(1.2F, 1.2F).clientTrackingRange(64).build("shot_material_entity"));
 
     /** パワーアップ／得点／ボム／エクステンド（原版 EntityTHItem）。 */
     public static final RegistryObject<EntityType<EntityTHItem>> TH_ITEM =
@@ -406,7 +406,7 @@ public class THKaguyaEntities
                     () -> EntityType.Builder.of(
                                     (EntityType.EntityFactory<EntityTHItem>) (type, level) -> new EntityTHItem(type, level),
                                     MobCategory.MISC)
-                            .sized(0.5F, 0.5F).clientTrackingRange(64).updateInterval(2).build("th_item"));
+                            .sized(1.2F, 1.2F).clientTrackingRange(64).updateInterval(2).build("th_item"));
 
     public static final RegistryObject<EntityType<EntitySpiritualStrikeTalisman>> SPIRITUAL_STRIKE_TALISMAN =
             ENTITIES.register("spiritual_strike_talisman",

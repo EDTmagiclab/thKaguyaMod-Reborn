@@ -205,7 +205,7 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.REIMU.get(),
                 ctx -> new RenderTHBoss<EntityReimu>(ctx, new ModelReimu<>(ctx.bakeLayer(REIMU_LAYER)), "textures/mob/reimutexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.RUMIA.get(),
-                ctx -> new RenderTHBoss<EntityRumia>(ctx, new ModelRumia<>(ctx.bakeLayer(RUMIA_LAYER)), "textures/mob/rumiatexture.png", 0.25F));
+                ctx -> new thKaguyaMod.client.render.living.RenderRumia(ctx, RUMIA_LAYER));
         event.registerEntityRenderer(THKaguyaEntities.SAKUYA.get(),
                 ctx -> new RenderTHBoss<EntitySakuya>(ctx, new ModelSakuya<>(ctx.bakeLayer(SAKUYA_LAYER)), "textures/mob/sakuyatexture.png", 0.25F));
         event.registerEntityRenderer(THKaguyaEntities.SANAE.get(),
@@ -220,10 +220,13 @@ public class ClientRenderRegistry
 
         // 特殊弹体（阶段 3d-3）：继承 THShot 用 RenderTHShot，继承 THLaser 用 RenderTHLaser
         event.registerEntityRenderer(THKaguyaEntities.DRAGON_NECK_JEWEL.get(), RenderDragonNeckJewel::new);
-        event.registerEntityRenderer(THKaguyaEntities.HOMING_AMULET.get(), RenderTHShot::new);
+        event.registerEntityRenderer(THKaguyaEntities.HOMING_AMULET.get(),
+                thKaguyaMod.client.render.shot.RenderHomingAmulet::new);
         event.registerEntityRenderer(THKaguyaEntities.MASTER_SPARK.get(), RenderTHLaser::new);
-        event.registerEntityRenderer(THKaguyaEntities.MUSOU_FUUIN.get(), RenderTHShot::new);
-        event.registerEntityRenderer(THKaguyaEntities.NUCLEAR_SHOT.get(), RenderTHShot::new);
+        event.registerEntityRenderer(THKaguyaEntities.MUSOU_FUUIN.get(),
+                thKaguyaMod.client.render.shot.RenderMusouFuuin::new);
+        event.registerEntityRenderer(THKaguyaEntities.NUCLEAR_SHOT.get(),
+                thKaguyaMod.client.render.shot.RenderNuclearShot::new);
         event.registerEntityRenderer(THKaguyaEntities.ONMYOUDAMA.get(), RenderOnmyoudama::new);
         event.registerEntityRenderer(THKaguyaEntities.SANAE_WIND.get(), RenderSanaeWind::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_HENYORI_LASER.get(), RenderTHLaser::new);

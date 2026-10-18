@@ -1924,4 +1924,99 @@ public static void playShotSound(Entity entity)
 		return count;
 	}
 
+	/* ================================================================
+	 * 原版 THShotLib の爆炸/消弹系（:1581 explosionEffect / :1603 explosionEffect2 /
+	 * :1711 banishExplosion / :2379 弾生成）。移植版曾整段缺失，
+	 * 导致 boss 死亡演出与死亡时对周围妖精的伤害都没有发生。
+	 * ================================================================ */
+
+	/**
+	 * 原版 THShotLib.explosionEffect（:1581）。
+	 * 1.7.10 の {@code world.spawnParticle("hugeexplosion"/"largeexplode")} は
+	 * 1.20.1 の {@code ParticleTypes.EXPLOSION_EMITTER}/{@code EXPLOSION} に対応。
+	 */
+	public static void explosionEffect(net.minecraft.world.level.Level level, double posX, double posY, double posZ, float explosionSize)
+	{
+		level.playSound(null, posX, posY, posZ, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE,
+				net.minecraft.sounds.SoundSource.NEUTRAL, 2.0F, 3.0F);
+		spawnExplosionParticle(level, posX, posY, posZ, explosionSize);
+	}
+
+	/**
+	 * 原版 THShotLib.explosionEffect2（:1603）。音だけ花火の爆発音（fireworks.blast）になる。
+	 */
+	public static void explosionEffect2(net.minecraft.world.level.Level level, double posX, double posY, double posZ, float explosionSize)
+	{
+		level.playSound(null, posX, posY, posZ, net.minecraft.sounds.SoundEvents.FIREWORK_ROCKET_BLAST,
+				net.minecraft.sounds.SoundSource.NEUTRAL, 2.0F, 3.0F);
+		spawnExplosionParticle(level, posX, posY, posZ, explosionSize);
+	}
+
+	/** explosionEffect 系のパーティクル部分（サーバーなら周囲へ送信、クライアントなら直接追加）。 */
+	private static void spawnExplosionParticle(net.minecraft.world.level.Level level, double posX, double posY, double posZ, float explosionSize)
+	{
+		boolean huge = explosionSize >= 2.0F;
+		if(level instanceof net.minecraft.server.level.ServerLevel serverLevel)
+		{
+			serverLevel.sendParticles(huge ? net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER
+					: net.minecraft.core.particles.ParticleTypes.EXPLOSION, posX, posY, posZ, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+		}
+		else if(level.isClientSide)
+		{
+			level.addParticle(huge ? net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER
+					: net.minecraft.core.particles.ParticleTypes.EXPLOSION, posX, posY, posZ, 1.0D, 0.0D, 0.0D);
+		}
+	}
+
+	/**
+	 * 原版 THShotLib.banishExplosion（:1711）：倒れた Entity の周囲の妖精（使い魔を除く）に
+	 * 距離減衰ダメージ（最低 2.0F）を与える。原版 EntityDanmakuMob.onDeathUpdate の deathTime==7 で呼ばれる。
+	 */
+	public static void banishExplosion(Entity deadEntity, double range, float maxDamage)
+	{
+		java.util.List<Entity> list = deadEntity.level().getEntities(deadEntity,
+				deadEntity.getBoundingBox().inflate(range, range, range));
+
+		for(Entity entity : list)
+		{
+			if(entity instanceof thKaguyaMod.entity.living.EntityTHFairy
+					&& !(entity instanceof thKaguyaMod.entity.living.EntityFamiliar))
+			{
+				double distance = entity.distanceTo(deadEntity);
+				if(distance <= range)
+				{
+					float damage = maxDamage * (1.0F - (float)(distance / range));
+					if(damage < 2.0F)
+					{
+						damage = 2.0F;
+					}
+					entity.hurt(deadEntity.damageSources().indirectMagic(entity, deadEntity), damage);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 原版 THShotLib.弾生成（:2379）：createShot の完全な引数版への別名（原版でも呼び出し箇所なし）。
+	 */
+	public static final EntityTHShot danmakuSpawn(LivingEntity user, Entity source, Vec3 pos,
+			Vec3 angle, float slope,
+			Vec3 rotate, float rotationSpeed, int rotationEnd,
+			double firstSpeed, double limitSpeed, double acceleration,
+			Vec3 gravity, ShotData shot)
+	{
+		return createShot(user, source, pos, angle, slope, rotate, rotationSpeed, rotationEnd,
+				firstSpeed, limitSpeed, acceleration, gravity, shot);
+	}
+
+	/* ============ 弾の色名（原版 THShotLib.java:88-95） ============ */
+
+	/** 弾の色の名前（日本語） */
+	public static final String COLOR_NAME_JP[] = {
+		"赤", "青", "緑", "黄", "紫", "水色", "橙", "白", "虹色", "ランダム", "暖色", "寒色", "", "", "", ""};
+
+	/** 弾の色の名前（英語） */
+	public static final String COLOR_NAME[] = {
+		"Red", "Blue", "Green", "Yellow", "Purple", "Aqua", "Orange", "White", "Rainbow", "Random", "Hot", "Cold", "", "", "", ""};
+
 }
