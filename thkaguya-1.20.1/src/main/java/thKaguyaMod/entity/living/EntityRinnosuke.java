@@ -1,5 +1,6 @@
 package thKaguyaMod.entity.living;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
@@ -52,5 +53,20 @@ public class EntityRinnosuke extends Villager
     public int getMaxSpawnClusterSize()
     {
         return 1;
+    }
+
+    /**
+     * 修正交易界面的名字。
+     *
+     * <p>1.20.1 的 {@code Villager#getTypeName()} 拼的是
+     * {@code entityDescId + "." + (职业命名空间 != minecraft ? 命名空间 + "." : "") + 职业路径}，
+     * 本实体的实体描述 id 已经是 {@code entity.thkaguya.rinnosuke}、职业是 {@code thkaguya:rinnosuke}，
+     * 于是它会去找 {@code entity.thkaguya.rinnosuke.thkaguya.rinnosuke} —— lang 里没有这个键，
+     * 交易界面就显示成键名。这里直接给固定的翻译键。
+     */
+    @Override
+    protected Component getTypeName()
+    {
+        return Component.translatable("entity.thkaguya.rinnosuke");
     }
 }

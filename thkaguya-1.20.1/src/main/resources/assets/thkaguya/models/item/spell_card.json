@@ -213,6 +213,12 @@
         "thkaguya:spellcard_id": 40
       },
       "model": "thkaguya:item/spell_card/gagoujicyclone"
+    },
+    {
+      "predicate": {
+        "thkaguya:spellcard_id": 41
+      },
+      "model": "thkaguya:item/spell_card/brilliantdragonbullet"
     }
   ]
 }

@@ -162,6 +162,8 @@ public class THKaguyaCore
             thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_LittleBugStorm.class, "thkaguyamod", "LittleBugStorm", 34);
             thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_MeteorOnEarth.class, "thkaguyamod", "Meteor_on_Earth", 35);
             thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_GagoujiCyclone.class, "thkaguyamod", "GagoujiCyclone", 40);
+            // 神宝「ブリリアントドラゴンバレッタ」（原版 lang 里就是 41；42–45 是其余四件神宝，留给以后）
+            thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(thKaguyaMod.entity.spellcard.THSC_BrilliantDragonBullet.class, "thkaguyamod", "BrilliantDragonBullet", 41);
 
             SpawnPlacements.register(THKaguyaEntities.TH_FAIRY.get(),
                     SpawnPlacements.Type.ON_GROUND,

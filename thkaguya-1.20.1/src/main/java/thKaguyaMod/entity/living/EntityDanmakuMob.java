@@ -524,6 +524,25 @@ public abstract class EntityDanmakuMob extends Mob
         return CIRCLE_COLOR_RED;
     }
 
+    /**
+     * 常驻魔法阵（{@link #circle}，end = -100 表示永不过期）主动消除。
+     *
+     * <p>原版在 {@code moveDanmakuAttack} 里直接 {@code circle.setDead()}，移植时漏了这一句，
+     * 于是 boss 阶段切换、被打死之后魔法阵会一直挂在原地。凡是「这个 boss 不再以该相位站立」
+     * 的时刻（切阶段、真正死亡、被移除）都要调用这里。
+     *
+     * <p>注意：不能改成「圆发现 user 不活就自毁」——玩家发动符卡用的那个圆
+     * （{@code THKaguyaPlayerDeathEventHandler}）在玩家死亡后还要留着参与复活判定。
+     */
+    protected void clearSpellCardCircle()
+    {
+        if(circle != null)
+        {
+            circle.discard();
+            circle = null;
+        }
+    }
+
     /** スペルカードを宣言する */
     protected void useSpellCard(int spellCardNo)
     {
@@ -565,6 +584,11 @@ public abstract class EntityDanmakuMob extends Mob
         if(!this.level().isClientSide && this.onDeathUpdate())
         {
             return;
+        }
+        // 真正死亡（没有下一阶段可进）：把常驻魔法阵收掉
+        if(!this.level().isClientSide)
+        {
+            clearSpellCardCircle();
         }
         super.die(source);
     }
@@ -667,6 +691,10 @@ public abstract class EntityDanmakuMob extends Mob
         {
             bossBar.removeAllPlayers();
         }
+        if(!level().isClientSide)
+        {
+            clearSpellCardCircle();
+        }
         super.remove(reason);
     }
 
@@ -752,6 +780,8 @@ public abstract class EntityDanmakuMob extends Mob
         // 原版：阶段切换时消掉周围 40 格的「敌方以外」弹幕（自己的旧弹幕清空，避免叠屏）
         THShotLib.danmakuRemove(this, 40.0D, "Enemy", true);
         isSpellCardMode = false;
+        // 原版 moveDanmakuAttack 末尾：阶段切换时把常驻魔法阵一起消掉
+        clearSpellCardCircle();
     }
 
     public Vec3 look()
