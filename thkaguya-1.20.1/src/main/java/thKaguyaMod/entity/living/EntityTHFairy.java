@@ -240,6 +240,12 @@ public class EntityTHFairy extends EntityDanmakuMob
                 this.becomeZombieFairy();
                 return;
             }
+            // 原版：dropFewItems 发生在 onDeath（第一次 HP 归零），僵尸化在其后的
+            // onDeathUpdate 里。移植版把僵尸化搬进了 die() 并提前 return，若不在这里
+            // 补一次掉落，妖怪妖精（下界/万圣节）就会整场不掉东西。
+            // 僵尸化会把 form 置 -1，之后的真正死亡由 dropCustomDeathLoot 的
+            // form < 0 早退挡住，不会掉两次。
+            this.dropLootNow(damageSource);
             // まだ死なない：探知距離が 2.0 に縮むまで「倒れた」状態で耐える
             this.zombieRising = true;
             this.setHealth(0.5F);

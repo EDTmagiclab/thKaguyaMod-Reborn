@@ -28,6 +28,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
@@ -577,20 +578,65 @@ public abstract class EntityDanmakuMob extends Mob
     /**
      * 死亡拦截：boss 在 HP 归零时先调用 onDeathUpdate() 判断是否进入下一阶段，
      * 若复活则跳过 super.die()（1.7.10 的 onDeathUpdate 每 tick 阶段转换等价物）。
+     *
+     * <p>掉落时序：1.7.10 的 {@code EntityLivingBase#onDeath} 里先调 {@code dropFewItems}
+     * 掉一次战利品，之后每 tick 的 {@code onDeathUpdate} 才决定是否进入下一阶段。
+     * 也就是说<b>每打破一个阶段都会掉一次</b>（符卡段掉的就是那张符卡）。
+     * 移植版把阶段切换搬进了 die()，若在这里直接 return 会把这几次掉落全部吞掉
+     * （Cirno 全程一滴不掉即由此而来），故先记下被打穿的阶段、切换后再按原阶段身份掉一次。
      */
     @Override
     public void die(DamageSource source)
     {
-        if(!this.level().isClientSide && this.onDeathUpdate())
-        {
-            return;
-        }
-        // 真正死亡（没有下一阶段可进）：把常驻魔法阵收掉
         if(!this.level().isClientSide)
         {
+            int brokenPattern = getDanmakuPattern();
+            if(this.onDeathUpdate())
+            {
+                dropLootForPattern(brokenPattern, source);
+                return;
+            }
+            // 真正死亡（没有下一阶段可进）：把常驻魔法阵收掉
             clearSpellCardCircle();
         }
         super.die(source);
+    }
+
+    /**
+     * 以「被打穿的那一阶段」的身份执行一次死亡掉落（对齐 1.7.10 的 onDeath→onDeathUpdate 时序）。
+     *
+     * <p>子类的 {@code dropCustomDeathLoot} 会读 {@code getDanmakuPattern()} /
+     * {@code getUsingSpellCardNo()}，而 {@code moveDanmakuAttack} 已在 onDeathUpdate 里把
+     * pattern 换成下一阶段，所以这里临时还原成被打穿的那一段再掉落，最后恢复原值，
+     * 避免阶段机被污染。
+     */
+    protected void dropLootForPattern(int brokenPattern, DamageSource source)
+    {
+        int currentPattern = getDanmakuPattern();
+        setDanmakuPattern(brokenPattern);
+        try
+        {
+            dropLootNow(source);
+        }
+        finally
+        {
+            setDanmakuPattern(currentPattern);
+        }
+    }
+
+    /**
+     * 立刻按「死亡掉落」规则掉一次（等价于 1.7.10 的 dropFewItems 调用）。
+     *
+     * <p>抢夺等级与「是否被玩家打过」的算法照抄 1.20.1 的 {@code dropAllDeathLoot}，
+     * 这样在非 super.die() 路径（阶段切换、妖精僵尸化的第一次倒地）里调用时，
+     * 掉落数量与原版一致。
+     */
+    protected void dropLootNow(DamageSource source)
+    {
+        boolean recentlyHit = this.lastHurtByPlayerTime > 0;
+        Entity killer = source.getEntity();
+        int looting = killer instanceof LivingEntity ? EnchantmentHelper.getMobLooting((LivingEntity)killer) : 0;
+        this.dropCustomDeathLoot(source, looting, recentlyHit);
     }
 
     /**
