@@ -70,4 +70,15 @@ tasks.named('processResources', ProcessResources).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    // 迁移期要把"全部错误"一次看全（javac 默认到 100 条就停）
+    options.compilerArgs << '-Xmaxerrs' << '2000'
+}
+
+// 迁移辅助：把编译类路径导出到文件，便于直接用 javac 跑（Gradle 会把诊断信息按 80 列截断/折断，
+// 直接调用 javac 才能拿到完整的 "cannot find symbol" / "required: ... found: ..." 文本）。
+tasks.register('dumpCompileCp') {
+    def outFile = layout.buildDirectory.file('compile-cp.txt')
+    doLast {
+        outFile.get().asFile.text = sourceSets.main.compileClasspath.asPath
+    }
 }

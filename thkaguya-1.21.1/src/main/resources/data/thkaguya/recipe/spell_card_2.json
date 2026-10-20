@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "BPB",
+    "BBB"
+  ],
+  "key": {
+    "B": { "item": "thkaguya:butterfly_shot" },
+    "P": { "item": "minecraft:paper" }
+  },
+  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 2 } }
+}

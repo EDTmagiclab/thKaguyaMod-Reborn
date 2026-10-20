@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I I",
+    "CPC",
+    "C C"
+  ],
+  "key": {
+    "C": { "item": "thkaguya:crystal_shot" },
+    "I": { "item": "minecraft:ice" },
+    "P": { "item": "minecraft:paper" }
+  },
+  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 19 } }
+}

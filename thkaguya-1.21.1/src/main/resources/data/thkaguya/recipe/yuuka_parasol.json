@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "YRO",
+    " IR",
+    "I Y"
+  ],
+  "key": {
+    "O": {
+      "item": "thkaguya:orange_pearl"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "item": "minecraft:dandelion"
+    },
+    "R": {
+      "item": "minecraft:poppy"
+    }
+  },
+  "result": {
+    "item": "thkaguya:yuuka_parasol",
+    "count": 1
+  }
+}

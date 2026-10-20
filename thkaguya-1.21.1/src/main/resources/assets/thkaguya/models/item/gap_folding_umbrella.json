@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "thkaguya:item/gap_folding_umbrella",
+    "layer1": "thkaguya:item/gap_folding_umbrella_ribbon"
+  }
+}

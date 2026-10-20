@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "LPL"
+  ],
+  "key": {
+    "B": { "item": "thkaguya:big_light_shot" },
+    "L": { "item": "thkaguya:long_laser" },
+    "P": { "item": "minecraft:paper" }
+  },
+  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 28 } }
+}

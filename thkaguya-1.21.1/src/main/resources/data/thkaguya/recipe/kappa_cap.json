@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LWL",
+    "SCS"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:lily_pad"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "S": {
+      "item": "minecraft:slime_ball"
+    },
+    "C": {
+      "item": "minecraft:leather_helmet"
+    }
+  },
+  "result": {
+    "item": "thkaguya:kappa_cap",
+    "count": 1
+  }
+}

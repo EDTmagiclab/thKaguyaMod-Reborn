@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPO",
+    " SP",
+    "S P"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "O": {
+      "item": "thkaguya:yin_yang_orb"
+    }
+  },
+  "result": {
+    "item": "thkaguya:hakurei_miko_stick",
+    "count": 1
+  }
+}

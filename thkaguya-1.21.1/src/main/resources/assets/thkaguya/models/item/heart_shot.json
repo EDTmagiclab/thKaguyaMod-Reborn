@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "thkaguya:item/heart_shot",
+    "layer1": "thkaguya:item/heart_shot_2"
+  }
+}

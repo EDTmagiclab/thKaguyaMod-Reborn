@@ -1,0 +1,14 @@
+{
+    "masterspark": {
+        "sounds": [ { "name": "thkaguya:masterspark" } ]
+    },
+    "spellcard": {
+        "sounds": [ { "name": "thkaguya:spellcard" } ]
+    },
+    "sukima": {
+        "sounds": [ { "name": "thkaguya:sukima" } ]
+    },
+    "down": {
+        "sounds": [ { "name": "thkaguya:down" } ]
+    }
+}
