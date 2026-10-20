@@ -6,9 +6,23 @@
     "RYR"
   ],
   "key": {
-    "P": { "item": "minecraft:paper" },
-    "R": { "item": "minecraft:poppy" },
-    "Y": { "item": "minecraft:dandelion" }
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "R": {
+      "item": "minecraft:poppy"
+    },
+    "Y": {
+      "item": "minecraft:dandelion"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 26 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 26
+      }
+    }
+  }
 }

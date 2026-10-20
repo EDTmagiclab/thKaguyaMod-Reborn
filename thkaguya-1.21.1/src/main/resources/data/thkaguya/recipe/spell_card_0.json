@@ -6,9 +6,23 @@
     "GOG"
   ],
   "key": {
-    "G": { "item": "minecraft:glowstone_dust" },
-    "O": { "item": "thkaguya:big_shot" },
-    "P": { "item": "minecraft:paper" }
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "O": {
+      "item": "thkaguya:big_shot"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 0 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 0
+      }
+    }
+  }
 }

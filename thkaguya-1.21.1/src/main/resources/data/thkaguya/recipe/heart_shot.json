@@ -11,7 +11,7 @@
     }
   },
   "result": {
-    "item": "thkaguya:heart_shot",
-    "count": 2
+    "count": 2,
+    "id": "thkaguya:heart_shot"
   }
 }

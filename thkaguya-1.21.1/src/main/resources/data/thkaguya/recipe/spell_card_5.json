@@ -6,9 +6,23 @@
     "BZB"
   ],
   "key": {
-    "B": { "item": "thkaguya:butterfly_shot" },
-    "P": { "item": "minecraft:paper" },
-    "Z": { "item": "minecraft:rotten_flesh" }
+    "B": {
+      "item": "thkaguya:butterfly_shot"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "Z": {
+      "item": "minecraft:rotten_flesh"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 5 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 5
+      }
+    }
+  }
 }

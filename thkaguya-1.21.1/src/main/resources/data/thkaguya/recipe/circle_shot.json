@@ -11,7 +11,7 @@
     }
   },
   "result": {
-    "item": "thkaguya:circle_shot",
-    "count": 3
+    "count": 3,
+    "id": "thkaguya:circle_shot"
   }
 }

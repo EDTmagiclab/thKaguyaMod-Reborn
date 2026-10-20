@@ -5,8 +5,20 @@
     " P "
   ],
   "key": {
-    "K": { "item": "thkaguya:knife_shot" },
-    "P": { "item": "minecraft:paper" }
+    "K": {
+      "item": "thkaguya:knife_shot"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 24 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 24
+      }
+    }
+  }
 }

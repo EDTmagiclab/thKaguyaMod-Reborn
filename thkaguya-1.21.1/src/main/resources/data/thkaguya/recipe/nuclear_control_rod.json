@@ -14,7 +14,7 @@
     }
   },
   "result": {
-    "item": "thkaguya:nuclear_control_rod",
-    "count": 1
+    "count": 1,
+    "id": "thkaguya:nuclear_control_rod"
   }
 }

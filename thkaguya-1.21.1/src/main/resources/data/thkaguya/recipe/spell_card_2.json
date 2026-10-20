@@ -6,8 +6,20 @@
     "BBB"
   ],
   "key": {
-    "B": { "item": "thkaguya:butterfly_shot" },
-    "P": { "item": "minecraft:paper" }
+    "B": {
+      "item": "thkaguya:butterfly_shot"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 2 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 2
+      }
+    }
+  }
 }

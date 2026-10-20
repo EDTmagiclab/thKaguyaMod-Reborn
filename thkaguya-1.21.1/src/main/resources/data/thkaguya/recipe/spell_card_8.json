@@ -6,9 +6,23 @@
     " C "
   ],
   "key": {
-    "C": { "item": "thkaguya:sakuya_watch" },
-    "K": { "item": "thkaguya:knife_shot" },
-    "P": { "item": "minecraft:paper" }
+    "C": {
+      "item": "thkaguya:sakuya_watch"
+    },
+    "K": {
+      "item": "thkaguya:knife_shot"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 8 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 8
+      }
+    }
+  }
 }

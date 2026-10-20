@@ -6,9 +6,23 @@
     "S"
   ],
   "key": {
-    "L": { "item": "thkaguya:middle_laser" },
-    "P": { "item": "minecraft:paper" },
-    "S": { "item": "thkaguya:gap" }
+    "L": {
+      "item": "thkaguya:middle_laser"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "S": {
+      "item": "thkaguya:gap"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 10 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 10
+      }
+    }
+  }
 }

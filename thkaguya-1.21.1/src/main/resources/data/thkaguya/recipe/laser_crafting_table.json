@@ -14,7 +14,7 @@
     }
   },
   "result": {
-    "item": "thkaguya:laser_crafting_table",
-    "count": 1
+    "count": 1,
+    "id": "thkaguya:laser_crafting_table"
   }
 }

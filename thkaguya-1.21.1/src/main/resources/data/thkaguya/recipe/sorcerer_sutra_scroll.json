@@ -14,7 +14,7 @@
     }
   },
   "result": {
-    "item": "thkaguya:sorcerer_sutra_scroll",
-    "count": 1
+    "count": 1,
+    "id": "thkaguya:sorcerer_sutra_scroll"
   }
 }

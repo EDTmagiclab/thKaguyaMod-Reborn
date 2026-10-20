@@ -9,7 +9,7 @@
     }
   },
   "result": {
-    "item": "thkaguya:power_up_item_small",
-    "count": 9
+    "count": 9,
+    "id": "thkaguya:power_up_item_small"
   }
 }

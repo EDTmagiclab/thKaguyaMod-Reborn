@@ -6,9 +6,23 @@
     "C C"
   ],
   "key": {
-    "C": { "item": "thkaguya:crystal_shot" },
-    "I": { "item": "minecraft:ice" },
-    "P": { "item": "minecraft:paper" }
+    "C": {
+      "item": "thkaguya:crystal_shot"
+    },
+    "I": {
+      "item": "minecraft:ice"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
-  "result": { "item": "thkaguya:spell_card", "count": 1, "nbt": { "Damage": 19 } }
+  "result": {
+    "count": 1,
+    "id": "thkaguya:spell_card",
+    "components": {
+      "thkaguya:stack_tag": {
+        "Damage": 19
+      }
+    }
+  }
 }
