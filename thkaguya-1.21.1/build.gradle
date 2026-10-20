@@ -26,10 +26,20 @@ neoForge {
     runs {
         client {
             client()
+            // 客户端与专用服务器必须用不同的 gameDir：共用一个 run/ 会互相抢
+            // options.txt / logs/latest.log / saves，表现为"日志被另一个进程覆盖"。
+            gameDirectory = file('run/client')
+            // 便于本地联机自测（验证数据组件的 networkSynchronized 是否真的生效）：
+            //   g.bat runClient -PquickPlay=127.0.0.1:25566
+            if (project.hasProperty('quickPlay')) {
+                programArgument '--quickPlayMultiplayer'
+                programArgument project.property('quickPlay').toString()
+            }
         }
         server {
             server()
             programArgument '--nogui'
+            gameDirectory = file('run/server')
         }
         data {
             data()

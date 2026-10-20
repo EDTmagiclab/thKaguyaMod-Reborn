@@ -1,2 +1,3 @@
 @echo off
-call "%~dp0g.bat" runServer
+call "%~dp0g.bat" runServer %*
+
