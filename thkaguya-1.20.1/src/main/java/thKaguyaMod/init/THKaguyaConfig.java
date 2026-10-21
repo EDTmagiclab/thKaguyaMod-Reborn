@@ -49,6 +49,12 @@ public class THKaguyaConfig
     /** 実験的機能：咲夜の弾幕戦を有効にする（設定画面の名称：启用咲夜弹幕战） */
     public static boolean enableSakuyaBossFight;
 
+    /**
+     * 実験的機能：符卡宣言演出（カットイン）を有効にする。
+     * 無効にすると原版同等の「チャット欄に符卡名を出すだけ」の表示に戻る。
+     */
+    public static boolean enableSpellCardCutIn;
+
     public static final ForgeConfigSpec SPEC;
 
     private static final ForgeConfigSpec.BooleanValue USING_MASTER_SPARK;
@@ -75,6 +81,7 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.BooleanValue SUPPRESS_MALLET_GUI_WARNING;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SANAE_BOSS_FIGHT;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SAKUYA_BOSS_FIGHT;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_SPELL_CARD_CUT_IN;
 
     static
     {
@@ -137,6 +144,12 @@ public class THKaguyaConfig
                         "开启后：手持冈格尼尔（Gungnir）右键咲夜即可开战，两张符卡：杀人玩偶 → 永恒之月。",
                         "Default: false")
                 .define("Enable Sakuya Danmaku Battle", false);
+        ENABLE_SPELL_CARD_CUT_IN = builder
+                .comment("启用符卡宣言演出（实验性玩法）",
+                        "宣言符卡时画面压暗、卡面蹦出、右下角显示宣言者半身像、大字显示符卡名。",
+                        "关闭后恢复原版表现（只在聊天栏输出符卡名）。纯客户端表现，不影响任何玩法数值。",
+                        "Default: true")
+                .define("Enable Spell Card Cut-In", true);
         builder.pop();
 
         SPEC = builder.build();
@@ -216,6 +229,7 @@ public class THKaguyaConfig
         suppressMalletGuiWarning = SUPPRESS_MALLET_GUI_WARNING.get();
         enableSanaeBossFight = ENABLE_SANAE_BOSS_FIGHT.get();
         enableSakuyaBossFight = ENABLE_SAKUYA_BOSS_FIGHT.get();
+        enableSpellCardCutIn = ENABLE_SPELL_CARD_CUT_IN.get();
     }
 
     /**
@@ -265,5 +279,16 @@ public class THKaguyaConfig
             SPEC.save();
         }
         enableSakuyaBossFight = value;
+    }
+
+    /** 実験的機能：符卡宣言演出の有効／無効を書き換える（設定画面から呼ぶ）。 */
+    public static void setEnableSpellCardCutIn(boolean value)
+    {
+        ENABLE_SPELL_CARD_CUT_IN.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        enableSpellCardCutIn = value;
     }
 }

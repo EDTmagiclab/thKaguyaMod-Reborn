@@ -240,5 +240,6 @@
   "config.thkaguya.sanae_boss_fight": "Enable Sanae Danmaku Battle: %s",
   "config.thkaguya.sakuya_boss_fight": "Enable Sakuya Danmaku Battle: %s",
   "message.thkaguya.boss_battle_reward": "Sanae accepts your challenge! Spell card obtained: %s",
-  "message.thkaguya.merchant_discount": "\"%s\" concedes! All trades are half price for the next %s minutes."
+  "message.thkaguya.merchant_discount": "\"%s\" concedes! All trades are half price for the next %s minutes.",
+  "config.thkaguya.spell_card_cutin": "Spell Card Cut-In: %s"
 }

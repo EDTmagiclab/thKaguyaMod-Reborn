@@ -62,6 +62,19 @@ public class EntitySpellCard extends Entity
     private static final EntityDataAccessor<Integer> SPELL_CARD_NUMBER =
             SynchedEntityData.defineId(EntitySpellCard.class, EntityDataSerializers.INT);
 
+    /**
+     * 宣言者の entity id（クライアント専用の「誰が撃ったか」情報）。
+     *
+     * <p>{@code user} は普通のフィールドで同期されないため、クライアント側では常に null。
+     * 符卡宣言演出（{@code client/spellcard_cutin}）が半身像を出すには宣言者が要るので、
+     * この 1 個だけ同期データに載せる。既定値 {@code -1} は「まだ届いていない」の意。</p>
+     */
+    private static final EntityDataAccessor<Integer> CASTER_ID =
+            SynchedEntityData.defineId(EntitySpellCard.class, EntityDataSerializers.INT);
+
+    /** クライアント側：この実体で演出を出したか（二重発火よけ）。 */
+    private boolean cutInFired;
+
     public LivingEntity user;
     public LivingEntity tgEntity;
     public int count;
@@ -100,6 +113,7 @@ public class EntitySpellCard extends Entity
         tgEntity = target;
         spellCardNumber = num;
         setSpellCardNumber(num);
+        setCasterId(spUser.getId());
         spellCardUsedTime = 0;
         count = 0;
 
@@ -139,7 +153,45 @@ public class EntitySpellCard extends Entity
     @Override
     protected void defineSynchedData()
     {
-        this.entityData.define(SPELL_CARD_NUMBER, 0);
+        // 既定値 -1 は「まだ同期されていない」。0 を既定にすると、0 番（夢想封印）と
+        // 未同期が区別できなくなる（SynchedEntityData は値が変わらないと dirty にならず、
+        // 0 番のカードは実際に一度も送られてこないため）。
+        this.entityData.define(SPELL_CARD_NUMBER, -1);
+        this.entityData.define(CASTER_ID, -1);
+    }
+
+    /**
+     * 同期データが届いた瞬間のフック（クライアント）。
+     *
+     * <p>符卡宣言演出はここで起動する。{@code EntityJoinLevelEvent} では駄目な理由：
+     * {@code ClientboundAddEntityPacket} は同期データを積んでおらず、参加した瞬間に読むと
+     * カード番号が既定値に見えて「未同期」と区別できない。ここなら値が入った時点で分かる。</p>
+     *
+     * <p>カード番号と宣言者の両方が揃うまで待つ（この 2 つは同じ束で来るが、
+     * 束の中の順序は保証されないので、片方が先に来た回では発火しない）。</p>
+     */
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key)
+    {
+        super.onSyncedDataUpdated(key);
+
+        if (!this.level().isClientSide || cutInFired)
+        {
+            return;
+        }
+        if (getCasterId() < 0 || !isCardNumberSynced())
+        {
+            return;
+        }
+
+        cutInFired = true;
+        thKaguyaMod.client.spellcard_cutin.SpellCardCutIn.trigger(getSpellCardNumber(), getCasterId());
+    }
+
+    /** 卡片番号がクライアントに届いているか（内部表現は -1 が未同期）。 */
+    private boolean isCardNumberSynced()
+    {
+        return this.entityData.get(SPELL_CARD_NUMBER) >= 0;
     }
 
     @Override
@@ -261,8 +313,27 @@ public class EntitySpellCard extends Entity
         this.entityData.set(SPELL_CARD_NUMBER, number);
     }
 
+    /**
+     * 符卡番号。
+     *
+     * <p>内部の「未同期」を表す -1 は 0 番として返すので、呼び出し側は常に 0 以上を受け取る
+     * （レンダラや名前解決が負の添字で落ちないようにするため）。
+     * 未同期かどうかを見たいときは {@link #isCardNumberSynced()} を使う。</p>
+     */
     public int getSpellCardNumber()
     {
-        return this.entityData.get(SPELL_CARD_NUMBER);
+        int number = this.entityData.get(SPELL_CARD_NUMBER);
+        return number < 0 ? 0 : number;
+    }
+
+    /** 宣言者の entity id。クライアントで未同期なら -1。 */
+    public void setCasterId(int id)
+    {
+        this.entityData.set(CASTER_ID, id);
+    }
+
+    public int getCasterId()
+    {
+        return this.entityData.get(CASTER_ID);
     }
 }

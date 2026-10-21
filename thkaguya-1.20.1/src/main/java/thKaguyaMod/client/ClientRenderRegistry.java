@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -285,5 +286,18 @@ public class ClientRenderRegistry
                     new ResourceLocation(THKaguyaCore.MODID, "spellcard_id"),
                     (stack, level, entity, seed) -> stack.getDamageValue());
         });
+    }
+
+    /**
+     * 符卡宣言演出（カットイン）の GUI レイヤ登録。
+     *
+     * <p>{@code registerAboveAll} は HUD の最も上に重ねる指定。画面を閉じている間だけ
+     * 描くよう {@code SpellCardCutInRenderer} 側で {@code minecraft.screen} を見ている。</p>
+     */
+    @SubscribeEvent
+    public static void registerGuiOverlays(RegisterGuiOverlaysEvent event)
+    {
+        event.registerAboveAll("thkaguya_spellcard_cutin",
+                thKaguyaMod.client.spellcard_cutin.SpellCardCutInRenderer.INSTANCE);
     }
 }
