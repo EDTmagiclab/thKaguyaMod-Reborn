@@ -5,6 +5,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.CreeperRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -291,5 +292,21 @@ public class ClientRenderRegistry
                     ResourceLocation.fromNamespaceAndPath(THKaguyaCore.MODID, "spellcard_id"),
                     (stack, level, entity, seed) -> thKaguyaMod.THStackData.getInt(stack, "Damage", 0));
         });
+    }
+
+    /**
+     * 符卡宣言演出（カットイン）の GUI レイヤ登録。
+     *
+     * <p>NeoForge 1.21.1 は {@code RegisterGuiLayersEvent} + {@code LayeredDraw.Layer}。
+     * {@code registerAboveAll} は HUD の最も上に重ねる指定。
+     * 画面を閉じている間だけ描くよう
+     * {@code SpellCardCutInRenderer} 側で {@code minecraft.screen} を見ている。</p>
+     */
+    @SubscribeEvent
+    public static void registerGuiLayers(RegisterGuiLayersEvent event)
+    {
+        event.registerAboveAll(
+                ResourceLocation.fromNamespaceAndPath(THKaguyaCore.MODID, "spellcard_cutin"),
+                thKaguyaMod.client.spellcard_cutin.SpellCardCutInRenderer.INSTANCE);
     }
 }

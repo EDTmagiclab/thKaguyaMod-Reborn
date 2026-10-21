@@ -26,6 +26,7 @@ public class ExperimentalConfigScreen extends Screen
     private Button warningButton;
     private Button sanaeButton;
     private Button sakuyaButton;
+    private Button cutInButton;
 
     /** クライアント側でのみ呼ぶこと（mod 構築フェーズ） */
     public static void register(ModContainer modContainer)
@@ -44,7 +45,8 @@ public class ExperimentalConfigScreen extends Screen
     protected void init()
     {
         int centerX = this.width / 2;
-        int top = this.height / 2 - 70;
+        // 項目が 5 つになったので、縦位置を上へ寄せて「完了」ボタンとの重なりを避ける
+        int top = this.height / 2 - 96;
 
         this.malletButton = this.addRenderableWidget(Button
                 .builder(malletLabel(), button -> this.toggleMalletGui())
@@ -74,6 +76,15 @@ public class ExperimentalConfigScreen extends Screen
                     button.setMessage(sakuyaLabel());
                 })
                 .bounds(centerX - 110, top + 78, 220, 20)
+                .build());
+
+        // 実験的機能：符卡宣言演出（オフにすると原版同等の「チャットに名前を出すだけ」に戻る）
+        this.cutInButton = this.addRenderableWidget(Button
+                .builder(cutInLabel(), button -> {
+                    THKaguyaConfig.setEnableSpellCardCutIn(!THKaguyaConfig.enableSpellCardCutIn);
+                    button.setMessage(cutInLabel());
+                })
+                .bounds(centerX - 110, top + 104, 220, 20)
                 .build());
 
         this.addRenderableWidget(Button
@@ -106,6 +117,12 @@ public class ExperimentalConfigScreen extends Screen
                 Component.translatable(THKaguyaConfig.enableSakuyaBossFight ? "options.on" : "options.off"));
     }
 
+    private Component cutInLabel()
+    {
+        return Component.translatable("config.thkaguya.spell_card_cutin",
+                Component.translatable(THKaguyaConfig.enableSpellCardCutIn ? "options.on" : "options.off"));
+    }
+
     private void toggleMalletGui()
     {
         // 有効 → 無効：そのまま切り替え
@@ -136,7 +153,7 @@ public class ExperimentalConfigScreen extends Screen
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
         guiGraphics.drawCenteredString(this.font,
                 Component.translatable("config.thkaguya.experimental.hint"),
-                this.width / 2, this.height / 2 + 30, 0xA0A0A0);
+                this.width / 2, this.height / 2 + 42, 0xA0A0A0);
     }
 
     @Override
