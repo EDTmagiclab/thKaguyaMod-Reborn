@@ -139,7 +139,10 @@ public class ItemTHShot extends Item
 			}
 		}
 
-		return COLOR_R[color] * 65536 + COLOR_G[color] * 256 + COLOR_B[color];
+		// 1.21.1 の ItemRenderer.renderQuadList は tint の alpha を合成係数に使う
+		// （1.20.1 の Forge 版は alpha を見ない）。alpha=0 のままだと layer0 が
+		// 完全透明になり「空心圆环」になるため、必ず不透明にする。
+		return 0xFF000000 | (COLOR_R[color] << 16) | (COLOR_G[color] << 8) | COLOR_B[color];
 	}
 
 	@Override

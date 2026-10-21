@@ -89,7 +89,7 @@ public class ItemOharaibouS extends Item
 			{
 				if(!card.isEmpty() && card.getItem() == THKaguyaItems.SPELL_CARD.get())
 				{
-					int cardNo = card.getDamageValue();
+					int cardNo = thKaguyaMod.THStackData.getInt(card, "Damage", 0);
 
 					// 五芒星を５つ以上、使用者のレベルが４０以上、大奇跡「八坂の神風」なら
 					if(time >= 150 && player.experienceLevel >= 40 && cardNo == 18)

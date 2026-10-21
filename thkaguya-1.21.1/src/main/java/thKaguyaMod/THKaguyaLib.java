@@ -174,7 +174,8 @@ public class THKaguyaLib
 				// 手に持っているのが早苗の符卡（14〜18）なら、NBT Charge が必要
 				if(itemStack.getItem() == THKaguyaItems.SPELL_CARD.get())
 				{
-					int damage = itemStack.getDamageValue();
+					// 1.21.1: maxDamage=0 のアイテムは damage が 0 に clamp されるため stack_tag から読む
+					int damage = THStackData.getInt(itemStack, "Damage", 0);
 					if(damage >= 14 && damage <= 18)
 					{
 						CompoundTag nbt = THStackData.get(itemStack);

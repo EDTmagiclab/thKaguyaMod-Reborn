@@ -54,7 +54,11 @@ public class THKaguyaCreativeTab
                         for (int id : sortedSpellCardIds())
                         {
                             ItemStack stack = new ItemStack(THKaguyaItems.SPELL_CARD.get());
-                            stack.setDamageValue(id);
+                            // 1.21.1 (NeoForge) は maxDamage=0 のアイテムで damage を 0 に clamp するため、
+                            // 「damage = 符卡 No」方式は使えない。符卡 No は stack_tag の "Damage" に入れる。
+                            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+                            tag.putInt("Damage", id);
+                            thKaguyaMod.THStackData.set(stack, tag);
                             output.accept(stack);
                         }
                     })

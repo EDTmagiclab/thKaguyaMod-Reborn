@@ -30,6 +30,13 @@ import thKaguyaMod.registry.SpellCardRegistry;
  * （真珠・弾・銀刀などはアイテム分割したが、符卡は 40 枚近くあり
  *   画像・言語キーも 1 枚ごとに用意されているため分割しない方が忠実。）
  *
+ * 1.20.1 -> 1.21.1（重要）:
+ *   1.21.1 (NeoForge) の ItemStack#getDamageValue() は Item#getDamage(stack) 経由で
+ *   Mth.clamp(damage, 0, stack.getMaxDamage()) されるため、耐久値を持たないアイテム
+ *   （このスペルカードは stacksTo(1) のみ）では damage が**常に 0 に丸められる**。
+ *   → 1.20.1 の「damage = 符卡 No」方式は使えない。符卡 No はデータコンポーネント
+ *   thkaguya:stack_tag の Damage（int）に保存し、getSpellCardID 経由で読む。
+ *
  * 1.7.10 -> 1.20.1:
  *   onItemRightClick        -> use(Level, Player, InteractionHand)
  *   onUpdate（常時）        -> inventoryTick
@@ -53,7 +60,7 @@ public class ItemTHSpellCard extends Item
 	@Override
 	public String getDescriptionId(ItemStack itemStack)
 	{
-		return super.getDescriptionId(itemStack) + "." + itemStack.getDamageValue();
+		return super.getDescriptionId(itemStack) + "." + getSpellCardID(itemStack);
 	}
 
 	/** 右クリック：スペルカードを宣言する */
@@ -63,7 +70,7 @@ public class ItemTHSpellCard extends Item
 		ItemStack itemStack = player.getItemInHand(hand);
 
 		// 原版はここで THShotLib.NORMAL（難易度 Normal）を渡す
-		THKaguyaLib.checkSpellCardDeclaration(level, itemStack, player, itemStack.getDamageValue(), THShotLib.NORMAL, true);
+		THKaguyaLib.checkSpellCardDeclaration(level, itemStack, player, getSpellCardID(itemStack), THShotLib.NORMAL, true);
 
 		return InteractionResultHolder.success(itemStack);
 	}
@@ -84,6 +91,8 @@ public class ItemTHSpellCard extends Item
 			{
 				nbt.remove("Charge");
 			}
+			// データコンポーネントは値セマンティクスなので必ず書き戻す
+			THStackData.set(itemStack, nbt);
 		}
 	}
 
@@ -93,7 +102,7 @@ public class ItemTHSpellCard extends Item
 	{
 		super.appendHoverText(itemStack, context, tooltip, flag);
 
-		int damage = itemStack.getDamageValue();
+		int damage = getSpellCardID(itemStack);
 
 		tooltip.add(Component.literal("Lv." + getLevel(damage) + " Spell Card"));
 
@@ -122,7 +131,7 @@ public class ItemTHSpellCard extends Item
 	@Override
 	public boolean isFoil(ItemStack itemStack)
 	{
-		int damage = itemStack.getDamageValue();
+		int damage = getSpellCardID(itemStack);
 
 		if(damage >= 14 && damage <= 18)
 		{
@@ -139,7 +148,7 @@ public class ItemTHSpellCard extends Item
 	/** アイテムスタックからスペルカードIDを取得する */
 	public int getSpellCardID(ItemStack itemStack)
 	{
-		return itemStack.getDamageValue();
+		return THStackData.getInt(itemStack, "Damage", 0);
 	}
 
 	/**

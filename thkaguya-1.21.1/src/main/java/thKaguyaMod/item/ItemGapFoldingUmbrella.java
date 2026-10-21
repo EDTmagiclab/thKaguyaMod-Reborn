@@ -74,7 +74,8 @@ public class ItemGapFoldingUmbrella extends Item
 			}
 		}
 
-		return (COLOR_R[color] << 16) | (COLOR_G[color] << 8) | COLOR_B[color];
+		// 1.21.1 の ItemRenderer は tint の alpha を合成係数に使うため不透明で返す
+		return 0xFF000000 | (COLOR_R[color] << 16) | (COLOR_G[color] << 8) | COLOR_B[color];
 	}
 
 

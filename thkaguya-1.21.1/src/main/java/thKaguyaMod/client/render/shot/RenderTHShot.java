@@ -299,9 +299,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         float uMax = (frame * 32F + 32F) / 64F;
 
         poseStack.pushPose();
-        poseStack.scale(size, size, size);
-        poseStack.scale(2.0F, 2.0F, 1.0F);   // 原版 width = 1.0F
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.scale(size * 2.0F, size * 2.0F, size * 2.0F); // 原版 width = 1.0F
 
         // musoufuuin.png は透明部分の RGB が赤のまま（1.7.10 の alpha test 前提アセット）なので、
         // 発光混合（alpha を見ない）で描く際は alpha discard 付きパスを使う。
@@ -325,9 +324,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         boolean blend = form == DanmakuConstants.FORM_BIG;
 
         poseStack.pushPose();
-        poseStack.scale(size, size, size);
-        poseStack.scale(2.0F, 2.0F, 1.0F);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.scale(size * 2.0F, size * 2.0F, size * 2.0F);
 
         VertexConsumer consumer = buffer.getBuffer(blend
                 ? THRenderTypes.additive(texture)
@@ -353,9 +351,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         float uMax = (frame * 32F + 32F) / 64F;
 
         poseStack.pushPose();
-        poseStack.scale(size, size, size);
-        poseStack.scale(4.0F, 4.0F, 1.0F);   // 原版 width = 2.0F
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.scale(size * 4.0F, size * 4.0F, size * 4.0F); // 原版 width = 2.0F
 
         // 面向相机的 billboard 必须用 NoCull 系 RenderType（详见 billboard() 说明）
         VertexConsumer consumer = buffer.getBuffer(THRenderTypes.additive(TEX_LIGHT));
@@ -382,9 +379,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         float uMax = (frame * 32F + 32F) / 64F;
 
         poseStack.pushPose();
-        poseStack.scale(size, size, size);
-        poseStack.scale(4.0F, 4.0F, 1.0F);   // 原版外層 width = 2.0F
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.scale(size * 4.0F, size * 4.0F, size * 4.0F); // 原版外層 width = 2.0F
 
         VertexConsumer consumer = buffer.getBuffer(THRenderTypes.additive(TEX_LIGHT));
         billboard(consumer, poseStack.last(), COLOR_R[color], COLOR_G[color], COLOR_B[color], 128, uMin, uMax);
@@ -460,9 +456,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         float size = entity.getShotSize();
 
         poseStack.pushPose();
-        poseStack.scale(size, size, size);
-        poseStack.scale(2.0F, 2.0F, 1.0F);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.scale(size * 2.0F, size * 2.0F, size * 2.0F);
         poseStack.mulPose(Axis.ZP.rotationDegrees(anim * 3.7F));
 
         VertexConsumer consumer = buffer.getBuffer(THRenderTypes.glow(TEX_FAMILIAR));

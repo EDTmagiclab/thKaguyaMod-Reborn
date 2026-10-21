@@ -1254,9 +1254,11 @@ public abstract class EntityDanmakuMob extends Mob
         int spellCardNo = this.getUsingSpellCardNo();
         if (spellCardNo >= 0 && recentlyHit)
         {
-            // damage = 符卡 No。漏掉这一步会让所有 boss 一律掉 damage 0（灵符「梦想封印」）
+            // 符卡 No は stack_tag の "Damage"（1.21.1 では damage が 0 に clamp される）
             ItemStack card = new ItemStack(THKaguyaItems.SPELL_CARD.get(), 1);
-            card.setDamageValue(spellCardNo);
+            CompoundTag cardTag = new CompoundTag();
+            cardTag.putInt("Damage", spellCardNo);
+            THStackData.set(card, cardTag);
             this.spawnAtLocation(card);
         }
     }

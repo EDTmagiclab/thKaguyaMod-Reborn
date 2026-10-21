@@ -289,7 +289,7 @@ public class ClientRenderRegistry
             ItemProperties.register(
                     thKaguyaMod.init.THKaguyaItems.SPELL_CARD.get(),
                     ResourceLocation.fromNamespaceAndPath(THKaguyaCore.MODID, "spellcard_id"),
-                    (stack, level, entity, seed) -> stack.getDamageValue());
+                    (stack, level, entity, seed) -> thKaguyaMod.THStackData.getInt(stack, "Damage", 0));
         });
     }
 }
