@@ -117,7 +117,7 @@
     [1, 3, 5, 8, 5, 3, 1], [1, 3, 5, 9, 5, 3, 1], [1, 3, 6, 8, 6, 3, 1], [1, 3, 6, 9, 6, 3, 1],
     [1, 4, 6, 8, 6, 4, 1],
     [1, 3, 6, 11, 6, 3, 1], [1, 3, 6, 12, 6, 3, 1], [0], [0], [0], [0], [0], [0], [0], [0],
-    [0], [0], [0], [0], [1, 3, 6, 12, 12, 6, 3, 1]
+    [0], [0], [0], [1, 3, 6, 12, 12, 6, 3, 1]
   ];
 
   /* ---------------- op 表（与 符卡JSON设计文档.md §6 一致） ---------------- */
@@ -267,8 +267,9 @@
         if (nm === 'pi') return Math.PI;
         if (nm === 'e') return Math.E;
         if (nm === 'tick' && 'time' in env) return env.time;
-        if (nm in env) return env[nm];
-        // card.vars 是「懒求值宏」：用到时才按当前 env 求（所以 a = time*6 + i*(360/7) 能拿到逐发的 i）
+        // card.vars 是「懒求值宏」：用到时才按当前 env 求（所以 a = time*6 + i*(360/7) 能拿到逐发的 i）。
+        // 必须排在 env 内建名之前：生成代码那边 toJava 也是先查 javaVars，
+        // 否则 vars 里叫 way 的宏会被内建的 way（本批次数）遮蔽，预览和实机就不一致了。
         if (env.$vars && Object.prototype.hasOwnProperty.call(env.$vars, nm)) {
           const depth = (env.$depth || 0) + 1;
           if (depth > 24) throw new Error('vars 循环引用：' + nm);
@@ -276,6 +277,7 @@
           sub.$depth = depth;
           return evalAst((env.$vars[nm] instanceof Expr ? env.$vars[nm].ast : parseExpr(env.$vars[nm])), sub);
         }
+        if (nm in env) return env[nm];
         throw new Error('未知变量 ' + nm);
       }
       case 'neg': return -evalAst(n.a, env);
@@ -430,6 +432,17 @@
     for (let i = 0; i < arguments.length; i++) if (!isBlank(arguments[i])) return arguments[i];
     return undefined;
   }
+  // danmakuRemove 只认大写 "ALL"，其余一律 match=false（THShotLib.java:1887-1901）。
+  // 在这里统一归一化，避免「预览正常、代码正常、游戏里删 0 颗」的静默失效。
+  function targetName(v) {
+    const s = String(isBlank(v) ? 'ALL' : v).trim();
+    const low = s.toLowerCase();
+    if (low === 'all') return 'ALL';
+    if (low === 'enemy') return 'Enemy';
+    if (low === 'player') return 'Player';
+    if (low === 'other') return 'Other';
+    return s;
+  }
   // 批量参数：优先 spray.xxx / spread.xxx，回退到扁平字段
   function batchVal(ev, key, flatKey, dflt) {
     const a = ev.spray ? ev.spray[key] : undefined;
@@ -511,7 +524,9 @@
       rotEnd: spinEnd === undefined ? 9999 : n(spinEnd, env),
       firstSpeed: firstSpeed,
       limitSpeed: limitSpeed,
-      accel: n(ev.accel, env),
+      // 核弹的 acceleration 形参在原版被 firstSpeed 顶替（THShotLib.java:1863 的复制粘贴错），
+      // 预览必须跟着错，否则设了 accel 的卡预览的加速方式与实机不同
+      accel: (ev.op === 'nuclear') ? firstSpeed : n(ev.accel, env),
       gravity: ev.gravity && typeof ev.gravity === 'object'
         ? v(n(ev.gravity.x, env), n(ev.gravity.y, env), n(ev.gravity.z, env))
         : v(n(ev.gx, env), n(ev.gy, env), n(ev.gz, env)),
@@ -532,8 +547,11 @@
   }
 
   // createWideShot 核心 :658-716
+  // 注意：不要覆盖 env.i —— 实机里表达式只在 create* 调用那一刻求值一次，
+  // 这时 i 只能是外层 repeat 的序号，批内序号对表达式不可见。
   function wideShots(ev, env, out, basePos, baseAngle) {
-    const way = Math.max(2, n(batchVal(ev, 'way', 'way', 2), env) | 0);
+    // 原版不钳制 way：way=1 时 span 是 Infinity 但循环只跑一次，实际发 1 发（:670-672）
+    const way = Math.max(0, n(batchVal(ev, 'way', 'way', 2), env) | 0);
     const wideAngle = n(firstOf(ev.spread && ev.spread.span, ev.wideAngle, ev.span, 60), env);
     const distance = n(ev.distance, env);
     const baseAngleOffset = n(batchVal(ev, 'base', 'baseAngle', 0), env);
@@ -543,7 +561,7 @@
     let a2 = -wideAngle / 2 + baseAngleOffset;           // :670-672
     const span = wideAngle / (way - 1);
     for (let i = 0; i < way; i++) {
-      env.i = i; env.way = way;
+      env.way = way;
       const ang = rotateAround(rotateVec, baseAngle, a2);
       const p = vadd(basePos, vscale(ang, distance));
       const slope = pitch * Math.sin(a2 * DEG);          // :705
@@ -555,20 +573,34 @@
   }
 
   // createCircleShot :844-860 → 转发 wideShot(360 - 360/way)
+  // createCircleLaserA :1526 → 转发 createWideLaserA(way + 1, 360F, distance)（实机多发一束、相位差半格）
   function circleShots(ev, env, out, basePos, baseAngle) {
-    const way = Math.max(2, n(batchVal(ev, 'way', 'way', 2), env) | 0);
+    const isLaser = ev.op === 'circle_laser';
+    let way = Math.max(0, n(batchVal(ev, 'way', 'way', 2), env) | 0);
     let ba = n(batchVal(ev, 'base', 'baseAngle', 0), env);
-    if (way % 2 === 0) ba += 360 / (way * 2);            // :850-853
+    let span;
+    if (isLaser) {
+      way += 1;
+      span = 360;
+    } else {
+      if (way % 2 === 0) ba += 360 / (way * 2);          // :850-853
+      span = 360 - 360 / way;
+    }
     const sub = Object.assign({}, ev, {
-      wideAngle: new Expr('' + (360 - 360 / way)),
-      baseAngle: new Expr('' + ba)
+      way: new Expr('' + way),
+      wideAngle: new Expr('' + span),
+      baseAngle: new Expr('' + ba),
+      // 清掉嵌套批量对象，否则 batchVal 优先读 spray.base 会把上面算好的偏移吞掉
+      spray: undefined,
+      spread: undefined
     });
     wideShots(sub, env, out, basePos, baseAngle);
   }
 
   // createRingShot :968-1039
   function ringShots(ev, env, out, basePos, baseAngle) {
-    const way = Math.max(2, n(batchVal(ev, 'way', 'way', 2), env) | 0);
+    const way = Math.max(0, n(batchVal(ev, 'way', 'way', 2), env) | 0);
+    if (way < 1) return;                                 // 原版 way=0 循环 0 次，什么都不发
     const distance = n(ev.distance, env);
     let ringSpan = n(firstOf(ev.spray && ev.spray.span, ev.ringSpan, ev.span, 0), env);
     const ringBaseAngle = n(batchVal(ev, 'base', 'baseAngle', 0), env);
@@ -581,7 +613,7 @@
     let a2 = ringBaseAngle;
     const span = 360 / way;
     for (let i = 0; i < way; i++) {
-      env.i = i; env.way = way;
+      env.way = way;
       const moving = rotateAround(baseAngle, baseVec, a2);       // :1022
       const extend = rotateAround(baseAngle, overVec, a2);       // :1023
       const over2 = rotateAround(baseAngle, baseOverVec, a2);    // :1024
@@ -595,7 +627,7 @@
 
   // createRandomRingShot :1082-1148
   function randomRingShots(ev, env, out, basePos, baseAngle, rand) {
-    const num = Math.max(1, n(firstOf(ev.num, ev.way, 1), env) | 0);
+    const num = Math.max(0, n(firstOf(ev.num, ev.way, 1), env) | 0);
     const distance = n(ev.distance, env);
     const ringSpan = n(firstOf(ev.ringSpan, ev.ring_span, ev.spray && ev.spray.span, 360), env);
     const ringMax = ringSpan / 2;
@@ -604,7 +636,7 @@
     const overVec = fromAngle(-yaw, pitch + 90, 1);
     const axis = v(-baseAngle.x, -baseAngle.y, baseAngle.z);
     for (let i = 0; i < num; i++) {
-      env.i = i; env.way = num;
+      env.way = num;
       const a2 = rand() * 360;
       const baseVec = fromAngle(-yaw, pitch + rand() * ringMax, 1);
       const moving = rotateAround(axis, baseVec, a2);
@@ -625,7 +657,8 @@
     }
     const distance = n(ev.distance, env);
     const angleZ = n(ev.slope, env);
-    const baseAngleOff = n(batchVal(ev, 'base', 'baseAngle', 0), env) + angleZ;
+    // 原版 :1236-1270：angleZ 只作为两颗轴向弹的 slope 形参，不参与环的相位
+    const baseAngleOff = n(batchVal(ev, 'base', 'baseAngle', 0), env);
     const frontPos = vadd(basePos, vscale(baseAngle, distance));
     const backPos = vsub(basePos, vscale(baseAngle, distance));
     const row = WAYS[way];
@@ -633,13 +666,18 @@
     if (row.length >= 2) angleSpan = 360 / (row.length - 1);
     let flagFB = false, slopeAcc = 0;
     for (let i = 0; i < row.length; i++) {
-      env.i = i; env.way = row.length;
+      env.way = way;
+      if (row[i] === 0) continue;      // 配比表里的 0 表示这一层不发，原版循环 0 次
       if (row[i] === 1) {
         if (!flagFB) {
-          out.push(baseSpec(ev, env, frontPos, baseAngle, undefined));
+          const fwd = baseSpec(ev, env, frontPos, baseAngle, undefined);
+          fwd.slope = angleZ;          // :1253 轴向弹把 angleZ 当 slope
+          out.push(fwd);
           flagFB = true;
         } else {
-          out.push(baseSpec(ev, env, backPos, v(-baseAngle.x, -baseAngle.y, -baseAngle.z), undefined));
+          const back = baseSpec(ev, env, backPos, v(-baseAngle.x, -baseAngle.y, -baseAngle.z), undefined);
+          back.slope = angleZ;         // :1261
+          out.push(back);
         }
       } else {
         const sub = Object.assign({}, ev, {
@@ -664,11 +702,12 @@
     const attach = ev.attach || {};
     const offDist = n(attach.length, env);
     const yOff = n(attach.yOffset === undefined ? attach.y_offset : attach.yOffset, env);
-    const up = perpendicular(baseAngle);
+    // 与生成代码同源：getVecFromAngle(yaw, pitch + 90)（THSC_MoonlightRay.java:27 的旋转轴）
+    const up = fromAngle(yawOf(baseAngle.x, baseAngle.z), pitchOf(baseAngle.x, baseAngle.y, baseAngle.z) + 90, 1);
     const origin = vadd(vadd(basePos, vscale(baseAngle, offDist)), v(0, yOff, 0));
     const step = way > 1 ? span / way : 0;
     for (let i = 0; i < way; i++) {
-      env.i = i; env.way = way;
+      env.way = way;
       const dir = way > 1 ? vnorm(rotateAround(baseAngle, up, base + i * step)) : baseAngle;
       const axis = vnorm(vcross(baseAngle, dir));
       const spec = baseSpec(ev, env, origin, dir, vlen(axis) < 0.5 ? up : axis);
@@ -707,7 +746,7 @@
     if (info.action) {
       const act = { kind: 'action', op: op, tick: env.time };
       if (op === 'spawn') act.entity = ev.entity || '';
-      if (op === 'remove_danmaku') { act.range = n(ev.range, env); act.target = ev.target || 'All'; act.dropBonus = ev.dropBonus === undefined ? (ev.drop_bonus !== undefined ? ev.drop_bonus : false) : ev.dropBonus; }
+      if (op === 'remove_danmaku') { act.range = n(ev.range, env); act.target = targetName(ev.target); act.dropBonus = ev.dropBonus === undefined ? (ev.drop_bonus !== undefined ? ev.drop_bonus : false) : ev.dropBonus; }
       if (op === 'explosion_effect') act.size = n(ev.size, env);
       for (let r = 0; r < repeat; r++) { env.r = r; env.i = r; emit(act); }
       return;
@@ -724,39 +763,40 @@
       return;
     }
 
-    // 批量类 op：先展开成一批（i = 批内序号），再整体重复 repeat 次
-    const pos = anchorPos(ev, env, ctx);
-    const angle = eventAnchorAngle(ev, env, ctx);
-    const out = [];
-    switch (op) {
-      case 'wide':
-      case 'wide_laser':
-        wideShots(ev, env, out, pos, angle);
-        break;
-      case 'circle':
-      case 'circle_laser':
-        circleShots(ev, env, out, pos, angle);
-        break;
-      case 'ring':
-      case 'ring_laser':
-        ringShots(ev, env, out, pos, angle);
-        break;
-      case 'random_ring':
-      case 'random_ring_laser':
-        randomRingShots(ev, env, out, pos, angle, ctx.rand);
-        break;
-      case 'sphere':
-      case 'sphere_laser':
-        sphereShots(ev, env, out, pos, angle);
-        break;
-      case 'laser_b':
-        laserBShots(ev, env, out, pos, angle);
-        break;
-      default:
-        throw new Error('未知 op：' + op);
-    }
+    // 批量类 op：每一轮 repeat 都重新展开一遍。生成代码是 for(int i…) 里再调一次 create*，
+    // 每次调用内部都会重新算 i / rand；复用同一批 spec 会让预览变成 N 份完全重合的扇。
     for (let r = 0; r < repeat; r++) {
       env.r = r;
+      const pos = anchorPos(ev, env, ctx);
+      const angle = eventAnchorAngle(ev, env, ctx);
+      const out = [];
+      switch (op) {
+        case 'wide':
+        case 'wide_laser':
+          wideShots(ev, env, out, pos, angle);
+          break;
+        case 'circle':
+        case 'circle_laser':
+          circleShots(ev, env, out, pos, angle);
+          break;
+        case 'ring':
+        case 'ring_laser':
+          ringShots(ev, env, out, pos, angle);
+          break;
+        case 'random_ring':
+        case 'random_ring_laser':
+          randomRingShots(ev, env, out, pos, angle, ctx.rand);
+          break;
+        case 'sphere':
+        case 'sphere_laser':
+          sphereShots(ev, env, out, pos, angle);
+          break;
+        case 'laser_b':
+          laserBShots(ev, env, out, pos, angle);
+          break;
+        default:
+          throw new Error('未知 op：' + op);
+      }
       for (let i = 0; i < out.length; i++) emit(out[i]);
     }
   }
@@ -975,7 +1015,9 @@
         ax: s.ay[idx], ay: s.ap[idx], az: s.az[idx],
         form: s.form, color: s.color, size: s.size, kind: s.kind,
         width: s.width, length: s.length, age: idx, born: s.born,
-        vis: s.anim >= 0 || (idx - s.born) >= Math.abs(s.anim) ? 1 : 0,
+        // vis=0 表示还在 delay 期：原版照常渲染（RenderTHShot:101）但原地不动，预览用半透明表示。
+        // 只能用 idx 和 delay 算 —— s.anim 是仿真结束时才定下的最终值，不是这一 tick 的值
+        vis: idx >= (s.delay | 0) ? 1 : 0,
         op: s.op
       });
     }
@@ -1095,7 +1137,9 @@
     const way = 'way';
     const dist = jdouble(ev.distance);
     const base = jfloat(batchVal(ev, 'base', 'baseAngle', 0));
-    const span = jfloat(firstOf(ev.spread && ev.spread.span, ev.spray && ev.spray.span, ev.wideAngle, ev.ringSpan, ev.span, 0));
+    // wide 的 wideAngle 留空时预览按 60° 算，这里必须同源，否则预览是扇、实机叠成一条线
+    const spanDflt = (op === 'wide' || op === 'wide_laser') ? 60 : 0;
+    const span = jfloat(firstOf(ev.spread && ev.spread.span, ev.spray && ev.spray.span, ev.wideAngle, ev.ringSpan, ev.span, spanDflt));
     const spin = firstOf(ev.spin, ev.rotSpeed, ev.rotationSpeed);
     const spinEnd = firstOf(ev.spinEnd, ev.rotEnd, ev.rotationEnd);
     const rotS = jfloat(spin);
@@ -1117,18 +1161,26 @@
         const setYOff = jdouble(firstOf(at.yOffset, at.y_offset, 0));
         const wayNum = Number(exprOrNum(batchVal(ev, 'way', 'way', 1)));
         const spreadOk = Number.isFinite(wayNum) && wayNum > 1;
-        const ang = spreadOk ? base + ' + ' + tag + 'I * (' + span + ' / ' + way + ')' : '0.0F';
-        // createLaserB 没有 way 形参：原卡自己 for 循环逐条建（THSC_NonDirectionalLaser :34 同款）
-        return [
+        const head = [
           'Vec3 ' + tag + 'A = ' + aimVec + ';',
           // 原卡 THSC_MoonlightRay:27 就是用它当旋转轴（垂直于视线）
-          'Vec3 ' + tag + 'U = THShotLib.getVecFromAngle(user.getYRot(), user.getXRot() + 90F);',
+          'Vec3 ' + tag + 'U = THShotLib.getVecFromAngle(user.getYRot(), user.getXRot() + 90F);'
+        ];
+        // 单束不能用「绕 U 转 0 度」——那得到的是 U 本身（与瞄准垂直），必须直接用瞄准向量
+        if (!spreadOk) {
+          return head.concat([
+            'THShotLib.createLaserB(user, user, ' + pos + ', ' + tag + 'A, ' + tag + 'U, ' + rotS + ', ' + rotE + ', ' + data + ', user, ' + setLen + ', ' + setYOff + ');'
+          ]).join('\n');
+        }
+        const ang = base + ' + ' + tag + 'I * (' + span + ' / ' + way + ')';
+        // createLaserB 没有 way 形参：原卡自己 for 循环逐条建（THSC_NonDirectionalLaser :34 同款）
+        return head.concat([
           'for(int ' + tag + 'I = 0; ' + tag + 'I < ' + way + '; ' + tag + 'I++)',
           '{',
           '    Vec3 ' + tag + 'D = THShotLib.getVectorFromRotation(' + tag + 'A, ' + tag + 'U, ' + ang + ');',
           '    THShotLib.createLaserB(user, user, ' + pos + ', ' + tag + 'D, THShotLib.getOuterProduct(' + tag + 'A, ' + tag + 'D), ' + rotS + ', ' + rotE + ', ' + data + ', user, ' + setLen + ', ' + setYOff + ');',
           '}'
-        ].join('\n');
+        ]).join('\n');
       }
       case 'wide':
         return 'THShotLib.createWideShot(user, user, ' + pos + ', ' + aimVec + ', ' + rotS + ', ' + rotE + ', ' + first + ', ' + limit + ', ' + accel + ', ' + grav + ', ' + data + ', ' + way + ', ' + span + ', ' + dist + ', ' + base + ');';
@@ -1147,11 +1199,17 @@
       case 'random_ring_laser':
         return 'THShotLib.createRandomRingLaser(user, user, ' + pos + ', ' + aimVec + ', ' + first + ', ' + limit + ', ' + accel + ', ' + grav + ', ' + data + ', ' + jint(firstOf(ev.num, 1)) + ', ' + dist + ', ' + jfloat(firstOf(ev.ringSpan, ev.ring_span, 360)) + ');';
       case 'sphere':
+        // 13 参重载把自转硬编码成 rotate_Default()/0F/9999，真要自转就必须走 16 参那个
+        if (!isBlank(spin)) {
+          return 'THShotLib.createSphereShot(user, user, ' + pos + ', ' + aimVec + ', ' + jfloat(firstOf(ev.slope, 0)) + ', rotateAxis(' +
+            jdouble(firstOf((ev.rotate || {}).x, 0)) + ', ' + jdouble(firstOf((ev.rotate || {}).y, 1)) + ', ' + jdouble(firstOf((ev.rotate || {}).z, 0)) + '), ' +
+            rotS + ', ' + rotE + ', ' + first + ', ' + limit + ', ' + accel + ', ' + grav + ', ' + data + ', ' + way + ', ' + dist + ', ' + base + ');';
+        }
         return 'THShotLib.createSphereShot(user, user, ' + pos + ', ' + aimVec + ', ' + jfloat(firstOf(ev.slope, 0)) + ', ' + first + ', ' + limit + ', ' + accel + ', ' + grav + ', ' + data + ', ' + way + ', ' + dist + ', ' + base + ');';
       case 'sphere_laser':
         return 'THShotLib.createSphereLaserA(user, user, ' + pos + ', ' + aimVec + ', ' + first + ', ' + limit + ', ' + accel + ', ' + grav + ', ' + data + ', ' + way + ', ' + dist + ', ' + base + ');';
       case 'remove_danmaku':
-        return 'THShotLib.danmakuRemove(user, ' + jdouble(firstOf(ev.range, 4)) + ', "' + (ev.target || 'All') + '", ' + ((ev.dropBonus || ev.drop_bonus) ? 'true' : 'false') + ');';
+        return 'THShotLib.danmakuRemove(user, ' + jdouble(firstOf(ev.range, 4)) + ', "' + (targetName(ev.target)) + '", ' + ((ev.dropBonus || ev.drop_bonus) ? 'true' : 'false') + ');';
       case 'explosion_effect':
         return [
           'Vec3 ' + tag + 'P = ' + pos + ';',
@@ -1416,7 +1474,7 @@
     if (op === 'spawn' && !isBlank(ev.entity)) o.entity = ev.entity;
     if (op === 'remove_danmaku') {
       if (!isBlank(ev.range)) o.range = raw(ev.range);
-      o.target = ev.target || 'All';
+      o.target = targetName(ev.target);
       const db = firstOf(ev.dropBonus, ev.drop_bonus);
       if (!isBlank(db)) o.drop_bonus = typeof db === 'boolean' ? db : !!db;
     }
@@ -1427,6 +1485,10 @@
     if (!isBlank(ev.repeat)) o.repeat = raw(ev.repeat);
     if (ev.sound) o.sound = true;
     if (!isBlank(ev.guard)) o.if = raw(ev.guard);
+    // 导入时记下的未知字段原样带回，避免「导入再导出静默丢字段」
+    if (ev._extra && typeof ev._extra === 'object') {
+      for (const k in ev._extra) if (!(k in o)) o[k] = ev._extra[k];
+    }
     return o;
   }
 
@@ -1602,7 +1664,7 @@
       if (ev.aim === 'dir' && !(ev.dir || ev.dx !== undefined)) add('warn', at, 'aim=dir 但没有方向分量');
       if (ev.anchor === 'vec' && !ev.vec) add('warn', at, 'anchor=vec 但没有 vec 偏移');
       if (ev.op === 'spawn' && !ev.entity) add('error', at, 'spawn 需要 entity');
-      if (ev.op === 'remove_danmaku' && !['Enemy', 'Other', 'All'].includes(ev.target || 'All')) add('warn', at, 'target 只能是 Enemy / Other / All');
+      if (ev.op === 'remove_danmaku' && !['Enemy', 'Other', 'Player', 'ALL'].includes(targetName(ev.target))) add('warn', at, 'target 只能是 Enemy / Other / Player / ALL（大小写不敏感，导出的代码里会归一化成原版认的写法）');
       if (info.batch === 'spray' || info.batch === 'spread') {
         const w = firstOf(batchVal(ev, 'way', 'way', undefined));
         if (w === undefined) add('warn', at, '批量 op 建议填 way（默认 2）');
@@ -1617,7 +1679,18 @@
       }
       if (ev.op === 'wide' || ev.op === 'wide_laser') {
         const w = Number(exprOrNum(firstOf(batchVal(ev, 'way', 'way', 2))));
-        if (Number.isFinite(w) && w < 2) add('warn', at, 'wide 系列的 way < 2 会让原版的 span=wideAngle/(way-1) 除零');
+        if (Number.isFinite(w) && w < 2) add('warn', at, 'wide 系列的 way < 2 会让原版的 span=wideAngle/(way-1) 除零（way=1 时原版只发 1 发）');
+      }
+      if (ev.op === 'sphere_laser' && !isBlank(firstOf(ev.spin, ev.rotSpeed, ev.rotationSpeed))) {
+        add('warn', at, '原版 createSphereLaserA 没有自转形参，填了 rotation_speed 也不会转');
+      }
+      if ((ev.op === 'nuclear') && !isBlank(ev.accel)) {
+        add('info', at, '原版 createNuclearShot 内部把 acceleration 传成了 firstSpeed（复制粘贴错），填的 acceleration 会被忽略');
+      }
+      // 批量 op 的表达式里出现 i：实机只在 create* 调用那一刻求值一次，那时 i 是 repeat 序号，
+      // 不是「第几发」，所以写 i 无法做到逐发变化
+      if (info.batch && !isBlank(ev.repeat) && Number(exprOrNum(ev.repeat)) > 1 && /\bi\b/.test(JSON.stringify(ev))) {
+        add('warn', at, '批量 op 里的 i 是 repeat 序号（每次调用只求值一次），不会逐发变化');
       }
       if (info.data === 'shot' && ev.shot && !isBlank(ev.shot.damage)) {
         const d = Number(exprOrNum(ev.shot.damage));

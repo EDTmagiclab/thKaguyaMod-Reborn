@@ -390,5 +390,78 @@ console.log('\n[17] 导入容错：BOM / 真实 json-spellcards 全量往返');
   });
 }
 
+console.log('\n[18] 评审清单回归（几何 / 代码生成 / 时间轴）');
+{
+  const one = (ev, extra) => Object.assign({ slug: 'T', events: [ev] }, extra || {});
+  const count = (ev, extra) => D.simulate(one(ev, extra)).shots.length;
+  const shotBase = { firstSpeed: 1, limitSpeed: 1, shot: { form: 1 } };
+
+  // P1：WAYS 必须和 THShotLib.java:459-510 一样是 45 行，末行在 44
+  ok('[18] WAYS 45 行', D.WAYS.length === 45, D.WAYS.length);
+  ok('[18] WAYS[44] 是末行配比', String(D.WAYS[44]) === '1,3,6,12,12,6,3,1', String(D.WAYS[44]));
+  ok('[18] sphere way=44 发 44 发', count(Object.assign({ op: 'sphere', way: 44 }, shotBase)) === 44);
+  ok('[18] sphere way=45 直接不发射', count(Object.assign({ op: 'sphere', way: 45 }, shotBase)) === 0);
+
+  // P2/P3：配比表里的 0 不发幻影弹；way=1 不钳成 2
+  ok('[18] sphere way=3 发 3 发（不再是 7）', count(Object.assign({ op: 'sphere', way: 3 }, shotBase)) === 3);
+  ok('[18] wide way=1 发 1 发', count(Object.assign({ op: 'wide', way: 1 }, shotBase)) === 1);
+  ok('[18] ring way=1 发 1 发', count(Object.assign({ op: 'ring', way: 1 }, shotBase)) === 1);
+  ok('[18] circle way=3 发 3 发', count(Object.assign({ op: 'circle', way: 3 }, shotBase)) === 3);
+  // P6：circle_laser 实机 way+1 发
+  ok('[18] circle_laser way=3 发 4 发', count({ op: 'circle_laser', way: 3, firstSpeed: 1, limitSpeed: 1, laser: { color: 0 } }) === 4);
+
+  // P4：sphere 的 slope 只作用于两颗轴向弹，不参与环相位
+  const sNoSlope = D.simulate(one(Object.assign({ op: 'sphere', way: 5, slope: 0 }, shotBase)));
+  const sSlope = D.simulate(one(Object.assign({ op: 'sphere', way: 5, slope: 30 }, shotBase)));
+  ok('[18] sphere 的 slope 不改变环的朝向', String(sNoSlope.shots.map(s => s.angle)) === String(sSlope.shots.map(s => s.angle)));
+  ok('[18] sphere 的 slope 进了轴向弹', Math.abs(sSlope.shots[0].slope - 30) < 1e-9, sSlope.shots[0].slope);
+
+  // P8：remove_danmaku 默认 target 必须是大写 ALL
+  const rm = D.cardToJava(one({ when: { kind: 'at', a: 0 }, op: 'remove_danmaku', range: 4 }));
+  ok('[18] remove_danmaku 默认 target 是 "ALL"', /danmakuRemove\(user, 4, "ALL"/.test(rm), rm.split('\n').find(l => l.indexOf('danmakuRemove') >= 0));
+  const rm2 = D.cardToJava(one({ when: { kind: 'at', a: 0 }, op: 'remove_danmaku', range: 4, target: 'all' }));
+  ok('[18] target 大小写归一化成 "ALL"', /danmakuRemove\(user, 4, "ALL"/.test(rm2));
+
+  // P7：wide 的 span 留空时，预览与生成代码都按 60 度
+  ok('[18] wide 默认 span 生成 60F', /createWideShot\([^)]*60F/.test(D.cardToJava(one(Object.assign({ op: 'wide', way: 3 }, shotBase)))) === false
+    ? /60F/.test(D.cardToJava(one(Object.assign({ op: 'wide', way: 3 }, shotBase))))
+    : true);
+
+  // P9：laser_b 单束时直接用瞄准向量，不能退化成绕 U 转 0 度
+  const lb1 = D.cardToJava(one({ op: 'laser_b', way: 1, laser: { color: 0 }, attach: { length: 1 } }));
+  ok('[18] laser_b way=1 不生成 for 循环', !/for\(int/.test(lb1));
+  ok('[18] laser_b way=1 方向用 A', /createLaserB\(user, user, pos_User\(\), dmk0A, dmk0U/.test(lb1), lb1.split('\n').find(l => l.indexOf('createLaserB') >= 0));
+  const lb7 = D.cardToJava(one({ op: 'laser_b', way: 7, laser: { color: 0 }, attach: { length: 1 } }));
+  ok('[18] laser_b way=7 仍走循环', /for\(int dmk0I = 0; dmk0I < way;/.test(lb7), lb7.split('\n').find(l => l.indexOf('for(int') >= 0));
+
+  // P11：sphere 带自转时要改用 16 参重载（13 参那个把自转硬编码成 0）
+  const sp = D.cardToJava(one(Object.assign({ op: 'sphere', way: 5, spin: 3, spinEnd: 60 }, shotBase)));
+  ok('[18] sphere 有 spin 时走 16 参重载', /rotateAxis\(/.test(sp.split('\n').find(l => l.indexOf('createSphereShot') >= 0) || ''));
+  const sp0 = D.cardToJava(one(Object.assign({ op: 'sphere', way: 5 }, shotBase)));
+  ok('[18] sphere 无 spin 时仍是 13 参', !/rotateAxis/.test(sp0.split('\n').find(l => l.indexOf('createSphereShot') >= 0) || ''));
+
+  // P12：批量 op 的 repeat 每轮都要重新展开
+  const repOnce = D.simulate(one({ op: 'ring', way: 5, repeat: 1, firstSpeed: 1, limitSpeed: 1, shot: { form: 1 } }));
+  const repTwo = D.simulate(one({ op: 'ring', way: 5, repeat: 2, firstSpeed: 1, limitSpeed: 1, shot: { form: 1 } }));
+  ok('[18] 批量 op 的 repeat 会真的多出一批', repTwo.shots.length === repOnce.shots.length * 2, repOnce.shots.length + ' → ' + repTwo.shots.length);
+
+  // P13：vis 只看 delay 是否结束（delay 期内半透明，但不该被算成「不存在」）
+  const dl = D.simulate(one(Object.assign({}, shotBase, { op: 'shot', when: { kind: 'at', a: 0 }, shot: { form: 1, delay: 5, end: 20 } })));
+  ok('[18] 样例确实带上了 delay', dl.shots[0].delay === 5, dl.shots[0].delay);
+  const st0 = D.stateAt(dl, 0)[0];
+  ok('[18] delay 期 vis=0（半透明）', st0.vis === 0, st0.vis);
+  const st6 = D.stateAt(dl, 6)[0];
+  ok('[18] delay 过后 vis=1', st6.vis === 1, st6.vis);
+
+  // P14：核弹的 acceleration 在实机里被 firstSpeed 顶替
+  const nu = D.simulate(one({ op: 'nuclear', when: { kind: 'at', a: 0 }, firstSpeed: 1, limitSpeed: 3, accel: 5, shot: { form: 15 } }));
+  ok('[18] 核弹预览的 accel 用 firstSpeed', Math.abs(nu.shots[0].accel - 1) < 1e-9, nu.shots[0].accel);
+
+  // B5：导入时保留的未知字段要能原样导出
+  const back = D.cardFromJson('{"$schema":1,"slug":"t","events":[{"op":"shot","when":{"at":0},"weird_field":42}]}');
+  const out2 = JSON.parse(D.cardToJson(back));
+  ok('[18] 未知字段原样带回', out2.events[0].weird_field === 42, JSON.stringify(out2.events[0]));
+}
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败\n');
 process.exit(fail ? 1 : 0);

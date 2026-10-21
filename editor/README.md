@@ -36,14 +36,14 @@ start "editor\danmaku-editor.html#moon"
 | `presets.js` | 8 张示例符卡（含复刻自 `json-spellcards/` 的 46/47/48 号）。编辑器、预览渲染、自检共用这一份。 |
 | `editor-app.js` | 界面层：三栏布局、画布、时间轴、表单、撤销、`localStorage` 存档、导出弹窗。 |
 | `danmaku-editor.html` | 外壳：CSS + DOM，只负责按顺序加载上面三个脚本。 |
-| `test-core.js` | 核心层断言（168 项）：几何/物理/表达式/Schema 往返/Java 生成/全部预设。 |
-| `test-ui.js` | 界面层冒烟（87 项）：手写 DOM 桩 + `node:vm` 把界面真跑一遍。 |
+| `test-core.js` | 核心层断言（193 项）：几何/物理/表达式/Schema 往返/Java 生成/全部预设。 |
+| `test-ui.js` | 界面层冒烟（96 项）：手写 DOM 桩 + `node:vm` 把界面真跑一遍。 |
 | `render-preview.js` | 离线出图：把仿真结果光栅化成 PNG，用来肉眼检查弹幕形状。 |
 | `verify-java.js` | 把生成的 Java 拿去**真编译**：所有预设 + 一张覆盖 18 个 op 的合成卡 + 一张表达式压力卡，用 mod 自己的 classpath 跑 `javac`。 |
 
 ```bash
-node editor/test-core.js        # 核心层 168 项
-node editor/test-ui.js          # 界面层 87 项
+node editor/test-core.js        # 核心层 193 项
+node editor/test-ui.js          # 界面层 96 项
 node editor/render-preview.js saikou    # 出 4 帧预览图 out-saikou.png
 node editor/render-preview.js --all     # 所有预设各出一张
 node editor/verify-java.js              # 生成的 Java 是否真的能编译
@@ -118,11 +118,20 @@ node editor/verify-java.js              # 生成的 Java 是否真的能编译
   表单化会失真，目前只原样读写 JSON、Java 导出不处理。编辑器会在左侧给出提示。
 - **预览是简化 sprite**：形状用圆/星/菱形/心/椭圆近似，不做 `RenderTHShot` 的混合模式与拖尾。
 - **不模拟命中**：没有玩家判定、没有消弹，HUD 只统计「同屏峰值 / 累计 / 时长」。
-- 原版的两处怪癖被如实保留并加了警告：
-  - `wide` 系列 `way < 2` 时 `span = wideAngle / (way - 1)` 会除零；
-  - `createCircleLaserA` 内部按 `way + 1` 发，实际比填的多 1 束；
-  - `sphere` 的 `way ≥ 45` 时原版直接 `return`（不发射）；
+- 原版的怪癖被如实保留并加了警告（预览和生成代码都按原版行为走，不「修正」它）：
+  - `wide` 系列 `way < 2` 时 `span = wideAngle / (way - 1)` 会除零（`way = 1` 时原版只发 1 发）；
+  - `createCircleLaserA` 内部按 `way + 1` 发，实际比填的多 1 束 —— 预览也按 `way + 1` 画；
+  - `sphere` 的 `way ≥ 45` 时原版直接 `return`（不发射）；配比表里的 0 表示「这一层不发」；
+  - `sphere` 填了 `spin` 会改用 16 参重载（`createSphereShot` 的带 `rotate` 版本），
+    但 `sphere_laser` 原版**没有**自转形参，填了也不转（校验会提示）；
+  - `nuclear` 原版把 `acceleration` 传成了 `firstSpeed`（复制粘贴错），填的 `acceleration` 会被忽略，
+    预览也按 `firstSpeed` 加速；
+  - `remove_danmaku` 的 `target` 只认 `"ALL"` / `"Enemy"` / `"Player"` / `"Other"`，
+    留空或写错时原版一颗都删不掉 —— 编辑器默认给 `"ALL"` 并做大小写归一化；
   - 弹体 `damage ≤ 0` 在游戏里第一个 tick 就消失。
+- 批量 op（`wide`/`ring`/`sphere`…）里的 `i` 是**重复序号**（`repeat` 的循环变量），不是批内序号：
+  生成代码只在 `create*` 调用那一刻求值表达式，那时 `i` 只能是重复序号，预览也照此对齐。
+  想让每发都不同，请用单发 op + `repeat`，或把逐发差异写进 `vars` 宏（`vars` 优先于内建变量名）。
 - `float` 字段（`size`/`damage`/`width`/`length`/角度）在 Java 里输出 `1.0F` 字面量，
   表达式则包成 `(float)(...)`；`int` 字段包成 `(int)(...)`。别手改成 `(a+b)F`，Java 不接受。
 
@@ -131,7 +140,14 @@ node editor/verify-java.js              # 生成的 Java 是否真的能编译
 - 想加新 op：在 `danmaku-core.js` 的 `OP_INFO` 里登记（`batch` / `data` / 各项能力标志），
   然后补三处 —— `expandEvent` 的仿真分支、`eventJava` 的生成分支、`eventToSchema`/`eventFromSchema` 的映射。
   表单和校验会凭 `OP_INFO` 自动跟上，`test-core.js` 的 `[14]` 组会强制每个 op 都有 Java 生成结果。
-- 改完一定要跑 `node editor/test-core.js`，再用 headless Chrome 截图核对界面：
+- 改完一定要跑三套检查，再用 headless Chrome 截图核对界面：
+
+  ```bash
+  node editor/test-core.js        # 核心层 193 项
+  node editor/test-ui.js          # 界面层 96 项
+  node editor/verify-java.js      # 把生成的 .java 真丢给 javac 编译（需要 JDK 21）
+  node editor/render-preview.js --all   # 8 张预览 PNG，肉眼确认几何
+  ```
 
   ```bash
   chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1500,900 \

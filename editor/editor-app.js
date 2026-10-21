@@ -49,6 +49,8 @@
     undo: [],
     redo: [],
     lastCommit: 0,
+    lastSnap: null,     // 上一次「已落定」的卡快照，pushUndo 拍的是它（不能拍改完之后的 S.card）
+    snapDirty: false,
     refreshTimer: 0
   };
 
@@ -79,6 +81,9 @@
     try { return window.localStorage || null; } catch (e) { return null; }
   }
   function save() {
+    // 每次「编辑动作收尾」都会走到这里：把 lastSnap 刷成当前状态，
+    // 下一次 pushUndo 拍到的才是「这次编辑之前」的卡。
+    if (S.snapDirty) { S.lastSnap = JSON.stringify(S.card); S.snapDirty = false; }
     const ls = store();
     if (!ls) return;
     try {
@@ -101,18 +106,29 @@
     $('#btnRedo').disabled = !S.redo.length;
   }
 
-  /** 700ms 内的连续编辑合并成一次撤销点（打字不会一个字符一个撤销点）。 */
+  /**
+   * 700ms 内的连续编辑合并成一次撤销点（打字不会一个字符一个撤销点）。
+   *
+   * 关键点：所有编辑路径都是「先改 S.card，再 commit()」，所以这里不能直接拍 S.card ——
+   * 那拍到的已经是改完的状态，第一次 Ctrl+Z 什么都不会发生。改成拍 S.lastSnap
+   * （上一次「已落定」的快照），并在 save() 里刷新它。
+   */
   function pushUndo(force) {
     const now = Date.now();
+    const snap = S.lastSnap === null ? JSON.stringify(S.card) : S.lastSnap;
     if (!force && now - S.lastCommit < 700 && S.undo.length) {
       S.lastCommit = now;
+      S.redo.length = 0;      // 撤销后继续输入，旧的重做链必须作废
+      S.snapDirty = true;
+      syncUndoBtns();
       save();
       return;
     }
-    S.undo.push(JSON.stringify(S.card));
+    S.undo.push(snap);
     if (S.undo.length > 120) S.undo.shift();
     S.redo.length = 0;
     S.lastCommit = now;
+    S.snapDirty = true;       // 本次编辑结束（save()）后再把 lastSnap 刷成新状态
     syncUndoBtns();
     save();
   }
@@ -136,10 +152,20 @@
   }
 
   function afterCardSwap() {
+    S.lastSnap = JSON.stringify(S.card);
+    S.snapDirty = false;
+    // 换卡后不要延续「700ms 合并窗口」——否则紧接着的第一次编辑会被并进
+    // 换卡之前那个撤销点里，按 Ctrl+Z 会越过它
+    S.lastCommit = 0;
+    // 撤销/重做/导入后的卡不再对应任何预设，下拉框回落（否则显示的是另一张卡的名字）
+    S.presetKey = '';
+    const sel = $('#preset');
+    if (sel) sel.value = '';
     syncUndoBtns();
     syncMeta();
     S.tick = Math.min(S.tick, S.card.maxTick | 0 || 120);
     refresh();
+    renderVars();       // 变量面板也得重画，否则删掉的变量会「复活」写回 S.card.vars
     rebuildForm();
     jumpToFirstAlive();
     save();
@@ -390,7 +416,9 @@
         if (e && e.stopPropagation) e.stopPropagation();
         pushUndo(true);
         S.card.events.splice(i, 1);
-        if (S.sel >= S.card.events.length) S.sel = S.card.events.length - 1;
+        // 删掉当前项之前的一行时选中项要跟着左移，否则高亮和右栏会指到「另一个事件」上
+        if (i < S.sel) S.sel--;
+        else S.sel = Math.min(S.sel, S.card.events.length - 1);
         refresh(); rebuildForm(); save();
       };
       tools.appendChild(dup);
@@ -549,7 +577,7 @@
       field(g1, 'from（含）', ev.when, 'a', { expr: true });
       field(g1, 'to（不含）', ev.when, 'b', { expr: true });
     } else {
-      field(g1, 'at（tick，可写 3,10,20）', ev.when, 'a', { expr: true, array: true });
+      field(g1, 'at（tick，可写 3,10,20）', ev.when, 'a', { array: true });
     }
     field(g1, 'repeat', ev, 'repeat', { expr: true });
     field(g1, 'if 条件（可选）', ev, 'guard', { expr: true, wide: true, placeholder: '留空 = 不过滤；例如 time % 2 == 0' });
@@ -773,9 +801,10 @@
         const numKeys = ['id', 'needLevel', 'maxTick', 'endTime', 'removeTime'];
         S.card[p[1]] = (numKeys.indexOf(p[1]) >= 0 && v !== '' && !isNaN(Number(v))) ? Number(v) : v;
         if (p[1] === 'maxTick') {
+          // 只更新滑杆上限，不要在这里夹 S.tick —— 把 120 改成 200 的过程中会路过 1，
+          // 那样播放头会被永久拖到第 1 tick
           const max = Math.max(1, S.card.maxTick | 0 || 1);
           $('#scrub').max = String(max);
-          if (S.tick > max) S.tick = max;
         }
         commit();
       };
@@ -1048,7 +1077,8 @@
     box.innerHTML = '';
     const max = Math.max(1, S.sim.maxTick | 0 || 120);
     const seen = {};
-    (S.sim.spawnLog || []).forEach(t => { seen[t] = 1; });
+    // spawnLog 的元素是 {tick, op, count, idx}，不是数字
+    (S.sim.spawnLog || []).forEach(s => { seen[s.tick | 0] = 1; });
     Object.keys(seen).forEach(t => {
       const d = el('div', '');
       const left = (Number(t) / max) * 100;
@@ -1214,6 +1244,14 @@
   function doImport() {
     const txt = $('#importText').value || '';
     if (!txt.trim()) { toast('先粘贴 JSON'); return; }
+    // cardFromJson 永远返回带 events 的对象，所以「像不像一张卡」只能在这里判断 ——
+    // 否则粘一个 `{}` 会把当前编辑内容静默换成空白卡
+    let probe = null;
+    try { probe = JSON.parse(txt.replace(/^\uFEFF/, '')); } catch (e) { probe = null; }
+    if (!probe || typeof probe !== 'object' || (!Array.isArray(probe.events) && probe.$schema === undefined && probe.slug === undefined)) {
+      toast('这不像符卡 JSON（至少要有个 events 数组或 $schema / slug 字段）');
+      return;
+    }
     let card;
     try {
       card = D.cardFromJson(txt);
@@ -1252,6 +1290,8 @@
       } catch (e) {
         toast('读文件失败：' + e.message);
       }
+      // 清空 value：否则第二次选「同一个文件」不会触发 onchange
+      try { input.value = ''; } catch (e) { /* 桩实现可能不允许 */ }
     };
   }
 
@@ -1286,12 +1326,16 @@
     refresh();
     rebuildForm();
     save();
+    // 下拉框回落到「— 选择预设 —」：让它像命令菜单一样可以重复选同一项来重载
+    const sel = $('#preset');
+    if (sel) sel.value = '';
     toast('已载入预设「' + (p.label || key) + '」');
   }
 
   /* ============================ toast ============================ */
 
   let toastTimer = 0;
+  let saveTimer = 0;
   function toast(msg) {
     const t = $('#toast');
     t.textContent = msg;
@@ -1376,15 +1420,22 @@
       S.tick = Number($('#scrub').value) || 0;
       updateHud();
       drawFrame();
+      saveLater();
     };
     $('#speed').onchange = () => { S.speed = Number($('#speed').value) || 1; };
 
-    $('#camYaw').oninput = () => { S.cam.yaw = Number($('#camYaw').value) || 0; drawFrame(); };
-    $('#camPitch').oninput = () => { S.cam.pitch = Number($('#camPitch').value) || 0; drawFrame(); };
-    $('#camFov').oninput = () => { S.cam.fov = Number($('#camFov').value) || 62; drawFrame(); };
+    // 视角与播放头也要落盘，否则调好的一刷新就回默认
+    $('#camYaw').oninput = () => { S.cam.yaw = Number($('#camYaw').value) || 0; drawFrame(); saveLater(); };
+    $('#camPitch').oninput = () => { S.cam.pitch = Number($('#camPitch').value) || 0; drawFrame(); saveLater(); };
+    $('#camFov').oninput = () => { S.cam.fov = Number($('#camFov').value) || 62; drawFrame(); saveLater(); };
 
     dragCamera();
     bindKeys();
+  }
+
+  function saveLater() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { saveTimer = 0; save(); }, 400);
   }
 
   function dragCamera() {

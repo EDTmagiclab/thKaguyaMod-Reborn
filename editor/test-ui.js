@@ -601,6 +601,70 @@ console.log('\n[7] 撤销与重做');
 }
 
 /* ------------------------------------------------------------------ *
+ * 8b. 撤销的语义 / 删除行后的选中项 / 预设可重选 / 导入护栏
+ * ------------------------------------------------------------------ */
+
+console.log('\n[7b] 撤销语义与边界');
+{
+  // 撤销必须真的退回到「编辑之前」——曾经的 bug 是 pushUndo 拍到改完之后的状态
+  const before = $('#mName').value;
+  $('#mName').value = before + 'X';
+  $('#mName').dispatch('input');
+  drain();
+  ok('[7b] 改名生效', $('#mName').value === before + 'X', $('#mName').value);
+  let e = null;
+  try { $('#btnUndo').click(); drain(); } catch (err) { e = err; }
+  ok('[7b] 撤销不崩', !e, e && e.message);
+  ok('[7b] 撤销把字段退回到编辑之前', $('#mName').value === before, $('#mName').value + ' vs ' + before);
+
+  // 删掉「选中项之前」的一行：选中项要左移，否则右栏会指到另一个事件
+  if ($('#evlist').children.length >= 2) {
+    const rows = $('#evlist').children;
+    rows[1].click();
+    drain();
+    const findDel = node => {
+      for (const c of (node.children || [])) {
+        if (c.hasClass && (c.hasClass('del') || /✕/.test(c.textContent))) return c;
+        const r = findDel(c);
+        if (r) return r;
+      }
+      return null;
+    };
+    const delFirst = findDel(rows[0]);
+    ok('[7b] 第一行有删除按钮', !!delFirst);
+    if (delFirst) {
+      e = null;
+      try { delFirst.click(); drain(); } catch (err2) { e = err2; }
+      ok('[7b] 删除不崩', !e, e && e.message);
+      const on = $('#evlist').children.filter(c => c.hasClass('on'));
+      ok('[7b] 选中项左移到第 0 行', on.length === 1 && $('#evlist').children.indexOf(on[0]) === 0,
+        on.map(c => $('#evlist').children.indexOf(c)).join(','));
+    }
+  } else {
+    ok('[7b] 至少有两行事件', false);
+  }
+
+  // 预设下拉：载入后要回落，否则想重载同一张卡时选不动
+  $('#preset').value = 'moon';
+  $('#preset').dispatch('change');
+  drain();
+  ok('[7b] 载入预设后下拉框回落', $('#preset').value === '', $('#preset').value);
+  ok('[7b] 同一张预设可以再选一次', (function () {
+    $('#preset').value = 'moon';
+    $('#preset').dispatch('change');
+    drain();
+    return $('#mSlug').value.indexOf('MoonlightRay') === 0 || $('#mSlug').value.indexOf('moon') >= 0;
+  })(), $('#mSlug').value);
+
+  // 导入护栏：粘一个 {} 不能把当前卡静默换成空白卡
+  const keepSlug = $('#mSlug').value;
+  $('#importText').value = '{}';
+  $('#btnDoImport').click();
+  drain();
+  ok('[7b] 粘 {} 不会替换当前卡', $('#mSlug').value === keepSlug, $('#mSlug').value + ' vs ' + keepSlug);
+}
+
+/* ------------------------------------------------------------------ *
  * 9. 播放 / 时间轴
  * ------------------------------------------------------------------ */
 
