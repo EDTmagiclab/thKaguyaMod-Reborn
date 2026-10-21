@@ -1,0 +1,211 @@
+/* danmaku-core 自检：数学不变量 + 物理 + 仿真（node editor/test-core.js） */
+const D = require('./danmaku-core.js');
+
+let pass = 0, fail = 0;
+function ok(name, cond, extra) {
+  if (cond) { pass++; console.log('  ok   ' + name); }
+  else { fail++; console.log('  FAIL ' + name + (extra ? '  → ' + extra : '')); }
+}
+function near(a, b, eps) { return Math.abs(a - b) <= (eps === undefined ? 1e-6 : eps); }
+function ang(a, b) { // 两向量夹角（度）
+  const c = D.vdot(a, b) / (D.vlen(a) * D.vlen(b));
+  return Math.acos(Math.max(-1, Math.min(1, c))) / Math.PI * 180;
+}
+
+console.log('\n[1] THShotLib.getVecFromAngle / yawOf / pitchOf');
+{
+  const z = D.fromAngle(0, 0);
+  ok('yaw=0,pitch=0 → +Z', near(z.x, 0) && near(z.y, 0) && near(z.z, 1), JSON.stringify(z));
+  const s = D.fromAngle(90, 0);
+  ok('yaw=90 → -X（与原版 -sin(yaw) 一致）', near(s.x, -1) && near(s.z, 0), JSON.stringify(s));
+  const down = D.fromAngle(0, 90);
+  ok('pitch=90 → -Y（原版 -sin(pitch)）', near(down.y, -1), JSON.stringify(down));
+  ok('yawOf(+Z)=0', near(D.yawOf(0, 1), 0));
+  // 重要：原版 getYawFromVector 与 getVecFromAngle 符号相反（atan2(x,z) vs -sin(yaw)），
+  // 二者不是互逆函数。此处的期望值按原版实际返回值写，移植/编辑器都不能把它们当逆运算替换。
+  ok('yawOf(-X)=-90（原版反号约定）', near(D.yawOf(-1, 0), -90), D.yawOf(-1, 0));
+  ok('pitchOf(0,-1,0)=-90（同理反号）', near(D.pitchOf(0, -1, 0), -90), D.pitchOf(0, -1, 0));
+}
+
+console.log('\n[2] getVectorFromRotation（罗德里格斯，绕 +Y 转 90°）');
+{
+  const r = D.rotateAround(D.v(0, 1, 0), D.v(0, 0, 1), 90);
+  ok('(0,0,1) 绕 +Y 转 90° → (+1,0,0)', near(r.x, 1, 1e-6) && near(r.z, 0, 1e-6), JSON.stringify(r));
+  const r2 = D.rotateAround(D.v(0, 1, 0), D.v(0, 1, 0), 123);
+  ok('平行于轴不变', near(r2.y, 1, 1e-6));
+  ok('旋转保长度', near(D.vlen(D.rotateAround(D.v(0, 1, 0), D.v(0.3, 0.4, 0.5), 71)), D.vlen(D.v(0.3, 0.4, 0.5)), 1e-9));
+}
+
+console.log('\n[3] createWideShot（way=3, wideAngle=90）');
+{
+  const card = {
+    maxTick: 1, level: 2,
+    events: [{ op: 'wide', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 3, wideAngle: 90, distance: 0, baseAngle: 0 }]
+  };
+  const sim = D.simulate(card);
+  ok('发 3 发', sim.shots.length === 3, sim.shots.length);
+  ok('无解析错误', sim.errors.length === 0, JSON.stringify(sim.errors));
+  const ds = sim.shots.map(s => s.angle);
+  const a01 = ang(ds[0], ds[1]), a12 = ang(ds[1], ds[2]);
+  ok('相邻夹角 45°', near(a01, 45, 1e-6) && near(a12, 45, 1e-6), a01 + ' / ' + a12);
+  ok('关于 +Z 对称', near(ds[0].x, -ds[2].x, 1e-6) && near(ds[1].x, 0, 1e-6));
+}
+
+console.log('\n[4] createCircleShot（way=8 → 每 45°）');
+{
+  const card = {
+    maxTick: 1, level: 2,
+    events: [{ op: 'circle', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 8 }]
+  };
+  const sim = D.simulate(card);
+  ok('发 8 发', sim.shots.length === 8, sim.shots.length);
+  const ds = sim.shots.map(s => s.angle);
+  let allHoriz = true, spans = [];
+  for (const d of ds) if (Math.abs(d.y) > 1e-9) allHoriz = false;
+  for (let i = 0; i < ds.length; i++) spans.push(ang(ds[i], ds[(i + 1) % ds.length]));
+  ok('全部水平（y=0）', allHoriz);
+  ok('相邻夹角 45°', spans.every(x => near(x, 45, 1e-6)), spans.map(x => x.toFixed(2)).join(','));
+}
+
+console.log('\n[5] createRingShot（ringSpan=0 与 180）');
+{
+  const flat = D.simulate({ maxTick: 1, level: 2, events: [{ op: 'ring', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 8, distance: 1, ringSpan: 0 }] });
+  ok('发 8 发', flat.shots.length === 8, flat.shots.length);
+  const dirs = flat.shots.map(s => s.angle);
+  const same = dirs.every(d => near(d.z, 1, 1e-6) && near(d.x, 0, 1e-6) && near(d.y, 0, 1e-6));
+  ok('ringSpan=0：8 发同向 +Z（扁平环）', same, JSON.stringify(dirs[0]));
+  // 出生位置用 px[0]（s.pos 是推进 1 tick 之后的坐标）
+  const pos = flat.shots.map(s => D.v(s.px[0], s.py[0], s.pz[0]));
+  const allR = pos.every(p => near(D.vlen(p), 1, 1e-6));
+  ok('ringSpan=0：位置在半径 1 的圆上', allR, pos.map(p => D.vlen(p).toFixed(3)).join(','));
+  const inPlane = pos.every(p => Math.abs(p.z) < 1e-6);   // 轴=+Z、起始向量 (0,-1,0) → 环面即 z=0 平面
+  ok('ringSpan=0：环面垂直于飞行方向（z 恒 0）', inPlane, pos.map(p => p.z.toFixed(2)).join(','));
+
+  const ball = D.simulate({ maxTick: 1, level: 2, events: [{ op: 'ring', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 8, distance: 1, ringSpan: 180 }] });
+  const d2 = ball.shots.map(s => s.angle);
+  let span = [];
+  for (let i = 0; i < d2.length; i++) span.push(ang(d2[i], d2[(i + 1) % d2.length]));
+  ok('ringSpan=180：相邻 45°（竖直环）', span.every(x => near(x, 45, 1e-6)), span.map(x => x.toFixed(1)).join(','));
+  ok('ringSpan=180：方向落在垂直圆上（z≈0）', d2.every(d => Math.abs(d.z) < 1e-6), d2.map(d => d.z.toFixed(2)).join(','));
+}
+
+console.log('\n[6] createSphereShot（ways 表 + 45 上限）');
+{
+  const sim = D.simulate({ maxTick: 1, level: 2, events: [{ op: 'sphere', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 5, distance: 0.3, baseAngle: 0 }] });
+  // way=5 → ways[5]={1,3,1} → 2 发单弹 + ring(3) = 2 + 3 = 5
+  ok('way=5 展开成 5 发（2 单 + ring3）', sim.shots.length === 5, sim.shots.length);
+  const over = D.simulate({ maxTick: 1, level: 2, events: [{ op: 'sphere', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 50 }] });
+  ok('way=50 ≥ 45 → 静默 return（0 发）', over.shots.length === 0, over.shots.length);
+}
+
+console.log('\n[7] 物理：等速 / 加速到限速 / 重力累加 / 延迟 / 寿命');
+{
+  const one = (extra) => D.simulate({
+    maxTick: 40, level: 2,
+    events: [Object.assign({ op: 'shot', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1 }, extra)]
+  });
+  const s1 = one({});
+  const shot = s1.shots[0];
+  ok('等速 1 格/tick：第 10 tick 位移 10', near(shot.pz[10], 10, 1e-6), shot.pz[10]);
+  ok('无重力时 y 恒 0', near(shot.py[10], 0));
+
+  const s2 = one({ firstSpeed: 0.2, limitSpeed: 1.0, accel: 0.3 });
+  const sh2 = s2.shots[0];
+  ok('加速被 limitSpeed 钳制', near(D.vlen(D.v(0, 0, sh2.pz[39] - sh2.pz[38])), 1.0, 1e-6) || sh2.pz[39] - sh2.pz[38] <= 1.0001);
+  ok('加速后总位移 > 等速 0.2 的 40 倍', sh2.pz[39] > 0.2 * 40, sh2.pz[39]);
+
+  const s3 = one({ gy: -0.03 });
+  const sh3 = s3.shots[0];
+  ok('重力使 y 递减且加速（抛物线）', sh3.py[39] < sh3.py[30] && (sh3.py[39] - sh3.py[38]) < (sh3.py[20] - sh3.py[19]));
+
+  const s4 = one({ shot: { form: 9, color: 0, size: 0.5, damage: 3, delay: 10, end: 80 } });
+  const sh4 = s4.shots[0];
+  ok('延迟 10 tick 内不移动', near(sh4.pz[10], 0, 1e-9), sh4.pz[10]);
+  ok('延迟结束后开始移动', sh4.pz[12] > 0, sh4.pz[12]);
+
+  const s5 = one({ shot: { form: 9, color: 0, size: 0.5, damage: 3, delay: 0, end: 10 } });
+  const sh5 = s5.shots[0];
+  ok('end=10 → 轨迹长度约 11~12', sh5.pz.length >= 10 && sh5.pz.length <= 13, sh5.pz.length);
+}
+
+console.log('\n[8] 时间轴 when');
+{
+  ok('at', D.whenMatch({ kind: 'at', a: 3 }, 3) && !D.whenMatch({ kind: 'at', a: 3 }, 4));
+  ok('range 左闭右开', D.whenMatch({ kind: 'range', a: 30, b: 98 }, 30) && D.whenMatch({ kind: 'range', a: 30, b: 98 }, 97) && !D.whenMatch({ kind: 'range', a: 30, b: 98 }, 98));
+  ok('every+until', D.whenMatch({ kind: 'every', a: 4, b: 10 }, 8) && !D.whenMatch({ kind: 'every', a: 4, b: 10 }, 12) && !D.whenMatch({ kind: 'every', a: 4, b: 10 }, 6));
+}
+
+console.log('\n[9] 表达式（求值 + Java 反生成）');
+{
+  const e = D.E('0.8 + level*0.2');
+  ok('eval level=2 → 1.2', near(e.eval({ level: 2 }), 1.2));
+  ok('常量折叠识别', D.E('2*3+1').isConst && !D.E('time*2').isConst);
+  ok('sin 收度数', near(D.E('sin(90)').eval({}), 1, 1e-12));
+  const j = D.E('sin(time*6)').java();
+  ok('Java 反生成含 Math.sin 与度数换算', /Math\.sin\(.*Math\.PI \/ 180\.0\)/.test(j), j);
+  ok('未知变量报错', (() => { try { D.E('foo').eval({}); return false; } catch (x) { return true; } })());
+  ok('语法错误报错', (() => { try { D.E('1+'); return false; } catch (x) { return true; } })());
+}
+
+console.log('\n[10] 真实卡复刻：彩光乱舞（THSC_SaikouRanbu 第一段，含复合守卫）');
+{
+  // 原卡：if(time % 30 < 10 && time % 2 == 1) → createRingShot(..., 15, 0.7, 40+(time%30)*5, 0)
+  const card = {
+    maxTick: 89, level: 2,
+    events: [
+      {
+        op: 'ring', when: { kind: 'range', a: 0, b: 90 },
+        guard: 'time % 30 < 10 && time % 2 == 1',
+        aim: 'yawpitch', yaw: 0, pitch: 0,
+        firstSpeed: 0.7, limitSpeed: 0.7, accel: 0, gy: -0.03,
+        way: 15, distance: 0.7, ringSpan: '40 + time % 30 * 5', baseAngle: 0,
+        shot: { form: 11, color: 'time % 4', size: 0.2, damage: 2.5, delay: 0, end: 60 }
+      }
+    ]
+  };
+  const sim = D.simulate(card);
+  ok('无解析错误', sim.errors.length === 0, JSON.stringify(sim.errors.slice(0, 2)));
+  // t ∈ {1,3,5,7,9} × 3 个 30-tick 块 = 15 波 × 15 发 = 225
+  ok('15 波 × 15 发 = 225 发', sim.shots.length === 225, sim.shots.length);
+  ok('守卫真的在过滤（不是全发射）', sim.shots.length < 90 * 15);
+  ok('颜色按 time%4 轮换（首波 time=1 → 1）', sim.shots[0].color === 1, sim.shots[0].color);
+  ok('第二块（time=31）颜色 → 3', sim.shots[15].color === 3, sim.shots[15].color);
+  // ringSpan = 40 + (time%30)*5：time=1 → 45 → 半角 22.5° → 首发的 y 分量约 -sin(22.5°)≈-0.38
+  ok('ringSpan 表达式生效（方向有纵向分量）', Math.abs(sim.shots[0].angle.y) > 0.3, sim.shots[0].angle.y);
+  const anyNaN = sim.shots.some(s => !isFinite(s.px[0]) || !isFinite(s.py[0]));
+  ok('坐标无 NaN', !anyNaN);
+}
+
+console.log('\n[10b] 统一性：way=15 circle 与 ring(ringSpan=0) 的角分布应各自自洽');
+{
+  const c = D.simulate({ maxTick: 0, level: 2, events: [{ op: 'circle', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 1, way: 15 }] });
+  const spans = [];
+  for (let i = 0; i < 15; i++) spans.push(ang(c.shots[i].angle, c.shots[(i + 1) % 15].angle));
+  ok('circle way=15 → 360/15=24° 均匀', spans.every(x => near(x, 24, 1e-6)), spans.map(x => x.toFixed(1)).join(','));
+}
+
+console.log('\n[11] 代码生成');
+{
+  const card = {
+    slug: 'Demo', name: '测试', needLevel: 2, endTime: 80, removeTime: 60, originalUser: 'SAKUYA',
+    maxTick: 40, level: 2,
+    events: [
+      { op: 'ring', when: { kind: 'range', a: 0, b: 40 }, aim: 'look', firstSpeed: 0.9, way: 12, distance: 0.5, ringSpan: 45, rotSpeed: '-3', rotEnd: 9999, shot: { form: 9, color: 3, size: 0.3, damage: 3, delay: 0, end: 50 } },
+      { op: 'shot', when: { kind: 'at', a: 10 }, aim: 'dir', dx: 0, dy: 0, dz: 1, firstSpeed: 1.5, gy: -0.03 }
+    ]
+  };
+  const java = D.cardToJava(card);
+  ok('含类名 THSC_Demo', /public class THSC_Demo extends THSpellCard/.test(java));
+  ok('含 createRingShot', /createRingShot\(/.test(java));
+  ok('区间条件生成', /time >= 0 && time < 40/.test(java));
+  ok('rotate 参数为负数正确', /-3F/.test(java));
+  const json = D.cardToJson(card);
+  const parsed = JSON.parse(json);
+  ok('JSON 可解析且事件数正确', parsed.events.length === 2);
+  ok('JSON 保留表达式字符串', parsed.events[0].rotSpeed === '-3');
+  console.log('\n----- 生成 Java 预览（前 28 行）-----');
+  console.log(java.split('\n').slice(0, 28).join('\n'));
+}
+
+console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败\n');
+process.exit(fail ? 1 : 0);

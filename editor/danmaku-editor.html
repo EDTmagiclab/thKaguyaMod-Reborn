@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弹幕可视化编辑器 · THKaguya Reborn</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --panel:#ffffff; --panel-2:#fafbfe; --line:#e2e6f0; --line-2:#cfd6e6;
+    --text:#1b2030; --dim:#657089; --dim-2:#8e97ad;
+    --accent:#5b5bd6; --accent-2:#eef0ff; --accent-3:#c7c9f7;
+    --ok:#0e9f6e; --warn:#d97706; --err:#dc2626;
+    --mono:ui-monospace,"Cascadia Code","JetBrains Mono",Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;
+    --r:8px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;overflow:hidden}
+  button{font-family:inherit;font-size:12px;cursor:pointer;border:1px solid var(--line-2);background:#fff;color:var(--text);padding:5px 10px;border-radius:6px;transition:.12s}
+  button:hover{background:var(--accent-2);border-color:var(--accent-3)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:#4a4ac4}
+  button.ghost{background:transparent;border-color:transparent;color:var(--dim);padding:3px 6px}
+  button.ghost:hover{background:#eef0f7;color:var(--text)}
+  input,select,textarea{font-family:inherit;font-size:12px;color:var(--text);background:#fff;
+    border:1px solid var(--line-2);border-radius:5px;padding:4px 6px;width:100%;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,91,214,.1)}
+  input.bad{border-color:var(--err);background:#fff5f5}
+  label{display:block;font-size:11px;color:var(--dim);margin-bottom:3px}
+
+  .app{display:grid;grid-template-columns:264px minmax(0,1fr) 344px;
+       grid-template-rows:46px minmax(0,1fr) 56px;height:100vh}
+
+  header{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 14px;
+    background:var(--panel);border-bottom:1px solid var(--line);z-index:3}
+  .brand{font-weight:650;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+  .brand b{color:var(--accent)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(14,159,110,.12)}
+  .grow{flex:1}
+  .hgroup{display:flex;align-items:center;gap:6px}
+  .hgroup span{font-size:11px;color:var(--dim-2)}
+  .kbd{font-family:var(--mono);font-size:10px;background:#eef0f7;border:1px solid var(--line);
+       border-radius:4px;padding:1px 4px;color:var(--dim)}
+
+  aside{background:var(--panel);overflow:auto;min-height:0}
+  aside.left{border-right:1px solid var(--line)}
+  aside.right{border-left:1px solid var(--line)}
+  .ph{position:sticky;top:0;background:var(--panel);padding:9px 12px;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;gap:8px;z-index:2}
+  .ph h3{margin:0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim-2);font-weight:600}
+  .ph .sp{flex:1}
+
+  /* 事件列表 */
+  .evlist{padding:6px}
+  .meta{padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .meta .row{margin-bottom:6px}
+  .meta .row:last-child{margin-bottom:0}
+  .meta input{padding:3px 6px;font-size:12px}
+  .ev{display:flex;gap:8px;padding:7px 8px;border-radius:6px;border:1px solid transparent;cursor:pointer;
+      align-items:flex-start;margin-bottom:2px}
+  .ev:hover{background:#f7f8fc}
+  .ev.sel{background:var(--accent-2);border-color:var(--accent-3)}
+  .ev .idx{font-family:var(--mono);font-size:10px;color:var(--dim-2);width:16px;text-align:right;flex:none;padding-top:2px}
+  .ev .body{min-width:0;flex:1}
+  .ev .op{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent)}
+  .ev .when{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .ev .del{opacity:0;font-size:14px;line-height:1;color:var(--dim-2);flex:none;padding:0 2px}
+  .ev:hover .del{opacity:1}
+  .ev .del:hover{color:var(--err)}
+  .empty{padding:26px 16px;text-align:center;color:var(--dim-2);font-size:12px;line-height:1.7}
+
+  /* 舞台 */
+  .stage{position:relative;min-width:0;min-height:0;background:#eef2fa;overflow:hidden}
+  #view{display:block;width:100%;height:100%}
+  .hud{position:absolute;left:12px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+  .chip{font-family:var(--mono);font-size:10.5px;background:rgba(255,255,255,.86);border:1px solid var(--line);
+        border-radius:5px;padding:2px 7px;color:var(--dim);backdrop-filter:blur(4px)}
+  .chip b{color:var(--text);font-weight:600}
+  .chip.err{border-color:#f3c7c7;background:#fff1f1;color:var(--err)}
+  .camhud{position:absolute;right:12px;top:10px;display:flex;flex-direction:column;gap:4px;
+          background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:7px;padding:7px 9px;
+          font-size:11px;color:var(--dim);backdrop-filter:blur(4px);width:132px}
+  .camhud .row{display:flex;align-items:center;gap:6px}
+  .camhud .row span{width:26px;flex:none;font-family:var(--mono);font-size:10px}
+  .camhud input[type=range]{padding:0;border:0;height:14px;accent-color:var(--accent)}
+
+  /* 时间轴 */
+  footer{grid-column:1/-1;background:var(--panel);border-top:1px solid var(--line);
+         display:flex;align-items:center;gap:10px;padding:0 14px}
+  .play{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;padding:0;flex:none}
+  .play svg{width:13px;height:13px;fill:currentColor}
+  #scrub{flex:1;accent-color:var(--accent);height:20px}
+  .tickbox{font-family:var(--mono);font-size:12px;color:var(--dim);width:88px;text-align:right;flex:none}
+  .tickbox b{color:var(--text);font-size:13px}
+  .marks{position:absolute;left:0;right:0;bottom:0;height:3px;pointer-events:none}
+  .tl{position:relative;flex:1;display:flex;align-items:center}
+
+  /* 表单 */
+  .form{padding:10px 12px 30px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .row.one{grid-template-columns:1fr}
+  .row.three{grid-template-columns:1fr 1fr 1fr}
+  .sec{margin:14px 0 8px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--dim-2);font-weight:600;border-top:1px dashed var(--line);padding-top:10px}
+  .sec:first-child{margin-top:0;border-top:0;padding-top:0}
+  .hint{font-size:10.5px;color:var(--dim-2);line-height:1.5;margin:-2px 0 8px}
+  .pills{display:flex;gap:4px;flex-wrap:wrap}
+  .pill{font-size:11px;padding:3px 8px;border-radius:99px;border:1px solid var(--line-2);background:#fff;
+        color:var(--dim);cursor:pointer}
+  .pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* 导出 */
+  .modal{position:fixed;inset:0;background:rgba(20,24,40,.34);display:none;place-items:center;z-index:50;backdrop-filter:blur(2px)}
+  .modal.on{display:grid}
+  .sheet{width:min(880px,92vw);height:min(680px,88vh);background:var(--panel);border-radius:12px;
+         box-shadow:0 24px 60px rgba(20,24,40,.24);display:flex;flex-direction:column;overflow:hidden}
+  .sheet header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .sheet header h2{margin:0;font-size:13px;font-weight:600}
+  .tabs{display:flex;gap:4px;padding:8px 14px 0}
+  .tab{font-size:12px;padding:5px 12px;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:0;
+       background:transparent;color:var(--dim)}
+  .tab.on{background:var(--panel-2);border-color:var(--line);color:var(--text);font-weight:600}
+  .sheet .body{flex:1;padding:0 14px 14px;min-height:0}
+  #export{width:100%;height:100%;font-family:var(--mono);font-size:11.5px;line-height:1.55;
+          border:1px solid var(--line);border-radius:0 8px 8px 8px;background:var(--panel-2);resize:none;padding:10px}
+  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1b2030;color:#fff;
+         font-size:12px;padding:7px 14px;border-radius:99px;opacity:0;transition:.2s;pointer-events:none;z-index:60}
+  .toast.on{opacity:1}
+  .badge{font-family:var(--mono);font-size:10px;padding:1px 5px;border-radius:4px;background:#eef0f7;color:var(--dim)}
+  .badge.s{background:#e8f7ef;color:var(--ok)}
+  .badge.l{background:#eef0ff;color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand"><span class="dot"></span>弹幕编辑器 <b>THKaguya</b></div>
+    <div class="hgroup">
+      <span>预设</span>
+      <select id="preset" style="width:210px"></select>
+    </div>
+    <div class="hgroup">
+      <span>难度</span>
+      <select id="level" style="width:74px">
+        <option value="1">EASY</option><option value="2" selected>NORMAL</option>
+        <option value="3">HARD</option><option value="4">LUNATIC</option>
+      </select>
+    </div>
+    <div class="grow"></div>
+    <div class="hgroup">
+      <span>玩家朝向 yaw</span>
+      <input id="userYaw" type="range" min="-180" max="180" value="0" style="width:110px">
+      <span id="userYawV" class="kbd">0°</span>
+    </div>
+    <button id="btnExport" class="primary">导出代码</button>
+  </header>
+
+  <aside class="left">
+    <div class="meta">
+      <div class="row one"><div><label>符卡名</label><input id="mName" type="text"></div></div>
+      <div class="row"><div><label>slug（类名）</label><input id="mSlug" type="text"></div>
+        <div><label>时长 tick</label><input id="mMax" type="text"></div></div>
+      <div class="row"><div><label>需求等级</label><input id="mLevel" type="text"></div>
+        <div><label>原作角色</label><input id="mUser" type="text"></div></div>
+    </div>
+    <div class="ph">
+      <h3>事件时间轴</h3><div class="sp"></div>
+      <button id="btnAdd" class="ghost" title="新增事件">+ 新增</button>
+    </div>
+    <div class="evlist" id="evlist"></div>
+  </aside>
+
+  <div class="stage" id="stage">
+    <canvas id="view"></canvas>
+    <div class="hud">
+      <div class="chip">实体峰值 <b id="statPeak">0</b></div>
+      <div class="chip">累计 <b id="statTotal">0</b></div>
+      <div class="chip" id="statErrWrap">错误 <b id="statErr">0</b></div>
+      <div class="chip">T <b id="statT">0</b> / <b id="statMax">0</b></div>
+    </div>
+    <div class="camhud">
+      <div class="row"><span>视角</span><input id="camYaw" type="range" min="-180" max="180" value="0"></div>
+      <div class="row"><span>俯仰</span><input id="camPitch" type="range" min="-45" max="45" value="8"></div>
+      <div class="row"><span>视野</span><input id="camFov" type="range" min="40" max="110" value="72"></div>
+      <div class="row" style="margin-top:2px;color:var(--dim-2);font-size:10px">拖动画布可旋转</div>
+    </div>
+  </div>
+
+  <aside class="right">
+    <div class="ph">
+      <h3>事件参数</h3><div class="sp"></div>
+      <span id="evLabel" class="badge">—</span>
+    </div>
+    <div class="form" id="form">
+      <div class="empty">左侧选一个事件<br>或点「+ 新增」</div>
+    </div>
+  </aside>
+
+  <footer>
+    <button class="play primary" id="btnPlay" title="播放/暂停（空格）">
+      <svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2.5v11l9-5.5z"/></svg>
+    </button>
+    <button class="ghost" id="btnRewind" title="回到 0">⏮</button>
+    <div class="tl">
+      <input id="scrub" type="range" min="0" max="120" value="0">
+      <div class="marks" id="marks"></div>
+    </div>
+    <div class="tickbox"><b id="tNow">0</b> / <span id="tMax">120</span> tick</div>
+    <div class="hgroup">
+      <span>速度</span>
+      <select id="speed" style="width:64px">
+        <option value="0.25">0.25×</option><option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option><option value="2">2×</option>
+      </select>
+    </div>
+  </footer>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <header>
+      <h2>导出</h2>
+      <div class="grow"></div>
+      <button id="btnCopy">复制</button>
+      <button id="btnDownload">下载</button>
+      <button class="ghost" id="btnClose" style="font-size:16px">✕</button>
+    </header>
+    <div class="tabs">
+      <button class="tab on" data-tab="java">Java 符卡类</button>
+      <button class="tab" data-tab="json">JSON（外挂 schema）</button>
+      <button class="tab" data-tab="report">事件表（Markdown）</button>
+    </div>
+    <div class="body"><textarea id="export" spellcheck="false"></textarea></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="danmaku-core.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const D = window.DMK;
+
+/* ============================ 预设 ============================ */
+// 每个事件字段与 THShotLib 一一对应；数值写字符串时按表达式处理（变量：time/i/way/level/pi）
+const PRESETS = {
+  saikou: {
+    label: '彩符「彩光乱舞」（彩光乱舞三段）',
+    card: {
+      name: '彩符「彩光乱舞」', slug: 'SaikouRanbu', needLevel: 2, endTime: 80, removeTime: 60,
+      originalUser: 'MEIRIN', maxTick: 90, userYaw: 0,
+      events: [
+        {
+          op: 'ring', when: { kind: 'range', a: 0, b: 90 }, guard: 'time % 30 < 10 && time % 2 == 1',
+          aim: 'look', firstSpeed: 0.7, limitSpeed: 0.7, accel: 0, gy: -0.03,
+          way: 15, distance: 0.7, ringSpan: '40 + time % 30 * 5', baseAngle: 0,
+          shot: { form: 11, color: 'time % 4', size: 0.2, damage: 2.5, delay: 0, end: 60 },
+          note: '晶体弹环，ringSpan 随 time 张开'
+        },
+        {
+          op: 'shot', when: { kind: 'range', a: 10, b: 20 }, repeat: 6,
+          aim: 'dir', dx: 'sin(i * 137)', dy: 'cos(i * 97)', dz: 'sin(i * 61)',
+          firstSpeed: 1.5, limitSpeed: 0.4, accel: -0.4,
+          shot: { form: 11, color: '7 - i % 3', size: 0.2, damage: 3.5, delay: 0, end: 50 },
+          note: '减速散弹（原版用 rand，这里用确定性三角函数代替）'
+        }
+      ]
+    }
+  },
+  spark: {
+    label: '恋符「Master Spark」（螺旋 + 重力调制）',
+    card: {
+      name: '恋符「マスタースパーク」', slug: 'MasterSpark', needLevel: 2, endTime: 110, removeTime: 70,
+      originalUser: 'MARISA', maxTick: 110, userYaw: 0,
+      events: [{
+        op: 'circle', when: { kind: 'range', a: 30, b: 99 },
+        aim: 'look', firstSpeed: 0.0, limitSpeed: 0.2, accel: 0.3,
+        gy: '-(0.034 + 0.03 * sin(time * 6))',
+        way: 7, baseAngle: 'time * 6',
+        shot: { form: 9, color: 'time % 7', size: 0.4, damage: 8, delay: 0, end: 55 },
+        note: '整圈旋转 + 逐发换色 + 重力正弦调制'
+      }]
+    }
+  },
+  moon: {
+    label: '月符「月光曲」（近似：激光扇旋转）',
+    card: {
+      name: '月符「ムーンライトレイ」', slug: 'MoonlightRay', needLevel: 1, endTime: 60, removeTime: 30,
+      originalUser: 'RUMIA', maxTick: 80, userYaw: 0,
+      events: [{
+        op: 'wide_laser', when: { kind: 'at', a: 3 },
+        aim: 'look', firstSpeed: 0.9, limitSpeed: 0.9, accel: 0,
+        way: 7, wideAngle: 360, distance: 0,
+        laser: { form: 0, color: 1, width: '0.8 + level * 0.2', length: 40, damage: 6, delay: 10, end: '29 + level * 5' },
+        note: '原版用 createLaserB（附着自转），此预览用 laser_a 近似'
+      }]
+    }
+  },
+  sphere: {
+    label: '球面弹（sphere way=20，20 向均匀分布）',
+    card: {
+      name: '球面弹演示', slug: 'SphereDemo', needLevel: 1, endTime: 100, removeTime: 60,
+      originalUser: 'OTHER', maxTick: 100, userYaw: 0,
+      events: [{
+        op: 'sphere', when: { kind: 'every', a: 5, b: 80 },
+        aim: 'look', firstSpeed: 0.85, limitSpeed: 0.15, accel: -0.008,
+        way: 20, distance: 0.6, baseAngle: 0, slope: 1,
+        shot: { form: 9, color: 9, size: 'SIZE[9]', damage: 3, delay: 0, end: 72 },
+        note: 'ways[20]={1,3,6,6,3,1} → 20 个均匀方向；RAINBOW 逐发取 0–6'
+      }]
+    }
+  },
+  blank: {
+    label: '空白（从零开始）',
+    card: {
+      name: '新符卡', slug: 'NewCard', needLevel: 1, endTime: 100, removeTime: 60,
+      originalUser: 'OTHER', maxTick: 100, userYaw: 0,
+      events: [{
+        op: 'ring', when: { kind: 'range', a: 0, b: 100 }, aim: 'look',
+        firstSpeed: 0.8, limitSpeed: 0.8, accel: 0, way: 12, distance: 0.5, ringSpan: 0, baseAngle: 0,
+        shot: { form: 9, color: 3, size: 0.3, damage: 3, delay: 0, end: 60 }
+      }]
+    }
+  }
+};
+
+/* ============================ 状态 ============================ */
+const S = {
+  card: null,
+  sim: null,
+  sel: 0,
+  tick: 0,
+  playing: false,
+  speed: 1,
+  cam: { yaw: 0, pitch: 8, fov: 72 },
+  acc: 0,
+  last: 0,
+  json: 'java'
+};
+
+const deep = o => JSON.parse(JSON.stringify(o));
+
+function loadPreset(key) {
+  S.card = deep(PRESETS[key].card);
+  if (S.card.level === undefined) S.card.level = 2;
+  if (S.card.maxTick === undefined) S.card.maxTick = 100;
+  S.sel = 0;
+  S.tick = 0;
+  S.playing = false;
+  $('#level').value = String(S.card.level);
+  syncMeta();
+  refresh({ full: true });
+}
+
+/* 卡级字段（名称 / slug / 时长 / 等级 / 原作角色）——导出代码直接取这些值 */
+function syncMeta() {
+  $('#mName').value = S.card.name || '';
+  $('#mSlug').value = S.card.slug || 'NewCard';
+  $('#mMax').value = S.card.maxTick | 0;
+  $('#mLevel').value = S.card.needLevel | 0;
+  $('#mUser').value = S.card.originalUser || 'OTHER';
+}
+
+function bindMeta() {
+  const pairs = [
+    ['#mName', v => { S.card.name = v; }],
+    ['#mSlug', v => { S.card.slug = v; }],
+    ['#mMax', v => { S.card.maxTick = Math.max(1, Number(v) || 1); S.tick = 0; }],
+    ['#mLevel', v => { S.card.needLevel = Math.max(1, Number(v) || 1); }],
+    ['#mUser', v => { S.card.originalUser = v.toUpperCase().replace(/[^A-Z_]/g, '') || 'OTHER'; }]
+  ];
+  pairs.forEach(([sel, set]) => {
+    const el = $(sel);
+    el.oninput = () => { set(el.value); if (sel === '#mMax') { $('#scrub').max = S.card.maxTick | 0; } schedule(); };
+    el.onchange = () => { if (sel === '#mMax' || sel === '#mSlug') refresh({ full: true }); };
+  });
+}
+bindMeta();
+
+/* ============================ 仿真 ============================ */
+let simTimer = null;
+function schedule() {
+  if (simTimer) return;
+  simTimer = setTimeout(() => { simTimer = null; refresh(); }, 60);
+}
+
+function refresh(opts) {
+  const o = opts || {};
+  try {
+    S.sim = D.simulate(S.card);
+  } catch (e) {
+    S.sim = { shots: [], errors: [{ tick: 0, op: '-', msg: e.message }], spawnLog: [], maxTick: S.card.maxTick };
+  }
+  const max = S.card.maxTick | 0;
+  $('#scrub').max = max;
+  $('#tMax').textContent = max;
+  $('#statMax').textContent = max;
+  if (S.tick > max) S.tick = max;
+  $('#scrub').value = S.tick;
+
+  // 统计
+  const total = S.sim.shots.length;
+  const diff = new Int32Array(max + 3);
+  let peak = 0;
+  for (const s of S.sim.shots) {
+    const a = s.born, b = Math.min(max, s.born + s.px.length - 1);
+    if (b >= a) { diff[a]++; diff[b + 1]--; }
+  }
+  let cur = 0;
+  for (let i = 0; i <= max; i++) { cur += diff[i]; if (cur > peak) peak = cur; }
+  $('#statPeak').textContent = peak;
+  $('#statTotal').textContent = total;
+  $('#statErr').textContent = S.sim.errors.length;
+  $('#statErrWrap').className = 'chip' + (S.sim.errors.length ? ' err' : '');
+  $('#statErrWrap').title = S.sim.errors.slice(0, 4).map(e => 't' + e.tick + ' ' + e.op + ': ' + e.msg).join('\n');
+
+  drawMarks();
+  if (o.full) { renderList(); renderForm(); renderPreset(); }
+  else { renderList(); }
+  updateHud();
+}
+
+/* ============================ 事件列表 ============================ */
+function whenText(w) {
+  if (!w) return 't=0';
+  if ((w.kind || 'at') === 'at') return 't = ' + (w.a | 0);
+  if (w.kind === 'range') return 't ∈ [' + (w.a | 0) + ', ' + (w.b | 0) + ')';
+  if (w.kind === 'every') return '每 ' + (w.a | 0) + (w.b !== undefined && w.b !== '' ? ' 至 ' + (w.b | 0) : '');
+  return '';
+}
+
+function renderList() {
+  const box = $('#evlist');
+  box.innerHTML = '';
+  if (!S.card.events.length) {
+    box.innerHTML = '<div class="empty">还没有事件<br>点右上「+ 新增」</div>';
+    return;
+  }
+  S.card.events.forEach((ev, i) => {
+    const el = document.createElement('div');
+    el.className = 'ev' + (i === S.sel ? ' sel' : '');
+    const isLaser = String(ev.op).indexOf('laser') >= 0;
+    el.innerHTML =
+      '<div class="idx">' + (i + 1) + '</div>' +
+      '<div class="body">' +
+      '<div class="op">' + (ev.op || 'shot') + ' <span class="badge ' + (isLaser ? 'l' : 's') + '">' +
+      (isLaser ? 'LASER' : 'SHOT') + '</span></div>' +
+      '<div class="when">' + whenText(ev.when) + (ev.guard ? ' · if ' + ev.guard : '') + '</div>' +
+      '</div><div class="del" title="删除">✕</div>';
+    el.onclick = e => {
+      if (e.target.classList.contains('del')) {
+        S.card.events.splice(i, 1);
+        if (S.sel >= S.card.events.length) S.sel = S.card.events.length - 1;
+        S.sel = Math.max(0, S.sel);
+        refresh({ full: true });
+        return;
+      }
+      S.sel = i;
+      renderList(); renderForm();
+    };
+    box.appendChild(el);
+  });
+}
+
+function renderPreset() {
+  const sel = $('#preset');
+  if (!sel.options.length) {
+    Object.keys(PRESETS).forEach(k => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = PRESETS[k].label;
+      sel.appendChild(o);
+    });
+  }
+  sel.value = S.curPreset || 'saikou';
+}
+
+/* ============================ 参数表单 ============================ */
+const OPS = ['shot', 'wide', 'circle', 'ring', 'random_ring', 'sphere',
+  'laser_a', 'wide_laser', 'circle_laser', 'ring_laser', 'random_ring_laser', 'sphere_laser'];
+
+function mk(tag, cls, txt) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (txt !== undefined) e.textContent = txt;
+  return e;
+}
+
+function numField(parent, label, obj, key, opts) {
+  const o = opts || {};
+  const wrap = mk('div');
+  wrap.appendChild(mk('label', null, label));
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.value = obj[key] === undefined ? '' : obj[key];
+  if (o.placeholder) inp.placeholder = o.placeholder;
+  inp.oninput = () => {
+    obj[key] = inp.value;
+    let okv = true;
+    try { D.E(inp.value); } catch (e) { okv = false; }
+    inp.classList.toggle('bad', !okv);
+    schedule();
+  };
+  inp.onchange = () => renderList();
+  wrap.appendChild(inp);
+  parent.appendChild(wrap);
+  return inp;
+}
+
+function txtField(parent, label, obj, key, placeholder) {
+  const wrap = mk('div');
+  wrap.appendChild(mk('label', null, label));
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.value = obj[key] === undefined ? '' : obj[key];
+  if (placeholder) inp.placeholder = placeholder;
+  inp.oninput = () => { obj[key] = inp.value; schedule(); };
+  wrap.appendChild(inp);
+  parent.appendChild(wrap);
+  return inp;
+}
+
+function selField(parent, label, obj, key, options, onChange) {
+  const wrap = mk('div');
+  wrap.appendChild(mk('label', null, label));
+  const sel = document.createElement('select');
+  options.forEach(([v, t]) => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = t;
+    if (String(obj[key]) === String(v)) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.onchange = () => { obj[key] = isNaN(sel.value) || sel.value === '' ? sel.value : Number(sel.value); if (onChange) onChange(); renderList(); schedule(); };
+  wrap.appendChild(sel);
+  parent.appendChild(wrap);
+  return sel;
+}
+
+// 结构变化（换 op/when/aim）需要重建表单；延迟一拍执行，避免外层 renderForm 继续往旧节点追加
+const rerenderForm = () => setTimeout(renderForm, 0);
+
+function renderForm() {
+  const box = $('#form');
+  box.innerHTML = '';
+  const ev = S.card.events[S.sel];
+  $('#evLabel').textContent = ev ? ('#' + (S.sel + 1) + ' ' + (ev.op || 'shot')) : '—';
+  if (!ev) {
+    box.innerHTML = '<div class="empty">左侧选一个事件<br>或点「+ 新增」</div>';
+    return;
+  }
+
+  /* --- 通用 --- */
+  let sec = mk('div', 'sec', '触发');
+  box.appendChild(sec);
+
+  const row1 = mk('div', 'row');
+  selField(row1, 'op', ev, 'op', OPS.map(o => [o, o]), rerenderForm);
+  const when = ev.when || (ev.when = { kind: 'at', a: 0 });
+  selField(row1, 'when', when, 'kind', [['at', '指定 tick'], ['range', '[from, to)'], ['every', '每 N tick']], rerenderForm);
+  box.appendChild(row1);
+
+  const row2 = mk('div', 'row');
+  numField(row2, when.kind === 'every' ? '间隔 N' : 'from / at', when, 'a', { placeholder: '0' });
+  if (when.kind !== 'at') numField(row2, when.kind === 'every' ? '至（可空）' : 'to', when, 'b', { placeholder: '可选' });
+  box.appendChild(row2);
+
+  const rowg = mk('div', 'row one');
+  const gi = txtField(rowg, '守卫条件 if（可空，用 time / % / && 等）', ev, 'guard', 'time % 30 < 10 && time % 2 == 1');
+  box.appendChild(rowg);
+
+  /* --- 朝向 --- */
+  box.appendChild(mk('div', 'sec', '发射点与朝向'));
+  const row3 = mk('div', 'row');
+  selField(row3, 'aim', ev, 'aim', [['look', '视线 look'], ['yawpitch', 'yaw/pitch'], ['dir', '分量 dir'], ['target', '指向 target']], rerenderForm);
+  numField(row3, 'repeat', ev, 'repeat', { placeholder: '1' });
+  box.appendChild(row3);
+  if ((ev.aim || 'look') === 'yawpitch') {
+    const r = mk('div', 'row');
+    numField(r, 'yaw（度）', ev, 'yaw', { placeholder: '0' });
+    numField(r, 'pitch（度）', ev, 'pitch', { placeholder: '0' });
+    box.appendChild(r);
+  } else if (ev.aim === 'dir') {
+    const r = mk('div', 'row three');
+    numField(r, 'x', ev, 'dx', { placeholder: '0' });
+    numField(r, 'y', ev, 'dy', { placeholder: '0' });
+    numField(r, 'z', ev, 'dz', { placeholder: '1' });
+    box.appendChild(r);
+  }
+
+  /* --- 批量 --- */
+  const op = ev.op || 'shot';
+  const batch = {
+    none: [],
+    wide: ['way', 'wideAngle', 'distance', 'baseAngle'],
+    wide_laser: ['way', 'wideAngle', 'distance'],
+    circle: ['way', 'baseAngle'],
+    circle_laser: ['way'],
+    ring: ['way', 'distance', 'ringSpan', 'baseAngle'],
+    ring_laser: ['way', 'distance', 'ringSpan', 'baseAngle'],
+    random_ring: ['num', 'distance', 'ringSpan'],
+    random_ring_laser: ['num', 'distance', 'ringSpan'],
+    sphere: ['way', 'distance', 'baseAngle', 'slope'],
+    sphere_laser: ['way', 'distance', 'baseAngle']
+  }[op] || [];
+  if (batch.length) {
+    box.appendChild(mk('div', 'sec', '批量'));
+    const labels = {
+      way: 'way 弹数', wideAngle: 'wideAngle 张角°', distance: 'distance 推出',
+      baseAngle: 'baseAngle 相位°', ringSpan: 'ringSpan 纵向°', num: 'num 随机数',
+      slope: 'slope（angleZ）'
+    };
+    for (let i = 0; i < batch.length; i += 2) {
+      const r = mk('div', 'row');
+      numField(r, labels[batch[i]], ev, batch[i]);
+      if (batch[i + 1]) numField(r, labels[batch[i + 1]], ev, batch[i + 1]);
+      box.appendChild(r);
+    }
+  }
+
+  /* --- 运动 --- */
+  box.appendChild(mk('div', 'sec', '运动'));
+  const r4 = mk('div', 'row three');
+  numField(r4, '初速', ev, 'firstSpeed', { placeholder: '1.0' });
+  numField(r4, '限速', ev, 'limitSpeed', { placeholder: '同初速' });
+  numField(r4, '加速度', ev, 'accel', { placeholder: '0' });
+  box.appendChild(r4);
+  const r5 = mk('div', 'row three');
+  numField(r5, '重力 x', ev, 'gx', { placeholder: '0' });
+  numField(r5, '重力 y', ev, 'gy', { placeholder: '0' });
+  numField(r5, '重力 z', ev, 'gz', { placeholder: '0' });
+  box.appendChild(r5);
+  const r6 = mk('div', 'row');
+  numField(r6, '自转 度/tick', ev, 'rotSpeed', { placeholder: '0' });
+  numField(r6, '自转截止 tick', ev, 'rotEnd', { placeholder: '9999' });
+  box.appendChild(r6);
+
+  /* --- 弹数据 --- */
+  const isLaser = op.indexOf('laser') >= 0;
+  box.appendChild(mk('div', 'sec', isLaser ? '激光 LaserData' : '弹 ShotData'));
+  const sh = isLaser ? (ev.laser || (ev.laser = {})) : (ev.shot || (ev.shot = {}));
+  const r7 = mk('div', 'row');
+  if (isLaser) {
+    selField(r7, 'form', sh, 'form', [[0, 'NORMAL'], [1, 'GUNGNIR'], [2, 'LAEVATAIN']]);
+    txtField(r7, 'color', sh, 'color', '0-7 / BLUE / time%8');
+  } else {
+    selField(r7, 'form 弹型', sh, 'form', D.FORM_NAMES.map(n => [D.FORMS[n], n + ' (' + D.FORMS[n] + ')']).concat([[26, 'PHANTOM (26)'], [27, 'AMULET (27)'], [28, 'KNIFE (28)'], [29, 'WIND (29)'], [30, 'BIG (30)'], [31, 'KISHITU (31)']]));
+    txtField(r7, 'color', sh, 'color', '0-7 / RED / time%4 / 8 随机 9 彩虹');
+  }
+  box.appendChild(r7);
+  const r8 = mk('div', 'row');
+  if (isLaser) {
+    numField(r8, 'width 半宽', sh, 'width', { placeholder: '0.1' });
+    numField(r8, 'length 长度', sh, 'length', { placeholder: '2.0' });
+  } else {
+    numField(r8, 'size 判定半径', sh, 'size', { placeholder: '按弹型' });
+    numField(r8, 'damage', sh, 'damage', { placeholder: '按弹型' });
+  }
+  box.appendChild(r8);
+  const r9 = mk('div', 'row three');
+  numField(r9, 'delay', sh, 'delay', { placeholder: '0' });
+  numField(r9, 'end 寿命', sh, 'end', { placeholder: '80' });
+  if (!isLaser) numField(r9, 'special', sh, 'special', { placeholder: '0' });
+  box.appendChild(r9);
+
+  const hint = mk('div', 'hint',
+    '所有数值框都接受表达式：time（当前 tick）、i（第几发）、way、level、pi，' +
+    '以及 sin/cos/sqrt/abs/min/max（角度单位为度）。');
+  box.appendChild(hint);
+}
+
+/* ============================ 画布 ============================ */
+const cv = $('#view');
+const ctx2d = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+
+function resize() {
+  const st = $('#stage').getBoundingClientRect();
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = Math.max(200, st.width);
+  H = Math.max(160, st.height);
+  cv.width = W * DPR;
+  cv.height = H * DPR;
+  cv.style.width = W + 'px';
+  cv.style.height = H + 'px';
+  ctx2d.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+
+const EYE = 1.62;
+
+function camTransform(p) {
+  const cy = Math.cos(S.cam.yaw * Math.PI / 180), sy = Math.sin(S.cam.yaw * Math.PI / 180);
+  const x1 = p.x * cy - p.z * sy;
+  const z1 = p.x * sy + p.z * cy;
+  const cp = Math.cos(S.cam.pitch * Math.PI / 180), sp = Math.sin(S.cam.pitch * Math.PI / 180);
+  const y2 = p.y * cp + z1 * sp;
+  const z2 = -p.y * sp + z1 * cp;
+  return { x: x1, y: y2, z: z2 };
+}
+
+function focal() {
+  return (H / 2) / Math.tan(S.cam.fov * Math.PI / 360);
+}
+
+function project(p) {
+  const c = camTransform(p);
+  if (c.z <= 0.08) return null;
+  const f = focal();
+  return { x: W / 2 + f * c.x / c.z, y: H / 2 - f * c.y / c.z, z: c.z };
+}
+
+function drawGrid() {
+  const f = focal();
+  const horizon = H / 2 - f * Math.tan(S.cam.pitch * Math.PI / 180);
+  const g = ctx2d.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#f7f9fe');
+  g.addColorStop(0.55, '#e9eff9');
+  g.addColorStop(1, '#dde5f4');
+  ctx2d.fillStyle = g;
+  ctx2d.fillRect(0, 0, W, H);
+
+  // 地平线
+  ctx2d.strokeStyle = 'rgba(120,140,180,.28)';
+  ctx2d.lineWidth = 1;
+  ctx2d.beginPath();
+  ctx2d.moveTo(0, horizon);
+  ctx2d.lineTo(W, horizon);
+  ctx2d.stroke();
+
+  // 地面网格（y = -EYE）
+  ctx2d.strokeStyle = 'rgba(120,140,180,.16)';
+  ctx2d.beginPath();
+  for (let z = 2; z <= 60; z += 2) {
+    const a = project({ x: -24, y: -EYE, z: z });
+    const b = project({ x: 24, y: -EYE, z: z });
+    if (a && b) { ctx2d.moveTo(a.x, a.y); ctx2d.lineTo(b.x, b.y); }
+  }
+  for (let x = -24; x <= 24; x += 4) {
+    const a = project({ x: x, y: -EYE, z: 0.4 });
+    const b = project({ x: x, y: -EYE, z: 60 });
+    if (a && b) { ctx2d.moveTo(a.x, a.y); ctx2d.lineTo(b.x, b.y); }
+  }
+  ctx2d.stroke();
+
+  // 6 格外的参考靶（1.8 格高）
+  const t0 = project({ x: 0, y: -EYE, z: 6 });
+  const t1 = project({ x: 0, y: -EYE + 1.8, z: 6 });
+  if (t0 && t1) {
+    ctx2d.strokeStyle = 'rgba(91,91,214,.25)';
+    ctx2d.setLineDash([4, 4]);
+    ctx2d.beginPath();
+    ctx2d.ellipse((t0.x + t1.x) / 2, (t0.y + t1.y) / 2, Math.abs(t1.y - t0.y) * 0.28, Math.abs(t1.y - t0.y) / 2, 0, 0, Math.PI * 2);
+    ctx2d.stroke();
+    ctx2d.setLineDash([]);
+  }
+}
+
+function starPath(c, r) {
+  c.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const a = i * Math.PI / 4 - Math.PI / 2;
+    const rr = i % 2 ? r * 0.38 : r;
+    const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
+    i ? c.lineTo(x, y) : c.moveTo(x, y);
+  }
+  c.closePath();
+}
+
+function heartPath(c, r) {
+  c.beginPath();
+  c.moveTo(0, r * 0.75);
+  c.bezierCurveTo(-r * 1.5, -r * 0.35, -r * 0.5, -r * 1.15, 0, -r * 0.35);
+  c.bezierCurveTo(r * 0.5, -r * 1.15, r * 1.5, -r * 0.35, 0, r * 0.75);
+  c.closePath();
+}
+
+function drawSprite(x, y, r, color, form, alpha, glow) {
+  const fill = D.PALETTE[color] || '#ffffff';
+  const bright = D.PALETTE_BRIGHT[color] || '#ffffff';
+  ctx2d.save();
+  ctx2d.translate(x, y);
+  ctx2d.globalAlpha = alpha;
+  if (glow && r > 1.4) {
+    ctx2d.globalAlpha = alpha * 0.28;
+    ctx2d.fillStyle = fill;
+    ctx2d.beginPath();
+    ctx2d.arc(0, 0, r * 1.9, 0, Math.PI * 2);
+    ctx2d.fill();
+    ctx2d.globalAlpha = alpha;
+  }
+  ctx2d.fillStyle = fill;
+  if (form === 9 || form === 8) {
+    starPath(ctx2d, r * 1.25);
+    ctx2d.fill();
+  } else if (form === 11) {
+    ctx2d.beginPath();
+    ctx2d.moveTo(0, -r * 1.3); ctx2d.lineTo(r * 0.8, 0);
+    ctx2d.lineTo(0, r * 1.3); ctx2d.lineTo(-r * 0.8, 0);
+    ctx2d.closePath();
+    ctx2d.fill();
+  } else if (form === 12) {
+    heartPath(ctx2d, r);
+    ctx2d.fill();
+  } else if (form === 10 || form === 18 || form === 13 || form === 28) {
+    ctx2d.beginPath();
+    ctx2d.ellipse(0, 0, r * 1.9, r * 0.62, 0, 0, Math.PI * 2);
+    ctx2d.fill();
+  } else {
+    ctx2d.beginPath();
+    ctx2d.arc(0, 0, r, 0, Math.PI * 2);
+    ctx2d.fill();
+  }
+  // 内芯
+  if (r > 2 && r < 11) {
+    ctx2d.globalAlpha = alpha * 0.75;
+    ctx2d.fillStyle = bright;
+    ctx2d.beginPath();
+    ctx2d.arc(0, -r * 0.15, Math.max(0.7, r * 0.34), 0, Math.PI * 2);
+    ctx2d.fill();
+  }
+  ctx2d.restore();
+}
+
+function drawFrame() {
+  drawGrid();
+  if (!S.sim) return;
+  const list = D.stateAt(S.sim, S.tick);
+  const f = focal();
+  const proj = [];
+  for (const s of list) {
+    const p = project(s);
+    if (!p) continue;
+    const q = s.kind === 'laser'
+      ? project({ x: s.x + s.ax * s.length, y: s.y + s.ay * s.length, z: s.z + s.az * s.length })
+      : null;
+    proj.push({ s, p, q });
+  }
+  proj.sort((a, b) => b.p.z - a.p.z);
+
+  // 激光先画（在下层）
+  for (const it of proj) {
+    if (it.s.kind !== 'laser' || !it.q) continue;
+    const w = Math.max(0.8, f * it.s.width / it.p.z);
+    ctx2d.save();
+    ctx2d.lineCap = 'round';
+    ctx2d.globalAlpha = 0.22;
+    ctx2d.strokeStyle = D.PALETTE[it.s.color] || '#fff';
+    ctx2d.lineWidth = w * 2.6;
+    ctx2d.beginPath(); ctx2d.moveTo(it.p.x, it.p.y); ctx2d.lineTo(it.q.x, it.q.y); ctx2d.stroke();
+    ctx2d.globalAlpha = 0.9;
+    ctx2d.strokeStyle = D.PALETTE_BRIGHT[it.s.color] || '#fff';
+    ctx2d.lineWidth = Math.max(0.6, w * 0.7);
+    ctx2d.beginPath(); ctx2d.moveTo(it.p.x, it.p.y); ctx2d.lineTo(it.q.x, it.q.y); ctx2d.stroke();
+    ctx2d.restore();
+  }
+
+  let drawn = 0;
+  for (const it of proj) {
+    if (it.s.kind === 'laser') continue;
+    // 太近的弹在屏幕上会糊成一团白（弹就在眼前），直接剔掉
+    if (it.p.z < 1.1) continue;
+    const r = f * it.s.size * 0.5 / it.p.z;
+    if (r < 0.35 || it.p.z > 90) continue;
+    drawSprite(it.p.x, it.p.y, Math.min(r, 20), it.s.color, it.s.form, it.s.age === 0 ? 0.95 : 0.92, true);
+    drawn++;
+  }
+  ctx2d.save();
+  ctx2d.font = '11px ' + getComputedStyle(document.body).fontFamily;
+  ctx2d.fillStyle = 'rgba(101,112,137,.7)';
+  ctx2d.fillText('绘制 ' + drawn + ' / 场上 ' + list.length, 12, H - 12);
+  ctx2d.restore();
+}
+
+/* ============================ 播放循环 ============================ */
+function loop(ts) {
+  if (!S.last) S.last = ts;
+  const dt = Math.min(0.1, (ts - S.last) / 1000);
+  S.last = ts;
+  if (S.playing) {
+    S.acc += dt * 20 * S.speed;
+    if (S.acc >= 1) {
+      const step = Math.floor(S.acc);
+      S.acc -= step;
+      S.tick += step;
+      const max = S.card.maxTick | 0;
+      if (S.tick > max) S.tick = 0;
+      $('#scrub').value = S.tick;
+      updateHud();
+    }
+  }
+  drawFrame();
+  requestAnimationFrame(loop);
+}
+
+function updateHud() {
+  $('#tNow').textContent = S.tick;
+  $('#statT').textContent = S.tick;
+}
+
+function drawMarks() {
+  const box = $('#marks');
+  box.innerHTML = '';
+  const max = Math.max(1, S.card.maxTick | 0);
+  const seen = new Set();
+  for (const m of S.sim.spawnLog) {
+    if (seen.has(m.tick)) continue;
+    seen.add(m.tick);
+    const d = document.createElement('div');
+    d.style.cssText = 'position:absolute;top:0;height:3px;width:2px;background:rgba(91,91,214,.55);left:' +
+      (m.tick / max * 100) + '%';
+    box.appendChild(d);
+  }
+}
+
+/* ============================ 交互 ============================ */
+$('#preset').onchange = e => { S.curPreset = e.target.value; loadPreset(e.target.value); };
+
+$('#btnAdd').onclick = () => {
+  S.card.events.push({
+    op: 'ring', when: { kind: 'range', a: 0, b: S.card.maxTick | 0 }, aim: 'look',
+    firstSpeed: 0.8, limitSpeed: 0.8, accel: 0, way: 8, distance: 0.5, ringSpan: 0, baseAngle: 0,
+    shot: { form: 9, color: 3, size: 0.3, damage: 3, delay: 0, end: 60 }
+  });
+  S.sel = S.card.events.length - 1;
+  refresh({ full: true });
+};
+
+$('#level').onchange = e => { S.card.level = Number(e.target.value); refresh(); };
+$('#level').value = String(2);
+
+$('#userYaw').oninput = e => {
+  S.card.userYaw = Number(e.target.value);
+  $('#userYawV').textContent = e.target.value + '°';
+  schedule();
+};
+
+$('#camYaw').oninput = e => { S.cam.yaw = Number(e.target.value); };
+$('#camPitch').oninput = e => { S.cam.pitch = Number(e.target.value); };
+$('#camFov').oninput = e => { S.cam.fov = Number(e.target.value); };
+
+$('#scrub').oninput = e => { S.tick = Number(e.target.value); S.playing = false; setPlayIcon(); updateHud(); };
+$('#btnRewind').onclick = () => { S.tick = 0; $('#scrub').value = 0; updateHud(); };
+$('#speed').onchange = e => { S.speed = Number(e.target.value); };
+
+function setPlayIcon() {
+  $('#playIcon').innerHTML = S.playing
+    ? '<rect x="4" y="2.5" width="3" height="11"/><rect x="9" y="2.5" width="3" height="11"/>'
+    : '<path d="M4 2.5v11l9-5.5z"/>';
+}
+$('#btnPlay').onclick = () => { S.playing = !S.playing; S.last = 0; setPlayIcon(); };
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
+    e.preventDefault();
+    S.playing = !S.playing; S.last = 0; setPlayIcon();
+  }
+  if (e.code === 'ArrowRight') { S.tick = Math.min(S.card.maxTick | 0, S.tick + 1); $('#scrub').value = S.tick; updateHud(); }
+  if (e.code === 'ArrowLeft') { S.tick = Math.max(0, S.tick - 1); $('#scrub').value = S.tick; updateHud(); }
+});
+
+/* 画布拖动旋转 */
+(function drag() {
+  let on = false, lx = 0, ly = 0;
+  cv.addEventListener('mousedown', e => { on = true; lx = e.clientX; ly = e.clientY; cv.style.cursor = 'grabbing'; });
+  window.addEventListener('mouseup', () => { on = false; cv.style.cursor = 'default'; });
+  window.addEventListener('mousemove', e => {
+    if (!on) return;
+    S.cam.yaw = Math.max(-180, Math.min(180, S.cam.yaw - (e.clientX - lx) * 0.35));
+    S.cam.pitch = Math.max(-45, Math.min(45, S.cam.pitch + (e.clientY - ly) * 0.25));
+    lx = e.clientX; ly = e.clientY;
+    $('#camYaw').value = S.cam.yaw;
+    $('#camPitch').value = S.cam.pitch;
+  });
+  cv.addEventListener('wheel', e => {
+    e.preventDefault();
+    S.cam.fov = Math.max(40, Math.min(110, S.cam.fov + (e.deltaY > 0 ? 4 : -4)));
+    $('#camFov').value = S.cam.fov;
+  }, { passive: false });
+})();
+
+/* ============================ 导出 ============================ */
+function mdReport() {
+  const rows = S.card.events.map((ev, i) => {
+    const isL = String(ev.op).indexOf('laser') >= 0;
+    const sh = isL ? (ev.laser || {}) : (ev.shot || {});
+    return '| ' + (i + 1) + ' | `' + (ev.op || 'shot') + '` | ' + whenText(ev.when) +
+      (ev.guard ? '<br>`if ' + ev.guard + '`' : '') +
+      ' | ' + (ev.aim || 'look') + ' | ' + (ev.firstSpeed || 0) + ' / ' + (ev.accel || 0) +
+      ' | ' + (ev.way || ev.num || 1) + ' | ' + (sh.form === undefined ? '-' : sh.form) + ' / ' + (sh.color === undefined ? '-' : sh.color) +
+      ' | ' + (sh.end === undefined ? 80 : sh.end) + ' |';
+  });
+  return [
+    '# ' + (S.card.name || '符卡') + ' 事件表',
+    '',
+    '| # | op | 时间 | aim | 速度/加速度 | 弹数 | form/color | end |',
+    '|---|---|---|---|---|---|---|---|',
+    ...rows,
+    '',
+    '实体峰值 ' + $('#statPeak').textContent + '，累计 ' + $('#statTotal').textContent + '，时长 ' + (S.card.maxTick | 0) + ' tick。'
+  ].join('\n');
+}
+
+function exportText(kind) {
+  if (kind === 'java') return D.cardToJava(S.card);
+  if (kind === 'json') return D.cardToJson(S.card);
+  return mdReport();
+}
+
+let curTab = 'java';
+function openExport() {
+  $('#modal').classList.add('on');
+  $('#export').value = exportText(curTab);
+}
+
+$('#btnExport').onclick = openExport;
+$('#btnClose').onclick = () => $('#modal').classList.remove('on');
+$('#modal').onclick = e => { if (e.target.id === 'modal') $('#modal').classList.remove('on'); };
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    curTab = t.dataset.tab;
+    $('#export').value = exportText(curTab);
+  };
+});
+$('#btnCopy').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($('#export').value);
+    toast('已复制到剪贴板');
+  } catch (e) { $('#export').select(); document.execCommand('copy'); toast('已复制'); }
+};
+$('#btnDownload').onclick = () => {
+  const ext = curTab === 'java' ? 'java' : curTab === 'json' ? 'json' : 'md';
+  const blob = new Blob([$('#export').value], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (S.card.slug || 'card') + '.' + ext;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 1400);
+}
+
+/* ============================ 启动 ============================ */
+resize();
+S.curPreset = 'saikou';
+loadPreset(S.curPreset);
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>

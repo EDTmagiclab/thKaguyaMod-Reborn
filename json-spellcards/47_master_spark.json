@@ -1,0 +1,57 @@
+{
+  "$schema": 1,
+  "id": 47,
+  "slug": "master_spark",
+  "name": {
+    "zh_cn": "恋符「マスタースパーク」",
+    "en_us": "Master Spark"
+  },
+  "need_level": 5,
+  "end_time": 109,
+  "remove_time": 99,
+  "original_user": "MARISA",
+  "vars": {
+    "lx": "-sin(cardYaw)*cos(cardPitch+90)",
+    "ly": "-sin(cardPitch+90)",
+    "lz": "cos(cardYaw)*cos(cardPitch+90)",
+    "g": "0.034 + 0.03*sin(time*6)",
+    "a": "time*6 + i*(360/7)"
+  },
+  "events": [
+    {
+      "when": { "at": 1 },
+      "op": "spawn",
+      "entity": "thkaguya:mini_hakkero",
+      "anchor": "default"
+    },
+    {
+      "when": { "from": 30, "to": 99 },
+      "op": "shot",
+      "anchor": "card",
+      "aim": "dir",
+      "dir": {
+        "x": "cos(a)*lx + sin(a)*cos(cardYaw)",
+        "y": "-cos(a)*sin(cardPitch+90)",
+        "z": "cos(a)*lz + sin(a)*sin(cardYaw)"
+      },
+      "repeat": 7,
+      "first_speed": 0.0,
+      "limit_speed": 0.2,
+      "acceleration": 0.3,
+      "gravity": {
+        "x": "-sin(cardYaw)*cos(cardPitch)*g",
+        "y": "-sin(cardPitch)*g",
+        "z": "cos(cardYaw)*cos(cardPitch)*g"
+      },
+      "shot": {
+        "form": "STAR",
+        "color": "time%7",
+        "size": 0.4,
+        "damage": 8.0,
+        "delay": 0,
+        "end": 55
+      }
+    }
+  ],
+  "notes": "原卡 THSC_MasterSpark.java（82 行）。第 1 tick 放迷你八卦炉实体，第 30-98 tick 每 tick 从符卡位置发 7 颗星弹：整圈均匀分布、整体以 6°/tick 旋转、从 0 速加速到 0.2、带 sin 调制的重力。方向公式逐项搬自原卡 :65-72（原卡里 rotateY(…, 2π) 是恒等变换，已略去）。color time%7 即 7 颗弹分别是 RED/BLUE/GREEN/YELLOW/PURPLE/AQUA/ORANGE。"
+}
