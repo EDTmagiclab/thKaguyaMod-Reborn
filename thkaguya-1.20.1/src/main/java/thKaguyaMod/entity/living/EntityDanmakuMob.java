@@ -947,8 +947,14 @@ public abstract class EntityDanmakuMob extends Mob
             double moveRate = Math.cos((double)moveTimer / (double)moveTimerMax * Math.PI / 2.0D);
             if(!level().isClientSide)
             {
-                Vec3 motion = this.getDeltaMovement();
-                this.setDeltaMovement(motion.add(moveVec.x * moveRate, moveVec.y * moveRate, moveVec.z * moveRate));
+                // 1.7.10 原版ここは moveEntity（＝その場の変位）で、速度には足していない。
+                // 1.20.1 で deltaMovement に加算すると「毎 tick 足す＋摩擦 0.91」になり、
+                // 終端速度が単発変位の約 10 倍まで育つ。早苗の非符は danmaku01 が毎 tick
+                // setStopStart() で moveTimer を 0 に戻すため、毎 tick 追撃されて
+                // ~2.8 格/tick（約 56m/s）まで加速し、数秒で最寄りプレイヤーから 128 格
+                // 離れて despawn していた（＝「打到一半消失」）。
+                this.move(net.minecraft.world.entity.MoverType.SELF,
+                        new Vec3(moveVec.x * moveRate, moveVec.y * moveRate, moveVec.z * moveRate));
             }
             moveTimer--;
         }
@@ -1208,7 +1214,64 @@ public abstract class EntityDanmakuMob extends Mob
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 thKaguyaMod.init.THKaguyaSounds.SPELL_CARD.get(),
                 net.minecraft.sounds.SoundSource.HOSTILE, THKaguyaConfig.SpellCardVol, 1.0F);
+        this.applyBattleGlow();
         return true;
+    }
+
+    /**
+     * 交戦中はプレイヤーから離れても消えない。
+     *
+     * <p>1.20.1 の {@code Mob#checkDespawn} は最寄りプレイヤーから 128 格離れると discard する。
+     * 移動速度が速い boss（早苗など）が戦闘中に距離を取る／吹き飛ばされるだけで
+     * 消えてしまうのを防ぐ。非交戦時は従来どおり自然消滅に任せる。</p>
+     */
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer)
+    {
+        return getDanmakuPattern() == NOT_ATTACK;
+    }
+
+    /** 交戦中の発光色を青くするためのスコアボードチーム名（バニラの GLOWING 縁取りはチーム色で決まる） */
+    private static final String BATTLE_GLOW_TEAM = "thkaguya_battle_glow";
+
+    /** 交戦開始：発光を有効にし、縁取りを青チーム色へ（標準の縁取りは白） */
+    protected void applyBattleGlow()
+    {
+        if(!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
+        {
+            return;
+        }
+        // 自然スポーン以外（スポーンエッグ・コマンド）でも光らせる
+        if(!this.hasEffect(MobEffects.GLOWING))
+        {
+            this.addEffect(new MobEffectInstance(MobEffects.GLOWING, -1, 0, false, false));
+        }
+
+        net.minecraft.world.scores.Scoreboard scoreboard = serverLevel.getScoreboard();
+        net.minecraft.world.scores.PlayerTeam team = scoreboard.getPlayerTeam(BATTLE_GLOW_TEAM);
+        if(team == null)
+        {
+            team = scoreboard.addPlayerTeam(BATTLE_GLOW_TEAM);
+            team.setColor(net.minecraft.ChatFormatting.BLUE);
+        }
+        if(scoreboard.getPlayersTeam(this.getScoreboardName()) != team)
+        {
+            scoreboard.addPlayerToTeam(this.getScoreboardName(), team);
+        }
+    }
+
+    /** 交戦終了：チームから外して縁取りを既定（白）に戻す */
+    protected void clearBattleGlow()
+    {
+        if(!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
+        {
+            return;
+        }
+        net.minecraft.world.scores.Scoreboard scoreboard = serverLevel.getScoreboard();
+        if(scoreboard.getPlayersTeam(this.getScoreboardName()) != null)
+        {
+            scoreboard.removePlayerFromTeam(this.getScoreboardName());
+        }
     }
 
     /** 飞行怪不掉落伤害（1.20.1 无 checkFallDamage，重写 causeFallDamage） */

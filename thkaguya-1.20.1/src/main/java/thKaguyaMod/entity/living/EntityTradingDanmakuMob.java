@@ -126,6 +126,7 @@ public abstract class EntityTradingDanmakuMob extends EntityDanmakuMob implement
         this.setHealth(maxHealth);
 
         thKaguyaMod.THShotLib.danmakuRemove(this, 40.0D, "Enemy", true);
+        this.clearBattleGlow();
         this.startDiscount(discountDuration);
     }
 
