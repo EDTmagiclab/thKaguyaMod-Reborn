@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "thkaguya:item/oval_shot",
-    "layer1": "thkaguya:item/oval_shot_2"
-  }
-}

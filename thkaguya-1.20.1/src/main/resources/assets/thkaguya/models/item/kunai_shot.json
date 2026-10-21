@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "thkaguya:item/kunai_shot",
-    "layer1": "thkaguya:item/kunai_shot_2"
-  }
-}
