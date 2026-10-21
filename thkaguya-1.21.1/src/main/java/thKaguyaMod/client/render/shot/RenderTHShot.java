@@ -13,9 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.client.model.shot.ModelSilverKnife;
@@ -1036,60 +1033,6 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
     }
 
     /**
-     * ステッカー平面のロール角度（度）。
-     *
-     * <p>カメラ空間（billboard 平面）での弾の速度ベクトルを求め、平面の +Y（刃先方向）を
-     * その方向へ一致させるための Z 回転角を返す。
-     */
-    private float screenRollDegrees(EntityTHShot entity)
-    {
-        double vx = entity.getX() - entity.xOld;
-        double vy = entity.getY() - entity.yOld;
-        double vz = entity.getZ() - entity.zOld;
-        if (vx * vx + vy * vy + vz * vz < 1.0E-8D)
-        {
-            Vec3 motion = entity.getDeltaMovement();
-            vx = motion.x;
-            vy = motion.y;
-            vz = motion.z;
-            if (vx * vx + vy * vy + vz * vz < 1.0E-8D)
-            {
-                return 0.0F;
-            }
-        }
-        Quaternionf cam = this.entityRenderDispatcher.cameraOrientation();
-        Vector3f right = cam.transform(new Vector3f(1.0F, 0.0F, 0.0F));
-        Vector3f up = cam.transform(new Vector3f(0.0F, 1.0F, 0.0F));
-        double dx = vx * right.x + vy * right.y + vz * right.z;
-        double dy = vx * up.x + vy * up.y + vz * up.z;
-        return (float) (Math.atan2(-dx, dy) * (180.0D / Math.PI));
-    }
-
-    /** ステッカー平面の刀身（三角形を退化四角形で描く） */
-    private static void stickerBlade(VertexConsumer consumer, PoseStack.Pose pose,
-                                     float halfWidth, float tipY, float baseY,
-                                     int r, int g, int b, int a)
-    {
-        quad(consumer, pose, r, g, b, a,
-                -halfWidth, baseY, 0.0F, 0.50F, 1.0F,
-                0.0F, tipY, 0.0F, 0.25F, 0.0F,
-                halfWidth, baseY, 0.0F, 0.00F, 1.0F,
-                halfWidth, baseY, 0.0F, 0.00F, 1.0F);
-    }
-
-    /** ステッカー平面の柄 + 環 */
-    private static void stickerHandle(VertexConsumer consumer, PoseStack.Pose pose,
-                                      float halfWidth, float frontY, float backY, float v0,
-                                      int r, int g, int b, int a)
-    {
-        quad(consumer, pose, r, g, b, a,
-                halfWidth, frontY, 0.0F, 0.50F, v0,
-                -halfWidth, frontY, 0.0F, 0.75F, v0,
-                -halfWidth, backY, 0.0F, 0.75F, 1.0F,
-                halfWidth, backY, 0.0F, 0.50F, 1.0F);
-    }
-
-    /**
      * クナイ / 矢 の共通形状（原版 renderKunaiShot / renderArrowShot は柄の長さと柄 UV だけが違う）。
      *
      * @param root      柄の先端 Z
@@ -1104,27 +1047,26 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        // 貼り付け（ステッカー）方式：カード平面を常にカメラへ正対させ、
-        // スクリーン上の進行方向へロールさせる。
-        // 1.7.10 の立体カード（水平面）は真後ろから見ると環が真横になり見えなくなるため。
-        poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        poseStack.mulPose(Axis.ZP.rotationDegrees(screenRollDegrees(entity)));
+        // 姿勢は「従来版で正南（yaw = 0, pitch = 0）へ撃ったとき」で固定する。
+        // 発射方向に応じて yaw / pitch を回すと、見る角度によって環が真横になって見えなくなるため、
+        // どの方向へ撃っても正南発射と同じ見た目になるよう yaw / pitch の回転は行わない。
+        // （自転成分 slope だけは残す）
+        poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
 
-        // ---- 白い刀身（先端 +Y / 根元 -0.8Y / 幅 ±0.8）----
-        stickerBlade(buffer.getBuffer(THRenderTypes.cutout(texture, false)), poseStack.last(),
-                0.8F, 1.12F, -0.8F, 255, 255, 255, 255);
-        // ---- 柄 + 環（-1.0Y 〜 root、UV v は handleV0 → 1.0）----
-        stickerHandle(buffer.getBuffer(THRenderTypes.cutout(texture, false)), poseStack.last(),
-                0.6F, -1.0F, root, handleV0, 255, 255, 255, 255);
+        // ---- 白い刀身（原版は色指定なし＝白・無混合・表面描画）----
+        emitBlade(buffer.getBuffer(THRenderTypes.cutout(texture, true)), poseStack.last(),
+                0.8F, 1.12F, -0.8F, -1.0F, 0.24F, 255, 255, 255, 255);
+        // 柄（原版が明示的に両面描画へ切り替える部分）
+        emitHandle(buffer.getBuffer(THRenderTypes.cutout(texture, false)), poseStack.last(),
+                0.6F, -1.0F, root, 0.50F, handleV0, 0.75F, 255, 255, 255, 255);
 
-        // ---- 色付き外層（一回り大きい発光コピー）----
-        poseStack.pushPose();
-        poseStack.scale(1.2F, 1.2F, 1.0F);
-        stickerBlade(buffer.getBuffer(THRenderTypes.glow(texture, false, true)), poseStack.last(),
-                0.8F, 1.12F, -0.8F, COLOR_R[color], COLOR_G[color], COLOR_B[color], 255);
-        stickerHandle(buffer.getBuffer(THRenderTypes.glow(texture, false, true)), poseStack.last(),
-                0.6F, -1.0F, root, handleV0, COLOR_R[color], COLOR_G[color], COLOR_B[color], 255);
-        poseStack.popPose();
+        // ---- 色付き外層（原版は 発光混合 (ONE, ONE_MINUS_SRC_COLOR)・頂点は一回り大きい）----
+        emitBlade(buffer.getBuffer(THRenderTypes.glow(texture, true, true)), poseStack.last(),
+                1.0F, 1.4F, -0.8F, -1.0F, 0.3F,
+                COLOR_R[color], COLOR_G[color], COLOR_B[color], 255);
+        emitHandle(buffer.getBuffer(THRenderTypes.glow(texture, false, true)), poseStack.last(),
+                0.6F, -1.0F, root, 0.50F, handleV0, 0.75F,
+                COLOR_R[color], COLOR_G[color], COLOR_B[color], 255);
 
         poseStack.popPose();
     }
