@@ -4,9 +4,9 @@ license="All rights reserved"
 
 [[mods]]
 modId="thkaguya"
-version="0.1.0-beta"
+version="0.2.0-beta"
 displayName="辉夜姬的五难题·重铸"
-description="东方Project「五つの難題」伪物与东方角色物品、弹幕、妖精的追加 Mod（1.7.10 → 1.20.1 移植版，公测 0.1.0-beta）"
+description="东方Project「五つの難題」伪物与东方角色物品、弹幕、妖精的追加 Mod（1.7.10 → 1.20.1 移植版，公测 0.2.0-beta）"
 authors="thKaguyaMod (original), ported to 1.20.1"
 
 [[dependencies.thkaguya]]
