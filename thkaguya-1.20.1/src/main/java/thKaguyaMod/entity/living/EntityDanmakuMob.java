@@ -919,6 +919,9 @@ public abstract class EntityDanmakuMob extends Mob
 
         tickBossBar();
 
+        // 交戦中の青い縁取りを維持（符卡「ミラクルフルーツ」の removeAllEffects 対策）
+        this.tickBattleGlow();
+
         // 原版：符卡宣言モーション中（負値）は毎 tick +2 で 0 まで戻す。
         // モデル側は同期値を見て腕を振り上げる（クライアントでは進めない）。
         if(!this.level().isClientSide && this.getSpellCardMotion() < 0)
@@ -1107,6 +1110,7 @@ public abstract class EntityDanmakuMob extends Mob
         nbt.putByte("DetectRange", (byte)getDetectionDistance());
         nbt.putByte("Flying", getFlyingHeight());
         nbt.putShort("Special", special);
+        nbt.putBoolean("BattleGlow", this.battleGlow);
     }
 
     /** 原版 EntityDanmakuMob.readEntityFromNBT（:1725-1762）。キー名・clamp とも原版どおり。 */
@@ -1131,6 +1135,11 @@ public abstract class EntityDanmakuMob extends Mob
         if(shotColor < 0 || shotColor >= 10)
         {
             shotColor = 8;
+        }
+        // 交戦中にチャンク再読込されても青い縁取りを維持する
+        if(nbt.getBoolean("BattleGlow") && getDanmakuPattern() != NOT_ATTACK)
+        {
+            this.applyBattleGlow();
         }
     }
 
@@ -1231,22 +1240,31 @@ public abstract class EntityDanmakuMob extends Mob
         return getDanmakuPattern() == NOT_ATTACK;
     }
 
-    /** 交戦中の発光色を青くするためのスコアボードチーム名（バニラの GLOWING 縁取りはチーム色で決まる） */
+    /** 交戦中の縁取り色（バニラの GLOWING 縁取りはチーム色で決まる）を青にするためのチーム名 */
     private static final String BATTLE_GLOW_TEAM = "thkaguya_battle_glow";
 
-    /** 交戦開始：発光を有効にし、縁取りを青チーム色へ（標準の縁取りは白） */
+    /** 交戦中の縁取り維持フラグ（NBT 保存。再適用とセーブ再読込に使う） */
+    private boolean battleGlow;
+    /** 縁取りの再適用カウンタ（20 tick 間隔） */
+    private int battleGlowTimer;
+
+    /**
+     * 交戦開始：発光フラグを立て、縁取りを青チーム色へ。
+     *
+     * <p>GLOWING 効果ではなく {@code setGlowingTag(true)}（同期フラグ）を使う。早苗の
+     * 符卡「奇跡「ミラクルフルーツ」」は宣言時に {@code user.removeAllEffects()} を
+     * 呼ぶため、効果ベースだと最初の符卡で縁取りごと消えてしまう。</p>
+     */
     protected void applyBattleGlow()
     {
+        this.battleGlow = true;
+        this.battleGlowTimer = 20;
+        this.setGlowingTag(true);
+
         if(!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
         {
             return;
         }
-        // 自然スポーン以外（スポーンエッグ・コマンド）でも光らせる
-        if(!this.hasEffect(MobEffects.GLOWING))
-        {
-            this.addEffect(new MobEffectInstance(MobEffects.GLOWING, -1, 0, false, false));
-        }
-
         net.minecraft.world.scores.Scoreboard scoreboard = serverLevel.getScoreboard();
         net.minecraft.world.scores.PlayerTeam team = scoreboard.getPlayerTeam(BATTLE_GLOW_TEAM);
         if(team == null)
@@ -1260,9 +1278,12 @@ public abstract class EntityDanmakuMob extends Mob
         }
     }
 
-    /** 交戦終了：チームから外して縁取りを既定（白）に戻す */
+    /** 交戦終了：チームから外し、発光フラグを下ろして縁取りを既定（白）に戻す */
     protected void clearBattleGlow()
     {
+        this.battleGlow = false;
+        this.setGlowingTag(false);
+
         if(!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
         {
             return;
@@ -1271,6 +1292,29 @@ public abstract class EntityDanmakuMob extends Mob
         if(scoreboard.getPlayersTeam(this.getScoreboardName()) != null)
         {
             scoreboard.removePlayerFromTeam(this.getScoreboardName());
+        }
+    }
+
+    /**
+     * 毎 tick 呼ばれる縁取り維持処理。
+     *
+     * <p>交戦中は 20 tick ごとに発光フラグとチーム所属を立て直す（何かの拍子に
+     * 解除されても 1 秒以内に戻る）。パターンが {@code NOT_ATTACK} に戻ったら自動解除。</p>
+     */
+    protected void tickBattleGlow()
+    {
+        if(this.level().isClientSide || !this.battleGlow)
+        {
+            return;
+        }
+        if(getDanmakuPattern() == NOT_ATTACK)
+        {
+            this.clearBattleGlow();
+            return;
+        }
+        if(--this.battleGlowTimer <= 0)
+        {
+            this.applyBattleGlow();
         }
     }
 
