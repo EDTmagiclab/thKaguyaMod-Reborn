@@ -193,4 +193,11 @@ public class ItemOharaibouS extends Item
 	{
 		return 0;
 	}
+
+	/** 旧存档：载入时把 1.20.1 的 tag 从 {@code minecraft:custom_data} 搬进 {@code thkaguya:stack_tag}。 */
+	@Override
+	public void verifyComponentsAfterLoad(ItemStack stack)
+	{
+		THStackData.migrate(stack);
+	}
 }

@@ -145,10 +145,48 @@ public class ItemTHSpellCard extends Item
 		return false;
 	}
 
+	/**
+	 * 旧存档：物品从磁盘载入时立刻迁移，而不是等到"被读取"——否则塞在箱子里的符卡
+	 * 会先以 0 号的样子同步给客户端（图标全变梦想封印）。
+	 */
+	@Override
+	public void verifyComponentsAfterLoad(ItemStack stack)
+	{
+		THStackData.migrate(stack);
+		migrateLegacyDamage(stack);
+	}
+
+	/**
+	 * 1.20.1 旧存档：符卡编号原本在 {@code tag.Damage}，1.21 的原版 DFU 会把它搬进
+	 * {@code minecraft:damage} 组件；本物品没有耐久，{@code getDamageValue()} 会被
+	 * clamp 成 0，所以这里直接读组件、转存进 stack_tag 并清掉组件（一次性）。
+	 *
+	 * @return 迁移到的编号；没有可迁移的值时返回 -1
+	 */
+	private int migrateLegacyDamage(ItemStack itemStack)
+	{
+		Integer legacy = itemStack.get(net.minecraft.core.component.DataComponents.DAMAGE);
+		if (legacy != null && legacy > 0)
+		{
+			CompoundTag tag = THStackData.getOrCreate(itemStack);
+			tag.putInt("Damage", legacy);
+			THStackData.set(itemStack, tag);
+			itemStack.remove(net.minecraft.core.component.DataComponents.DAMAGE);
+			return legacy;
+		}
+		return -1;
+	}
+
 	/** アイテムスタックからスペルカードIDを取得する */
 	public int getSpellCardID(ItemStack itemStack)
 	{
-		return THStackData.getInt(itemStack, "Damage", 0);
+		int id = THStackData.getInt(itemStack, "Damage", -1);
+		if (id < 0)
+		{
+			id = migrateLegacyDamage(itemStack);
+			return id < 0 ? 0 : id;
+		}
+		return id;
 	}
 
 	/**

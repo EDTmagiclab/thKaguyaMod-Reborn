@@ -3,9 +3,12 @@ package thKaguyaMod;
 import java.util.function.Supplier;
 
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -44,12 +47,67 @@ public final class THStackData
 	/** @return 该堆叠上的 CompoundTag；没有就返回 null（与旧 {@code getTag()} 语义一致）。 */
 	public static CompoundTag get(ItemStack stack)
 	{
-		return stack.isEmpty() ? null : stack.get(STACK_TAG.get());
+		if (stack.isEmpty())
+		{
+			return null;
+		}
+		CompoundTag tag = stack.get(STACK_TAG.get());
+		if (tag == null)
+		{
+			// 1.20.1 旧存档的第一次读取：把旧 tag 搬进组件
+			tag = migrateLegacyTag(stack);
+		}
+		return tag;
 	}
 
 	public static boolean has(ItemStack stack)
 	{
-		return !stack.isEmpty() && stack.has(STACK_TAG.get());
+		return get(stack) != null;
+	}
+
+	/** 供 {@code Item#verifyComponentsAfterLoad} 调用的入口：走到 get() 即触发一次性迁移。 */
+	public static void migrate(ItemStack stack)
+	{
+		if (!stack.isEmpty())
+		{
+			get(stack);
+		}
+	}
+
+	/**
+	 * 1.20.1 旧存档迁移：那时的 {@code ItemStack.tag{...}} 在 1.21 被原版 DFU 拆成
+	 * 两部分——「原版认识的键」（Damage、CustomModelData、display…）进各自组件，
+	 * 「剩下的键」整体进 {@code minecraft:custom_data}。本 mod 的自由 NBT
+	 * （Number / DanmakuForm / Speed / Color / Special / Gravity / Infinity /
+	 * GapColor / Charge / mode / OriginalDamage / OriginalItemID）全在后一堆里，
+	 * 所以这里把它原样搬进 {@code thkaguya:stack_tag}。
+	 *
+	 * <p>只对「本 mod 的物品 + 还没有 stack_tag + 确实带 custom_data」执行，读取一次即完成，
+	 * 之后 {@code stack_tag} 存在就不会再进来；迁移后清掉 custom_data，避免两份数据打架。</p>
+	 *
+	 * <p>注意：{@code Damage}（符卡编号）不在这里——它被 DFU 搬去了 {@code minecraft:damage}
+	 * 组件，由 {@code ItemTHSpellCard#getSpellCardID} 单独处理。</p>
+	 */
+	private static CompoundTag migrateLegacyTag(ItemStack stack)
+	{
+		CustomData legacy = stack.get(DataComponents.CUSTOM_DATA);
+		if (legacy == null || legacy.isEmpty())
+		{
+			return null;
+		}
+		// 只动自己的物品，别碰别的 mod 写在 custom_data 里的东西
+		if (!BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals(THKaguyaCore.MODID))
+		{
+			return null;
+		}
+		CompoundTag tag = legacy.copyTag();
+		if (tag.isEmpty())
+		{
+			return null;
+		}
+		set(stack, tag);
+		stack.remove(DataComponents.CUSTOM_DATA);
+		return stack.get(STACK_TAG.get());
 	}
 
 	/** 取不到就返回一个**未挂到堆叠上**的空 CompoundTag，改完请调用 {@link #set}。 */

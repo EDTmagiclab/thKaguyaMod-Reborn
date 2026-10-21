@@ -173,4 +173,11 @@ public class ItemBloodthirstyOnmyoudama extends Item
 		// 原版 hasEffect 恒 true（常に発光）
 		return true;
 	}
+
+	/** 旧存档：载入时把 1.20.1 的 tag 从 {@code minecraft:custom_data} 搬进 {@code thkaguya:stack_tag}。 */
+	@Override
+	public void verifyComponentsAfterLoad(ItemStack stack)
+	{
+		THStackData.migrate(stack);
+	}
 }
