@@ -413,6 +413,66 @@ public abstract class EntityDanmakuMob extends Mob
     {
         this.entityData.set(DATA_FLYING_HEIGHT, (byte)height);
         this.isFlyingMode = height > 0;
+        // 原版的弹幕 MOB 把 moveEntityWithHeading 整段换成飞行物理、从不施加重力，
+        // 所以「设了飞行高度就是浮着的」是预定行为。1.20.1 用 noGravity 复刻这个前提。
+        this.setNoGravity(height > 0);
+    }
+
+    /**
+     * 飞行高度维持（原版 EntityDanmakuMob.onUpdate :915-949 的移植）。
+     *
+     * <p>从脚下往上数最多 8 格空气得到「离地高度」，然后：
+     * <ul>
+     *   <li>有目标且已高于 flyingHeight → 朝目标 Y 修正（distance * 0.0006）</li>
+     *   <li>低于 flyingHeight → motionY += 0.006，每 tick 缓慢爬升</li>
+     *   <li>正好在目标高度 → 按原版的空中拖曳 0.91 收敛</li>
+     * </ul>
+     * 原版这一段之后整帧 motion *= 0.91，因此爬升终端速度约 0.067 格/tick；
+     * 1.20.1 的 travel 只用 0.98 衰减 Y，不加这一条会一路飘到天花板。
+     *
+     * <p>原版的「下降」分支（else 里的 if (heightCount >= flyingHeight)）是到不了的死代码，故不移植。
+     */
+    protected void applyFlyingHeight()
+    {
+        if (this.stop || getFlyingHeight() <= 0 || level().isClientSide)
+        {
+            return;
+        }
+
+        int heightCount = 0;
+        net.minecraft.core.BlockPos.MutableBlockPos pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        int fx = Mth.floor(getX());
+        int fy = Mth.floor(getY());
+        int fz = Mth.floor(getZ());
+        while (heightCount < 8)
+        {
+            pos.set(fx, fy - heightCount, fz);
+            if (!level().getBlockState(pos).isAir())
+            {
+                break;
+            }
+            heightCount++;
+        }
+
+        Vec3 motion = this.getDeltaMovement();
+        double my = motion.y;
+        LivingEntity target = this.getTarget();
+
+        if (target != null && heightCount > getFlyingHeight())
+        {
+            my += (target.getY() - getY()) * 0.0006D;
+        }
+        else if (heightCount < getFlyingHeight())
+        {
+            my += 0.006D;
+        }
+        else
+        {
+            my *= 0.91D;
+        }
+
+        my = Mth.clamp(my, -0.08D, 0.08D);
+        this.setDeltaMovement(motion.x, my, motion.z);
     }
 
     /** 符卡宣言モーション（原版 #getSpellCardMotion。負値の間が「腕を振り上げ中」） */
@@ -905,6 +965,9 @@ public abstract class EntityDanmakuMob extends Mob
             }
             moveTimer--;
         }
+
+        // 原版 onUpdate 末尾の飛行高度維持
+        this.applyFlyingHeight();
 
         // ターゲットがいないなら索敵
         if(this.getTarget() == null)
