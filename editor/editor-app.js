@@ -1413,11 +1413,12 @@
       const tag = (e.target && e.target.tagName) || '';
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
-      if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
       if (mod && e.key === 's') { e.preventDefault(); save(); toast('已保存到浏览器'); return; }
       if (mod && e.key === 'e') { e.preventDefault(); openExport(); return; }
+      // 光标在输入框里时把撤销交给浏览器（它只回退文本框内容，并照常触发 input 事件写回卡对象）
       if (typing) return;
+      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
+      if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
       if (e.key === ' ') { e.preventDefault(); play(); }
       else if (e.key === 'ArrowLeft') { S.playing = false; setPlayIcon(); S.tick = Math.max(0, S.tick - 1); updateHud(); drawFrame(); }
       else if (e.key === 'ArrowRight') { S.playing = false; setPlayIcon(); S.tick = Math.min(S.sim.maxTick | 0, S.tick + 1); updateHud(); drawFrame(); }

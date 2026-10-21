@@ -23,7 +23,10 @@ start "editor\danmaku-editor.html#moon"
 
 常用快捷键：`空格` 播放暂停、`←/→` 单 tick 步进、`Home/End` 跳到首尾、
 `Ctrl+Z / Ctrl+Shift+Z` 撤销重做、`Ctrl+S` 立即存档、`Ctrl+E` 打开导出。
+（光标在输入框里时 `Ctrl+Z` 交给浏览器，只回退正在编辑的那一格。）
 画布上按住拖动转相机、滚轮缩放视角。
+
+「导入」页签既可以直接粘贴 JSON，也可以点「选文件…」读一个 `.json`（带 BOM 的文件也能读）。
 
 ## 文件构成
 
@@ -33,13 +36,13 @@ start "editor\danmaku-editor.html#moon"
 | `presets.js` | 8 张示例符卡（含复刻自 `json-spellcards/` 的 46/47/48 号）。编辑器、预览渲染、自检共用这一份。 |
 | `editor-app.js` | 界面层：三栏布局、画布、时间轴、表单、撤销、`localStorage` 存档、导出弹窗。 |
 | `danmaku-editor.html` | 外壳：CSS + DOM，只负责按顺序加载上面三个脚本。 |
-| `test-core.js` | 核心层断言（147 项）：几何/物理/表达式/Schema 往返/Java 生成/全部预设。 |
+| `test-core.js` | 核心层断言（168 项）：几何/物理/表达式/Schema 往返/Java 生成/全部预设。 |
 | `test-ui.js` | 界面层冒烟（87 项）：手写 DOM 桩 + `node:vm` 把界面真跑一遍。 |
 | `render-preview.js` | 离线出图：把仿真结果光栅化成 PNG，用来肉眼检查弹幕形状。 |
 | `verify-java.js` | 把生成的 Java 拿去**真编译**：所有预设 + 一张覆盖 18 个 op 的合成卡 + 一张表达式压力卡，用 mod 自己的 classpath 跑 `javac`。 |
 
 ```bash
-node editor/test-core.js        # 核心层 147 项
+node editor/test-core.js        # 核心层 168 项
 node editor/test-ui.js          # 界面层 87 项
 node editor/render-preview.js saikou    # 出 4 帧预览图 out-saikou.png
 node editor/render-preview.js --all     # 所有预设各出一张
