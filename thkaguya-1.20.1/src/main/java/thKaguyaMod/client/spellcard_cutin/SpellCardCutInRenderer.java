@@ -106,7 +106,7 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
 
     /** 番号が範囲外／未実装のときに使う「空のカード枠」。 */
     private static final ResourceLocation FALLBACK_TEXTURE =
-            new ResourceLocation("thkaguya", "textures/item/spellcard/spellcard_frame.png");
+            cardTexture("textures/item/spellcard/spellcard_frame.png");
 
     /** 番号 → 実際の ResourceLocation（遅延生成してキャッシュ）。 */
     private static final ResourceLocation[] TEXTURE_CACHE = new ResourceLocation[CARD_TEXTURES.length];
@@ -117,6 +117,15 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
 
     @Override
     public void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int width, int height)
+    {
+        renderCutIn(graphics, width, height);
+    }
+
+    /**
+     * 演出本体。版ごとに違うのは呼び出し口（{@code IGuiOverlay} か {@code LayeredDraw.Layer} か）と
+     * その引数だけで、この中身は 1.20.1 / 1.21.1 で同じものがそのまま動く。
+     */
+    private void renderCutIn(GuiGraphics graphics, int width, int height)
     {
         if (!THKaguyaConfig.enableSpellCardCutIn)
         {
@@ -216,6 +225,9 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
             return;
         }
 
+        // 窓の上端を「下から上へ」広げる＝せり上がって見える。
+        // 半身像そのものには透明度をかけられない（原版の実体描画が α=1 で塗るため）ので、
+        // 露出量で出現を表現する。
         float rise = easeOutCubic(raw);
 
         int boxWidth = Math.min(96, Math.round(width * 0.22F));
@@ -225,28 +237,8 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
         int left = right - boxWidth;
         int top = bottom - boxHeight;
 
-        // 窓の上端を「下から上へ」広げる＝せり上がって見える。
-        // 半身像そのものには透明度をかけられない（原版の実体描画が α=1 で塗るため）ので、
-        // 露出量で出現を表現する。
-        int windowTop = Math.round(Mth.lerp(rise, bottom, top));
-        windowTop = Mth.clamp(windowTop, top, bottom);
-
-        graphics.flush();
-        graphics.enableScissor(left, windowTop, right, bottom);
-
-        int footX = (left + right) / 2;
-        int footY = bottom + Math.round(boxHeight * 0.10F);
-        int scale = Math.round(boxHeight * 0.58F);
-        try
-        {
-            EntityBustRenderer.render(graphics, footX, footY, scale, living);
-        }
-        finally
-        {
-            // 実体描画が万一失敗しても scissor を開いたままにしない
-            // （開いたままだと以降の HUD が全部切り取られる）
-            graphics.disableScissor();
-        }
+        // 足元座標・拡大率・切り抜きは EntityBustRenderer が吸収する（版ごとに API が違うため）
+        EntityBustRenderer.render(graphics, left, top, right, bottom, rise, living);
     }
 
     private void drawName(GuiGraphics graphics, Minecraft minecraft, int centerX, int height,
@@ -291,6 +283,12 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
     /* 補助                                                                */
     /* ------------------------------------------------------------------ */
 
+    /** リソース位置の作り方が版ごとに違うので、ここだけ差し替える（1.21.1 は fromNamespaceAndPath）。 */
+    private static ResourceLocation cardTexture(String path)
+    {
+        return new ResourceLocation("thkaguya", path);
+    }
+
     private static ResourceLocation textureOf(int cardNo)
     {
         if (cardNo < 0 || cardNo >= CARD_TEXTURES.length || CARD_TEXTURES[cardNo] == null)
@@ -300,8 +298,7 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
         ResourceLocation cached = TEXTURE_CACHE[cardNo];
         if (cached == null)
         {
-            cached = new ResourceLocation("thkaguya",
-                    "textures/item/spellcard/" + CARD_TEXTURES[cardNo] + ".png");
+            cached = cardTexture("textures/item/spellcard/" + CARD_TEXTURES[cardNo] + ".png");
             TEXTURE_CACHE[cardNo] = cached;
         }
         return cached;
