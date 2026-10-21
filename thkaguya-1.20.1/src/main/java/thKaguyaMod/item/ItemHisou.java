@@ -125,7 +125,14 @@ public class ItemHisou extends SwordItem
 			// 緋想の剣本体を出現させる（原版：damage に現在の損傷値を渡す）
 			EntityHisou hisou_0 = new EntityHisou(level, player, null, 7 + 1, itemStack.getDamageValue());
 			level.addFreshEntity(hisou_0);
-			itemStack.shrink(1);
+			// クリエイティブでは消費しない（1.7.10 原版は無条件に stackSize-- だったが、
+			// 1.20.1 ではスロット再同期が無く「手に残っている」ように見えていた。
+			// 1.21.1 では ServerPlayerGameMode が sendAllDataToRemote するため消えて見える。
+			// 両バージョンの見た目と操作感を揃えるため、クリエイティブは非消費で統一）。
+			if(!player.isCreative())
+			{
+				itemStack.shrink(1);
+			}
 
 			// 残像を 7 つ出現させる
 			for(int i = 0; i < 7; i++)
