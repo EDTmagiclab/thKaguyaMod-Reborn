@@ -103,6 +103,9 @@ node editor/verify-java.js              # 生成的 Java 是否真的能编译
 - **JSON**：`符卡JSON设计文档.md` 的 Schema 1.0（蛇形字段、嵌套 `spread`/`spray`、`when` 四种写法、
   `vars`/`specials`/`notes`/`circle_color`）。**可以反向导入**：把 `json-spellcards/` 里的卡丢进
   「导入」页签就能继续编辑，导出再导入是幂等的。
+  注意：mod 里目前**没有** JSON 解释器，JSON 是设计/交换格式，真正能被游戏加载的是 Java 类。
+- 生成的 `.java` 末尾会附一段注释，直接给出要贴进 `THKaguyaCore.java` 的
+  `SpellCardRegistry.registerSpellCard(...)` 那一行（含 id 与卡面贴图路径）——不然类写好了也进不了游戏。
 - **Markdown**：事件表 + 问题清单，贴进 issue / PR 说明用。
 - 打开页面时自动存档到 `localStorage`（键名 `thkaguya.dmk.v1`），刷新不丢；「新建」清空重来。
 

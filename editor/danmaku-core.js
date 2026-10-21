@@ -1276,6 +1276,17 @@
       lines.push('    }');
     }
     lines.push('}');
+    // 光有类文件还不会出现在游戏里：把注册那一行也写出来，省得每次翻 THKaguyaCore
+    const id = card.id === undefined || card.id === null || card.id === '' ? 0 : (Number(card.id) | 0);
+    const regName = slug || cls.replace(/^THSC_/, '');
+    lines.push('');
+    lines.push('/*');
+    lines.push(' * 注册（贴进 THKaguyaCore.java 的 registerSpellCard 列表；id 必须唯一，重号会被 idCheck 静默丢掉）：');
+    lines.push(' *   thKaguyaMod.registry.SpellCardRegistry.registerSpellCard(');
+    lines.push(' *       ' + cls + '.class, "thkaguyamod", "' + regName + '", ' + id + ');');
+    lines.push(' * 卡面贴图：assets/thkaguya/textures/item/spellcard/' + regName + '.png');
+    lines.push(' * 名字/等级/时间已经在构造函数里设好，注册完给对应的符卡道具就能用。');
+    lines.push(' */');
     return lines.join('\n');
   }
 

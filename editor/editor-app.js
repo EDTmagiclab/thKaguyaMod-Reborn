@@ -1418,12 +1418,18 @@
     // 支持 danmaku-editor.html#moon 这种「直接打开某个预设」的链接（调试 / 分享用）
     const hashKey = String((typeof location !== 'undefined' && location.hash) || '').replace(/^#/, '');
     const saved = hashKey && PRESETS[hashKey] ? null : restore();
+    let loaded = false;
     if (saved && saved.card && Array.isArray(saved.card.events)) {
-      S.card = normalizeCard(saved.card);
-      S.presetKey = saved.presetKey || '';
-      if (saved.cam) S.cam = saved.cam;
-      S.tick = saved.tick | 0;
-    } else {
+      // 存档可能是旧版本 / 手改坏的：解析失败就退回预设，别让页面白屏
+      try {
+        S.card = normalizeCard(saved.card);
+        S.presetKey = saved.presetKey || '';
+        if (saved.cam) S.cam = saved.cam;
+        S.tick = saved.tick | 0;
+        loaded = true;
+      } catch (e) { loaded = false; }
+    }
+    if (!loaded) {
       const first = (hashKey && PRESETS[hashKey]) ? hashKey : (PRESETS.saikou ? 'saikou' : Object.keys(PRESETS)[0]);
       S.card = first ? normalizeCard(clone(PRESETS[first].card)) : blankCard();
       S.presetKey = first || '';
