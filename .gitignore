@@ -53,3 +53,10 @@ _tmp_b1.md
 *.md
 !README.md
 index.html
+
+# ===== editor/ 工具的说明文档要进版本库 =====
+!editor/README.md
+
+# ===== 本地启动器产物（PCL2 / 原版启动器 profile），不进仓库 =====
+PCL.ini
+launcher_profiles.json

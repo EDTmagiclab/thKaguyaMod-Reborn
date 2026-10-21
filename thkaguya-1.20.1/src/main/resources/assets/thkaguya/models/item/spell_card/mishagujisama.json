@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "thkaguya:item/spellcard/mishagujisama",
-    "layer1": "thkaguya:item/spellcard/spellcard_lv3"
-  }
-}

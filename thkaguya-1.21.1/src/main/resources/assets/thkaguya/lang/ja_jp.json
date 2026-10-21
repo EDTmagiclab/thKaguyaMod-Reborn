@@ -239,5 +239,6 @@
   "gui.thkaguya.miracle_mallet.title": "妖器化",
   "config.thkaguya.sanae_boss_fight": "早苗の弾幕戦を有効にする：%s",
   "config.thkaguya.sakuya_boss_fight": "咲夜の弾幕戦を有効にする：%s",
-  "message.thkaguya.boss_battle_reward": "早苗は挑戦を受けた！スペルカードを入手：%s"
+  "message.thkaguya.boss_battle_reward": "早苗は挑戦を受けた！スペルカードを入手：%s",
+  "message.thkaguya.merchant_discount": "「%s」は降参した！%s 分間、取引はすべて半額。"
 }

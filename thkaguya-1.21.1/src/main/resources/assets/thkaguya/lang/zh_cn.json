@@ -239,5 +239,6 @@
   "gui.thkaguya.miracle_mallet.title": "妖器化",
   "config.thkaguya.sanae_boss_fight": "启用早苗弹幕战：%s",
   "config.thkaguya.sakuya_boss_fight": "启用咲夜弹幕战：%s",
-  "message.thkaguya.boss_battle_reward": "早苗接受了你的挑战！获得符卡：%s"
+  "message.thkaguya.boss_battle_reward": "早苗接受了你的挑战！获得符卡：%s",
+  "message.thkaguya.merchant_discount": "「%s」认输了！接下来 %s 分钟，全部交易五折。"
 }

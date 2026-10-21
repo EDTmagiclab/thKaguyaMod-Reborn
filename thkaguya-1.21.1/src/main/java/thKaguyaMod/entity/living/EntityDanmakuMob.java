@@ -932,6 +932,9 @@ public abstract class EntityDanmakuMob extends Mob
 
         tickBossBar();
 
+        // 交戦中の青い縁取りを維持（符卡「ミラクルフルーツ」の removeAllEffects 対策）
+        this.tickBattleGlow();
+
         // 原版：符卡宣言モーション中（負値）は毎 tick +2 で 0 まで戻す。
         // モデル側は同期値を見て腕を振り上げる（クライアントでは進めない）。
         if(!this.level().isClientSide && this.getSpellCardMotion() < 0)
@@ -960,8 +963,14 @@ public abstract class EntityDanmakuMob extends Mob
             double moveRate = Math.cos((double)moveTimer / (double)moveTimerMax * Math.PI / 2.0D);
             if(!level().isClientSide)
             {
-                Vec3 motion = this.getDeltaMovement();
-                this.setDeltaMovement(motion.add(moveVec.x * moveRate, moveVec.y * moveRate, moveVec.z * moveRate));
+                // 1.7.10 原版ここは moveEntity（＝その場の変位）で、速度には足していない。
+                // 1.20.1 で deltaMovement に加算すると「毎 tick 足す＋摩擦 0.91」になり、
+                // 終端速度が単発変位の約 10 倍まで育つ。早苗の非符は danmaku01 が毎 tick
+                // setStopStart() で moveTimer を 0 に戻すため、毎 tick 追撃されて
+                // ~2.8 格/tick（約 56m/s）まで加速し、数秒で最寄りプレイヤーから 128 格
+                // 離れて despawn していた（＝「打到一半消失」）。
+                this.move(net.minecraft.world.entity.MoverType.SELF,
+                        new Vec3(moveVec.x * moveRate, moveVec.y * moveRate, moveVec.z * moveRate));
             }
             moveTimer--;
         }
@@ -1114,6 +1123,7 @@ public abstract class EntityDanmakuMob extends Mob
         nbt.putByte("DetectRange", (byte)getDetectionDistance());
         nbt.putByte("Flying", getFlyingHeight());
         nbt.putShort("Special", special);
+        nbt.putBoolean("BattleGlow", this.battleGlow);
     }
 
     /** 原版 EntityDanmakuMob.readEntityFromNBT（:1725-1762）。キー名・clamp とも原版どおり。 */
@@ -1138,6 +1148,11 @@ public abstract class EntityDanmakuMob extends Mob
         if(shotColor < 0 || shotColor >= 10)
         {
             shotColor = 8;
+        }
+        // 交戦中にチャンク再読込されても青い縁取りを維持する
+        if(nbt.getBoolean("BattleGlow") && getDanmakuPattern() != NOT_ATTACK)
+        {
+            this.applyBattleGlow();
         }
     }
 
@@ -1221,7 +1236,99 @@ public abstract class EntityDanmakuMob extends Mob
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 thKaguyaMod.init.THKaguyaSounds.SPELL_CARD.get(),
                 net.minecraft.sounds.SoundSource.HOSTILE, THKaguyaConfig.SpellCardVol, 1.0F);
+        this.applyBattleGlow();
         return true;
+    }
+
+    /**
+     * 交戦中はプレイヤーから離れても消えない。
+     *
+     * <p>1.20.1 の {@code Mob#checkDespawn} は最寄りプレイヤーから 128 格離れると discard する。
+     * 移動速度が速い boss（早苗など）が戦闘中に距離を取る／吹き飛ばされるだけで
+     * 消えてしまうのを防ぐ。非交戦時は従来どおり自然消滅に任せる。</p>
+     */
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer)
+    {
+        return getDanmakuPattern() == NOT_ATTACK;
+    }
+
+    /** 交戦中の縁取り色（バニラの GLOWING 縁取りはチーム色で決まる）を青にするためのチーム名 */
+    private static final String BATTLE_GLOW_TEAM = "thkaguya_battle_glow";
+
+    /** 交戦中の縁取り維持フラグ（NBT 保存。再適用とセーブ再読込に使う） */
+    private boolean battleGlow;
+    /** 縁取りの再適用カウンタ（20 tick 間隔） */
+    private int battleGlowTimer;
+
+    /**
+     * 交戦開始：発光フラグを立て、縁取りを青チーム色へ。
+     *
+     * <p>GLOWING 効果ではなく {@code setGlowingTag(true)}（同期フラグ）を使う。早苗の
+     * 符卡「奇跡「ミラクルフルーツ」」は宣言時に {@code user.removeAllEffects()} を
+     * 呼ぶため、効果ベースだと最初の符卡で縁取りごと消えてしまう。</p>
+     */
+    protected void applyBattleGlow()
+    {
+        this.battleGlow = true;
+        this.battleGlowTimer = 20;
+        this.setGlowingTag(true);
+
+        if(!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
+        {
+            return;
+        }
+        net.minecraft.world.scores.Scoreboard scoreboard = serverLevel.getScoreboard();
+        net.minecraft.world.scores.PlayerTeam team = scoreboard.getPlayerTeam(BATTLE_GLOW_TEAM);
+        if(team == null)
+        {
+            team = scoreboard.addPlayerTeam(BATTLE_GLOW_TEAM);
+            team.setColor(net.minecraft.ChatFormatting.BLUE);
+        }
+        if(scoreboard.getPlayersTeam(this.getScoreboardName()) != team)
+        {
+            scoreboard.addPlayerToTeam(this.getScoreboardName(), team);
+        }
+    }
+
+    /** 交戦終了：チームから外し、発光フラグを下ろして縁取りを既定（白）に戻す */
+    protected void clearBattleGlow()
+    {
+        this.battleGlow = false;
+        this.setGlowingTag(false);
+
+        if(!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
+        {
+            return;
+        }
+        net.minecraft.world.scores.Scoreboard scoreboard = serverLevel.getScoreboard();
+        if(scoreboard.getPlayersTeam(this.getScoreboardName()) != null)
+        {
+            scoreboard.removePlayerFromTeam(this.getScoreboardName());
+        }
+    }
+
+    /**
+     * 毎 tick 呼ばれる縁取り維持処理。
+     *
+     * <p>交戦中は 20 tick ごとに発光フラグとチーム所属を立て直す（何かの拍子に
+     * 解除されても 1 秒以内に戻る）。パターンが {@code NOT_ATTACK} に戻ったら自動解除。</p>
+     */
+    protected void tickBattleGlow()
+    {
+        if(this.level().isClientSide || !this.battleGlow)
+        {
+            return;
+        }
+        if(getDanmakuPattern() == NOT_ATTACK)
+        {
+            this.clearBattleGlow();
+            return;
+        }
+        if(--this.battleGlowTimer <= 0)
+        {
+            this.applyBattleGlow();
+        }
     }
 
     /** 飞行怪不掉落伤害（1.20.1 无 checkFallDamage，重写 causeFallDamage） */
