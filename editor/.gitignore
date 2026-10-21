@@ -1,9 +1,0 @@
-# 无头 Chrome / 截图临时 profile（本地产物，勿入库）
-.chrome/
-chrome.log
-
-# render-preview.js 生成的 4 格预览图（随时可重跑）
-out-*.png
-
-# 导出/中转的临时工程文件
-*.tmp.json
