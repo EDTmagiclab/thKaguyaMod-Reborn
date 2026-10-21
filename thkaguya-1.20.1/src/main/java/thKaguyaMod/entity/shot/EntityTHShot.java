@@ -233,6 +233,16 @@ public class EntityTHShot extends Entity
     /** 角度更新 */
     public void updateAngle()
     {
+        // 1.7.10 原版 EntityTHShot.java:495-500 把这段整体包在 if(!worldObj.isRemote) 里：
+        // 客户端的 rotationYaw / rotationPitch 只信网络同步，不本地重算。
+        // 客户端没有 angle / lastShotMotion 的同步，deltaMovement 每 tick 被 tick() 重置为 (0,0,0)，
+        // 若无条件执行会得到 atan2(0,0)=0，把客户端朝向压成
+        // 「正南 + 水平」，于是苦无 / 箭 / 银刀 / 符札 / 米弹 / 椭圆弹 / 结晶弹
+        // 在客户端全部不转向。
+        if (level().isClientSide)
+        {
+            return;
+        }
         Vec3 m = getDeltaMovement();
         float f = (float)Math.sqrt(m.x * m.x + m.z * m.z);
         this.setYRot((float)((Math.atan2(m.x, m.z) * 180D) / Math.PI));
