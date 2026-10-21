@@ -486,7 +486,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
         poseStack.mulPose(Axis.ZP.rotationDegrees(wingAngle));
 
@@ -542,7 +543,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
 
         VertexConsumer consumer = buffer.getBuffer(THRenderTypes.cutout(TEX_TALISMAN, false));
@@ -567,7 +569,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - (float) anim * 23.0F));
 
@@ -706,7 +709,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
 
         VertexConsumer consumer = buffer.getBuffer(THRenderTypes.additiveCull(TEX_STAR));
 
@@ -761,7 +765,7 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw + 180.0F));
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
 
         // 白芯（原版未開混合 = alpha test、-0.85 は z オフセット、color=7 は白）
@@ -789,7 +793,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
         int zDivNum = 5;
 
         poseStack.pushPose();
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.scale(size, size, size);
 
         ricePart(buffer.getBuffer(THRenderTypes.cutout(TEX_LASER, true)), poseStack.last(),
@@ -816,7 +821,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
 
         ovalPart(buffer.getBuffer(THRenderTypes.cutout(TEX_LASER, true)), poseStack.last(),
                 length * 0.8D, width * 0.8F, zPos + length * 0.1D, zAngleDivNum, zDivNum, 7, 1.0F);
@@ -996,7 +1002,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
 
         VertexConsumer consumer = buffer.getBuffer(THRenderTypes.cutout(getKnifeTexture(color), true));
@@ -1031,19 +1038,6 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
      * @param root      柄の先端 Z
      * @param handleV0  柄 UV の v 開始（クナイ 0.375 / 矢 0.0）
      */
-    /**
-     * 弾の +Z（刀身の先端側）を進行方向（yaw/pitch）に一致させる。
-     *
-     * <p>1.7.10 原版は {@code GL11.glRotatef(yaw, 0, 1, 0)} + {@code glRotatef(-pitch, 1, 0, 0)} だが、
-     * Minecraft の yaw 規約ではこの組み合わせは「鏡像」になり、東西（yaw ±90）で 180° 反転する
-     * （南北だけ正しく見える）。{@code R_y(-yaw) * R_x(+pitch)} が正しい。
-     */
-    private static void alignToFlight(float yaw, float pitch, PoseStack poseStack)
-    {
-        poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
-        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
-    }
-
     private void renderBladeAndHandle(EntityTHShot entity, ResourceLocation texture, float root,
                                       float handleV0, float yaw, float pitch, float slope,
                                       PoseStack poseStack, MultiBufferSource buffer)
@@ -1053,7 +1047,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        alignToFlight(yaw, pitch, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
 
         // ---- 白い刀身（原版は色指定なし＝白・無混合・表面描画）----
