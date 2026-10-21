@@ -22,6 +22,8 @@ public class ModelReimu<T extends EntityDanmakuMob> extends EntityModel<T>
     private final ModelPart bipedLeftArm;
     private final ModelPart bipedRightLeg;
     private final ModelPart bipedLeftLeg;
+    private final ModelPart skirtTop;
+    private final ModelPart skirtBottom;
 
     public ModelReimu(ModelPart root)
     {
@@ -32,6 +34,8 @@ public class ModelReimu<T extends EntityDanmakuMob> extends EntityModel<T>
         this.bipedLeftArm = root.getChild("bipedBody").getChild("bipedLeftArm");
         this.bipedRightLeg = root.getChild("bipedBody").getChild("bipedRightLeg");
         this.bipedLeftLeg = root.getChild("bipedBody").getChild("bipedLeftLeg");
+        this.skirtTop = root.getChild("bipedBody").getChild("skirtTop");
+        this.skirtBottom = this.skirtTop.getChild("skirtBottom");
     }
 
     public static LayerDefinition createBodyLayer()
@@ -97,11 +101,57 @@ public class ModelReimu<T extends EntityDanmakuMob> extends EntityModel<T>
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch)
     {
-        if(bipedHead != null) { bipedHead.yRot = netHeadYaw * (float)Math.PI / 180F; bipedHead.xRot = headPitch * (float)Math.PI / 180F; }
-        if(bipedRightArm != null) { bipedRightArm.xRot = Mth.cos(limbSwing) * 0.7F * limbSwingAmount; }
-        if(bipedLeftArm != null) { bipedLeftArm.xRot = Mth.cos(limbSwing) * 0.7F * limbSwingAmount; }
-        if(bipedRightLeg != null) { bipedRightLeg.xRot = Mth.cos(limbSwing + (float)Math.PI) * 0.7F * limbSwingAmount; }
-        if(bipedLeftLeg != null) { bipedLeftLeg.xRot = Mth.cos(limbSwing + (float)Math.PI) * 0.7F * limbSwingAmount; }
+        // 原版 setRotationAngles の再現（Mth.cos(limbSwing * 0.6662F)）
+        final float swing = limbSwing * 0.6662F;
+        final float armZ = 30 / 180F * (float)Math.PI;
+
+        bipedHead.yRot = netHeadYaw * (float)Math.PI / 180F;
+        bipedHead.xRot = headPitch * (float)Math.PI / 180F;
+
+        bipedBody.xRot = 0.0F;
+        bipedBody.yRot = 0.0F;
+        bipedBody.zRot = 0.0F;
+
+        bipedRightArm.xRot = Mth.cos(swing + (float)Math.PI) * 2.0F * limbSwingAmount * 0.5F;
+        bipedLeftArm.xRot  = Mth.cos(swing) * 2.0F * limbSwingAmount * 0.5F;
+        bipedRightArm.zRot = armZ;
+        bipedLeftArm.zRot = -armZ;
+        bipedRightArm.yRot = 0.0F;
+        bipedLeftArm.yRot = 0.0F;
+
+        bipedRightLeg.xRot = Mth.cos(swing) * 0.5F * limbSwingAmount;
+        bipedLeftLeg.xRot  = Mth.cos(swing + (float)Math.PI) * 0.5F * limbSwingAmount;
+        bipedRightLeg.yRot = bipedLeftLeg.yRot = bipedRightLeg.zRot = bipedLeftLeg.zRot = 0.0F;
+
+        skirtTop.xRot = 0.0F;
+        skirtBottom.xRot = 0.0F;
+
+        if (entity.isCrouching())
+        {
+            bipedBody.yRot = Mth.cos(swing + (float)Math.PI) * 2.4F * limbSwingAmount;
+            skirtTop.yRot = bipedBody.yRot;
+            bipedRightArm.xRot = Mth.cos(swing + (float)Math.PI) * 1.4F * limbSwingAmount;
+            bipedLeftArm.xRot = Mth.cos(swing) * 1.4F * limbSwingAmount;
+            bipedHead.xRot -= 0.5F;
+        }
+        else
+        {
+            skirtTop.yRot = 0.0F;
+        }
+
+        if (entity.isPassenger())
+        {
+            bipedRightArm.xRot += -(float)Math.PI / 5F;
+            bipedLeftArm.xRot += -(float)Math.PI / 5F;
+            bipedRightLeg.xRot = -(float)Math.PI * 2F / 5F;
+            bipedLeftLeg.xRot = -(float)Math.PI * 2F / 5F;
+            bipedRightLeg.yRot = (float)Math.PI / 14F;
+            bipedLeftLeg.yRot = -(float)Math.PI / 14F;
+            bipedRightLeg.zRot = (float)Math.PI / 14F;
+            bipedLeftLeg.zRot = -(float)Math.PI / 14F;
+            skirtTop.xRot = -(float)Math.PI / 5;
+            skirtBottom.xRot = -(float)Math.PI / 4;
+        }
     }
 
     @Override

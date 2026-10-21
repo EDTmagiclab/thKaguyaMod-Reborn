@@ -1247,6 +1247,30 @@ public abstract class EntityDanmakuMob extends Mob
      *       entityDropItem(new ItemStack(THKaguyaItems.spell_card, 1, getUsingSpellCardNo()), 0.0F);
      * 即「正在放的这张符卡」，符卡编号就写在 damage 值里（ItemTHSpellCard 用 damage 决定名字）。
      */
+    /**
+     * 原版 Reimu / Sakuya / Miko 的 dropFewItems（三体逐字一致，1.7.10 :188 / :222 / :190）：
+     * 符卡攻击状态下，以 -60° 俯角环形喷出 12 个威力 + 12 个得点道具
+     * （power 起始 0°、point 起始 15°，交错铺满一圈；水平外抛约 1 格）。
+     * 原版用 EntityItem + 手写 motion，这里走已有的 dropPowerUpItem / dropPointItem。
+     */
+    protected void dropSpellCardAttackLoot()
+    {
+        if (!this.isSpellCardAttack())
+        {
+            return;
+        }
+        for (int k = 0; k < 12; k++)
+        {
+            Vec3 dir = THShotLib.getVecFromAngle(k * 30F, -60F, 1.0D);
+            this.dropPowerUpItem(this.position().add(dir.x, 0.0D, dir.z), dir);
+        }
+        for (int k = 0; k < 12; k++)
+        {
+            Vec3 dir = THShotLib.getVecFromAngle(k * 30F + 15F, -60F, 1.0D);
+            this.dropPointItem(this.position().add(dir.x, 0.0D, dir.z), dir);
+        }
+    }
+
     @Override
     protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel level, DamageSource source, boolean recentlyHit)
     {

@@ -181,4 +181,15 @@ public class EntityMiko extends EntityDanmakuMob
         }
         return damage;
     }
+
+    /**
+     * 原版 dropFewItems：符卡攻击状态倒下时喷 12 威力 + 12 得点（实现见基类 dropSpellCardAttackLoot）。
+     * 移植版此前整链缺失，三位 Boss 只掉符卡本体、不掉素材。
+     */
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit)
+    {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        this.dropSpellCardAttackLoot();
+    }
 }

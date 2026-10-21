@@ -1,8 +1,8 @@
 package thKaguyaMod.client.render.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -10,31 +10,44 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import thKaguyaMod.THKaguyaCore;
+import thKaguyaMod.client.model.shot.ModelSilverKnife;
 import thKaguyaMod.entity.item.EntitySilverKnife;
 
 /**
- * 銀のナイフの描画（1.20.1 移植版，阶段 3d-4 可见性修复）
+ * 銀のナイフ（投擲物）の描画。1.7.10 原版 {@code RenderSilverKnife} の 1:1 移植。
  *
- * 原版 RenderSilverKnife 用 ModelSilverKnife 立体模型（护手/柄/刃尖三盒）。
- * 阶段 4-6 再迁完整模型；当前用物品图标（textures/item/silver_knife_*.png，16x16
- * 完整刀形图）画沿弹道方向的细长四边形，按 knifeColor 选 4 张贴图，保留投掷朝向。
- * 注意：不能用 textures/shot/silverknife_*.png（64x32 弹幕精灵图，作 billboard 会显示展开碎片）。
+ * <p>原版は {@link ModelSilverKnife}（鍔 7×1×3 / 刀身 3×14×1 / 刀尖 1×1×1）を
+ * {@code glRotatef(180-yaw, Y) → glRotatef(-rotationPitch, X) → glRotatef(knifeZAngle, Z)}
+ * → {@code glScalef(0.5)} → {@code model.render(..., 0.0625F)} で描いていた。
+ * 移植初期は「物品アイコン（16×16）を貼った細長い quad」で代用していたが、
+ * モデル・テクスチャ（textures/shot/silverknife_*.png、64×32）とも揃っているため
+ * 本来の 3D 描画へ戻した（2026-10-21）。
+ *
+ * <p>テクスチャは必ず {@code textures/shot/} 側（64×32 の UV 展開図）。
+ * {@code textures/item/silver_knife_*.png} は 16×16 のアイコンで、UV が合わない。
+ *
+ * <p>回転は「180 - yaw」：この実体の yaw は 1.20.1 のバニラ規約（+Z 基準・反時計回り）で
+ * 入っているため、1.7.10 と同じ式をそのまま使う（弾幕の atan2 系とは別規約）。
  */
 public class RenderSilverKnife extends EntityRenderer<EntitySilverKnife>
 {
-    private static final ResourceLocation TEX_BLUE  = tex("textures/item/silver_knife_blue.png");
-    private static final ResourceLocation TEX_RED   = tex("textures/item/silver_knife_red.png");
-    private static final ResourceLocation TEX_GREEN = tex("textures/item/silver_knife_green.png");
-    private static final ResourceLocation TEX_WHITE = tex("textures/item/silver_knife_white.png");
+    private static final ResourceLocation TEX_BLUE  = tex("textures/shot/silverknife_blue.png");
+    private static final ResourceLocation TEX_RED   = tex("textures/shot/silverknife_red.png");
+    private static final ResourceLocation TEX_GREEN = tex("textures/shot/silverknife_green.png");
+    private static final ResourceLocation TEX_WHITE = tex("textures/shot/silverknife_white.png");
 
     private static ResourceLocation tex(String path)
     {
         return new ResourceLocation(THKaguyaCore.MODID, path);
     }
 
+    private final ModelPart model;
+
     public RenderSilverKnife(EntityRendererProvider.Context context)
     {
         super(context);
+        this.model = context.bakeLayer(ModelSilverKnife.LAYER_LOCATION);
+        this.shadowRadius = 0.3F; // 原版 shadowSize
     }
 
     @Override
@@ -66,27 +79,10 @@ public class RenderSilverKnife extends EntityRenderer<EntitySilverKnife>
         poseStack.scale(0.5F, 0.5F, 0.5F);
 
         ResourceLocation texture = getKnifeTexture(knife.getKnifeColor());
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
-
-        // 刀形物品图标 billboard（16x16 物品贴图，细长条比例，保留投掷朝向）
-        PoseStack.Pose pose = poseStack.last();
-        var matrix = pose.pose();
-        var normal = pose.normal();
-        float hw = 0.11F;  // 刀身宽度的一半（细长条，接近原版刀形观感）
-        float hh = 0.40F;  // 刀身长度的一半
-
-        consumer.vertex(matrix,  hw,  hh, 0.0F).color(255, 255, 255, 255)
-                .uv(1.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, -hw,  hh, 0.0F).color(255, 255, 255, 255)
-                .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix, -hw, -hh, 0.0F).color(255, 255, 255, 255)
-                .uv(0.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        consumer.vertex(matrix,  hw, -hh, 0.0F).color(255, 255, 255, 255)
-                .uv(1.0F, 1.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
-                .normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+        // 両面描画：1.7.10 は直前の GL 状態任せだったが、刃が 1/16 厚の板なので
+        // 面の向きで消える余地を残さない（刀弾 renderKnifeShot と同じ判断）。
+        this.model.render(poseStack, buffer.getBuffer(RenderType.entityCutoutNoCull(texture)),
+                packedLight, OverlayTexture.NO_OVERLAY);
 
         poseStack.popPose();
         super.render(knife, yaw, partialTick, poseStack, buffer, packedLight);
