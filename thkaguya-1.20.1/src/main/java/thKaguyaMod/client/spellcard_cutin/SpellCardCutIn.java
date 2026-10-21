@@ -1,9 +1,13 @@
 package thKaguyaMod.client.spellcard_cutin;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import thKaguyaMod.init.THKaguyaConfig;
 
 /**
@@ -29,6 +33,28 @@ public final class SpellCardCutIn
     /** 演出全体の長さ（ミリ秒）。{@link SpellCardCutInRenderer} のタイムラインと一致させること。 */
     public static final long DURATION_MS = 2000L;
 
+    /**
+     * ボスが<b>同じ符卡</b>を宣言し直したときに演出を省く時間（ミリ秒）。
+     *
+     * <p>原版のボスは符卡の {@code attackCounter} が 140 tick（7 秒）で 0 に戻るため、
+     * 同じカードを 7 秒ごとに「宣言し直す」（{@code useSpellCard} が毎回
+     * {@code EntitySpellCard} を spawn する）。演出を付ける前は弾幕がループするだけに見えていたのが、
+     * 今は 7 秒ごとに画面が暗転してしまう。そこでボスに限り、同じカードは 30 秒に 1 回だけ演じる。</p>
+     *
+     * <p>プレイヤーの宣言はこの制限を受けない（自分で撃った回数だけ演出が出る）。
+     * 実際の宣言回数・弾幕・難易度には一切影響しない、純粋に見た目側の抑制。</p>
+     */
+    private static final long BOSS_REPLAY_COOLDOWN_MS = 30_000L;
+
+    /** 卡号の収容数（原版は 0〜41）。 */
+    private static final int CARD_SLOTS = 64;
+
+    /** 追跡する宣言者の上限。超えたら丸ごと捨てる（ボスは数体しかいないので実質発動しない）。 */
+    private static final int MAX_TRACKED_CASTERS = 64;
+
+    /** 宣言者の entity id → 各カードを最後に「演じた」時刻（ミリ秒、添字＝カード番号）。 */
+    private static final Map<Integer, long[]> BOSS_SHOWN_AT = new HashMap<>();
+
     private static boolean playing = false;
     private static long startMillis = 0L;
     private static int cardNo = 0;
@@ -44,6 +70,9 @@ public final class SpellCardCutIn
      * <p>すでに上演中なら新しい要求は捨てる（ボスが複数体いても画面が重ならないように）。
      * 符卡の再宣言間隔はふつう数秒以上あるので、取りこぼしは実質起きない。</p>
      *
+     * <p>ボス（プレイヤー以外）の宣言は、同じカードを {@link #BOSS_REPLAY_COOLDOWN_MS} 以内に
+     * 宣言し直しても演じない。プレイヤーは制限なし。</p>
+     *
      * <p>発動音は原版の {@code thkaguyamod:spellcard} を鳴らしたいところだが、
      * この mod には {@code .ogg} が一本も入っていない（登録名だけがある状態）ので、
      * 代わりに原版の不死のトーテム音を借りる。将来 ogg を用意したらここを差し替えるだけでよい。</p>
@@ -58,13 +87,82 @@ public final class SpellCardCutIn
         {
             return;
         }
+
+        long now = System.currentTimeMillis();
+        boolean boss = isBossCaster(casterIdIn);
+
+        if (boss && isBossCoolingDown(casterIdIn, cardNoIn, now))
+        {
+            // ボスのカードループ（原版で 7 秒ごと）による再上演はここで黙って捨てる
+            return;
+        }
+
         cardNo = cardNoIn;
         casterId = casterIdIn;
-        startMillis = System.currentTimeMillis();
+        startMillis = now;
         playing = true;
+
+        if (boss)
+        {
+            markBossShown(casterIdIn, cardNoIn, now);
+        }
 
         Minecraft.getInstance().getSoundManager().play(
                 SimpleSoundInstance.forUI(SoundEvents.TOTEM_USE, 1.0F, 0.8F));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* ボスの再上演抑制                                                     */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * 宣言者がプレイヤーかどうか。
+     *
+     * <p>クライアントから見えない宣言者（追跡範囲外・同期前）は「ボス扱い」にして抑制側へ倒す。
+     * 見えない相手の演出で画面が埋まる方が困るため。</p>
+     */
+    private static boolean isBossCaster(int casterId)
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null)
+        {
+            return true;
+        }
+        Entity entity = minecraft.level.getEntity(casterId);
+        if (entity == null)
+        {
+            return true;
+        }
+        return !(entity instanceof Player);
+    }
+
+    private static boolean isBossCoolingDown(int casterId, int cardNoIn, long now)
+    {
+        if (cardNoIn < 0 || cardNoIn >= CARD_SLOTS)
+        {
+            return false;
+        }
+        long[] shownAt = BOSS_SHOWN_AT.get(casterId);
+        if (shownAt == null)
+        {
+            return false;
+        }
+        long last = shownAt[cardNoIn];
+        return last > 0L && now - last < BOSS_REPLAY_COOLDOWN_MS;
+    }
+
+    private static void markBossShown(int casterId, int cardNoIn, long now)
+    {
+        if (cardNoIn < 0 || cardNoIn >= CARD_SLOTS)
+        {
+            return;
+        }
+        if (BOSS_SHOWN_AT.size() > MAX_TRACKED_CASTERS)
+        {
+            BOSS_SHOWN_AT.clear();
+        }
+        long[] shownAt = BOSS_SHOWN_AT.computeIfAbsent(casterId, key -> new long[CARD_SLOTS]);
+        shownAt[cardNoIn] = now;
     }
 
     /** 上演中か（時間切れならその場で畳む）。 */
