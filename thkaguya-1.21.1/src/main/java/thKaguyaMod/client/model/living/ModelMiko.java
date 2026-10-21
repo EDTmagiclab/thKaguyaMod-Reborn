@@ -128,6 +128,26 @@ public class ModelMiko<T extends EntityDanmakuMob> extends EntityModel<T>
         final float swing = limbSwing * 0.6662F;
         final float armZ = 20 / 180F * (float)Math.PI;
 
+        // ---- 关节枢轴（原版 setDefaultPause 的 rotationPoint 覆盖）----
+        // 原版 ModelMiko 只在骑乘分支改 bipedBody.rotationPointY = -1，其余枢轴全部来自
+        // setDefaultPause：body 3 / head 0 / 手 (±3, 1) / 腿 (±2, bodyHeight=9)。
+        // 移植版把左腿的枢轴写成了 y=0（应 9），左腿会挂到腰上；一并按原版校正。
+        bipedBody.y = 3.0F;
+        bipedHead.y = 0.0F;
+        bipedRightArm.x = -3.0F;
+        bipedLeftArm.x = 3.0F;
+        bipedRightArm.y = 1.0F;
+        bipedLeftArm.y = 1.0F;
+        bipedRightLeg.x = -2.0F;
+        bipedLeftLeg.x = 2.0F;
+        bipedRightLeg.y = 9.0F;
+        bipedLeftLeg.y = 9.0F;
+
+        if (entity.isPassenger())
+        {
+            bipedBody.y = -1.0F;
+        }
+
         bipedHead.yRot = netHeadYaw * (float)Math.PI / 180F;
         bipedHead.xRot = headPitch * (float)Math.PI / 180F;
 

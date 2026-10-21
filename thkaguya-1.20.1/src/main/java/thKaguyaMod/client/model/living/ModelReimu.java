@@ -105,6 +105,38 @@ public class ModelReimu<T extends EntityDanmakuMob> extends EntityModel<T>
         final float swing = limbSwing * 0.6662F;
         final float armZ = 30 / 180F * (float)Math.PI;
 
+        // ---- 关节枢轴（原版 setDefaultPause + setRotationAngles 的 rotationPoint 覆盖）----
+        // 1.7.10 每帧先 setDefaultPause() 改一遍枢轴，setRotationAngles 再逐个覆盖；
+        // 移植时只搬了旋转角，枢轴一直停在 Techne 构造器的初值上：
+        //   裙腰 9（应 5）、裙摆 13（应 4，相对裙腰）、腿 12（应 7）、头/手 3（应 -1）。
+        // 于是裙摆比原版低了 11 像素，悬停到高处时看起来像“裙子掉到脚上”。此处逐值复刻。
+        bipedBody.y = 5.0F;              // setDefaultPause(-5) → setRotationAngles 5
+        bipedHead.y = -1.0F;             // setDefaultPause(5)  → setRotationAngles -1
+        bipedRightArm.y = -1.0F;         // setDefaultPause(6)  → setRotationAngles -1
+        bipedLeftArm.y = -1.0F;
+        bipedRightArm.x = -3.0F;
+        bipedLeftArm.x = 3.0F;
+        bipedRightLeg.x = -2.0F;
+        bipedLeftLeg.x = 2.0F;
+
+        if (entity.isPassenger())
+        {
+            bipedBody.y = -1.0F;
+            bipedRightLeg.y = 5.0F;      // 骑行：腿收到 5
+            bipedLeftLeg.y = 5.0F;
+        }
+        else
+        {
+            bipedRightLeg.y = 7.0F;      // 站立：腿放到 7
+            bipedLeftLeg.y = 7.0F;
+        }
+
+        // 裙腰 / 裙摆：原版 if / else 两个分支都写 5 与 4，值相同
+        skirtTop.y = 5.0F;
+        skirtTop.z = 0.0F;
+        skirtBottom.y = 4.0F;
+        skirtBottom.z = 0.0F;
+
         bipedHead.yRot = netHeadYaw * (float)Math.PI / 180F;
         bipedHead.xRot = headPitch * (float)Math.PI / 180F;
 
