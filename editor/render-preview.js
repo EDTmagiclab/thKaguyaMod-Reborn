@@ -1,7 +1,8 @@
 /*
  * render-preview.js — 不依赖浏览器，把 DMK 的仿真结果光栅化成 PNG（2×2 四帧）。
  * 用途：亲眼确认 create* 族生成的 3D 几何是否合理（有没有反向飞、有没有聚成一团）。
- * 用法：node render-preview.js [preset] > 见 out-preview.png
+ * 用法：node render-preview.js [预设名|--all]   → 写出 out-<预设名>.png
+ *       预设表来自 presets.js，与编辑器下拉框共用同一份数据。
  */
 const fs = require('fs');
 const zlib = require('zlib');
@@ -88,12 +89,15 @@ function frame(sim, tick, camYaw, camPitch, fov) {
   const f = (H / 2) / Math.tan(fov * Math.PI / 360);
   const cyaw = Math.cos(camYaw * Math.PI / 180), syaw = Math.sin(camYaw * Math.PI / 180);
   const cp = Math.cos(camPitch * Math.PI / 180), sp = Math.sin(camPitch * Math.PI / 180);
+  // 相机放在玩家身后 3.2 格：玩家自己发射的弹/激光从原点出发，贴脸时投影会炸开
+  const CAM = { x: 0, y: 0.25, z: -3.2 };
   function proj(p) {
-    const x1 = p.x * cyaw - p.z * syaw;
-    const z1 = p.x * syaw + p.z * cyaw;
-    const y2 = p.y * cp + z1 * sp;
-    const z2 = -p.y * sp + z1 * cp;
-    if (z2 <= 0.1) return null;
+    const x0 = p.x - CAM.x, y0 = p.y - CAM.y, z0 = p.z - CAM.z;
+    const x1 = x0 * cyaw - z0 * syaw;
+    const z1 = x0 * syaw + z0 * cyaw;
+    const y2 = y0 * cp + z1 * sp;
+    const z2 = -y0 * sp + z1 * cp;
+    if (z2 <= 0.25) return null;
     return { x: W / 2 + f * x1 / z2, y: H / 2 - f * y2 / z2, z: z2 };
   }
   // 地面网格
@@ -107,23 +111,23 @@ function frame(sim, tick, camYaw, camPitch, fov) {
     if (a && b) line(a.x, a.y, b.x, b.y, gc, 0.25, 0.45);
   }
 
-  const list = D.stateAt(sim, tick).map(s => {
+  const list = D.stateAt(sim, tick).filter(s => s.vis !== false).map(s => {
     const p = proj(s);
     return p ? { s, p } : null;
   }).filter(Boolean).sort((a, b) => b.p.z - a.p.z);
 
   // 激光
   for (const it of list) {
-    if (it.s.kind !== 'laser') continue;
+    if (!/^laser/.test(it.s.kind)) continue;
     const q = proj({ x: it.s.x + it.s.ax * it.s.length, y: it.s.y + it.s.ay * it.s.length, z: it.s.z + it.s.az * it.s.length });
     if (!q) continue;
     const col = hex2rgb(D.PALETTE[it.s.color] || '#ffffff');
-    const w = Math.max(0.6, f * it.s.width / it.p.z * 0.5);
+    const w = Math.min(26, Math.max(0.6, f * it.s.width / it.p.z * 0.5));
     line(it.p.x, it.p.y, q.x, q.y, col, 0.22, w * 2);
     line(it.p.x, it.p.y, q.x, q.y, [255, 255, 255], 0.55, w * 0.6);
   }
   for (const it of list) {
-    if (it.s.kind === 'laser') continue;
+    if (/^laser/.test(it.s.kind)) continue;
     const r = f * it.s.size * 0.5 / it.p.z;
     if (r < 0.3) continue;
     const col = hex2rgb(D.PALETTE[it.s.color] || '#ffffff');
@@ -136,44 +140,49 @@ function frame(sim, tick, camYaw, camPitch, fov) {
 }
 
 /* ---------- 组合 2×2 ---------- */
-const presets = {
-  saikou: {
-    name: '彩光乱舞', maxTick: 90, ticks: [0, 20, 40, 60], yaw: 0, pitch: 12,
-    events: [
-      { op: 'ring', when: { kind: 'range', a: 0, b: 90 }, guard: 'time % 30 < 10 && time % 2 == 1', aim: 'look', firstSpeed: 0.7, limitSpeed: 0.7, accel: 0, gy: -0.03, way: 15, distance: 0.7, ringSpan: '40 + time % 30 * 5', baseAngle: 0, shot: { form: 11, color: 'time % 4', size: 0.2, damage: 2.5, delay: 0, end: 60 } },
-      { op: 'shot', when: { kind: 'range', a: 10, b: 20 }, repeat: 6, aim: 'dir', dx: 'sin(i * 137)', dy: 'cos(i * 97)', dz: 'sin(i * 61)', firstSpeed: 1.5, limitSpeed: 0.4, accel: -0.4, shot: { form: 11, color: '7 - i % 3', size: 0.2, damage: 3.5, delay: 0, end: 50 } }
-    ]
-  },
-  spark: {
-    name: 'Master Spark', maxTick: 110, ticks: [30, 45, 60, 80], yaw: 0, pitch: 6,
-    events: [{ op: 'circle', when: { kind: 'range', a: 30, b: 99 }, aim: 'look', firstSpeed: 0, limitSpeed: 0.2, accel: 0.3, gy: '-(0.034 + 0.03 * sin(time * 6))', way: 7, baseAngle: 'time * 6', shot: { form: 9, color: 'time % 7', size: 0.4, damage: 8, delay: 0, end: 55 } }]
-  },
-  sphere: {
-    name: 'sphere way=20', maxTick: 90, ticks: [8, 20, 34, 50], yaw: 35, pitch: 10,
-    events: [{ op: 'sphere', when: { kind: 'every', a: 6, b: 80 }, aim: 'look', firstSpeed: 1.1, limitSpeed: 0.15, accel: -0.01, way: 20, distance: 0.6, baseAngle: 0, slope: 1, shot: { form: 9, color: 9, size: 'SIZE[9]', damage: 3, delay: 0, end: 70 } }]
-  },
-  ring0: {
-    name: 'ring way=16 ringSpan=0', maxTick: 60, ticks: [1, 8, 16, 26], yaw: 40, pitch: 18,
-    events: [{ op: 'ring', when: { kind: 'at', a: 0 }, aim: 'look', firstSpeed: 0.9, way: 16, distance: 1.2, ringSpan: 0, baseAngle: 0, shot: { form: 4, color: 5, size: 0.3, damage: 3, delay: 0, end: 60 } }]
-  }
-};
+const P = require('./presets.js');
 
-const which = process.argv[2] || 'saikou';
-const p = presets[which];
-const sim = D.simulate({ maxTick: p.maxTick, level: 2, events: p.events });
-console.log(which + ': shots=' + sim.shots.length + ' errors=' + sim.errors.length);
-if (sim.errors.length) console.log(sim.errors.slice(0, 3));
-
-const GW = W * 2, GH = H * 2;
-const out = Buffer.alloc(GW * GH * 3);
-p.ticks.forEach((t, i) => {
-  frame(sim, t, p.yaw, p.pitch, 74);
-  const ox = (i % 2) * W, oy = Math.floor(i / 2) * H;
-  for (let y = 0; y < H; y++) {
-    rgb.copy(out, ((oy + y) * GW + ox) * 3, y * W * 3, (y + 1) * W * 3);
+function render(which) {
+  const entry = P[which];
+  if (!entry) {
+    console.error('没有这个预设：' + which + '\n可用：' + Object.keys(P).join(', '));
+    return false;
   }
-  // 分隔线
-  console.log('  frame t=' + t + ' shots on screen=' + D.stateAt(sim, t).length);
-});
-fs.writeFileSync('out-' + which + '.png', png(GW, GH, out));
-console.log('已写出 out-' + which + '.png');
+  const card = JSON.parse(JSON.stringify(entry.card));
+  const maxTick = Math.max(1, card.maxTick | 0 || 120);
+  const yaw = card.camYaw === undefined ? 20 : card.camYaw;
+  const pitch = card.camPitch === undefined ? 12 : card.camPitch;
+  const sim = D.simulate(card);
+  // 取「场上有东西」的区间来抽 4 帧，避免后两帧空场
+  const alive = [];
+  for (let t = 0; t <= maxTick; t++) if (D.stateAt(sim, t).some(s => s.vis !== false)) alive.push(t);
+  const lo = alive.length ? alive[0] : 0;
+  const hi = alive.length ? alive[alive.length - 1] : maxTick;
+  const ticks = [0, 1, 2, 3].map(i => Math.round(lo + (hi - lo) * (i + 0.5) / 4));
+  console.log(which + '（' + (entry.label || '') + '）: shots=' + sim.shots.length +
+    ' actions=' + (sim.actions ? sim.actions.length : 0) + ' errors=' + sim.errors.length +
+    ' 存活区间=' + lo + '..' + hi);
+  if (sim.errors.length) console.log(sim.errors.slice(0, 3));
+
+  const GW = W * 2, GH = H * 2;
+  const out = Buffer.alloc(GW * GH * 3);
+  ticks.forEach((t, i) => {
+    frame(sim, t, yaw, pitch, 74);
+    const ox = (i % 2) * W, oy = Math.floor(i / 2) * H;
+    for (let y = 0; y < H; y++) {
+      rgb.copy(out, ((oy + y) * GW + ox) * 3, y * W * 3, (y + 1) * W * 3);
+    }
+    console.log('  frame t=' + t + ' 场上 ' + D.stateAt(sim, t).length + ' 个');
+  });
+  fs.writeFileSync('out-' + which + '.png', png(GW, GH, out));
+  console.log('已写出 out-' + which + '.png');
+  return true;
+}
+
+const arg = process.argv[2] || 'saikou';
+if (arg === '--all' || arg === '-a') {
+  Object.keys(P).forEach(k => render(k));
+} else {
+  const ok = render(arg);
+  if (!ok) process.exit(1);
+}
