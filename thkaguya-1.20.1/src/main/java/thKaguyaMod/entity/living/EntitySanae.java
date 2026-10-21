@@ -256,6 +256,39 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
     }
 
     /** 原版 EntitySanae.entityInit() 的 buyingList（只有 1 条交易）。 */
+    /** 戦闘に負けたときに戻す最大 HP（原版コンストラクタの 56） */
+    @Override
+    protected float merchantMaxHealth()
+    {
+        return 56.0F;
+    }
+
+    /**
+     * 実験的機能：最後の段階（ATTACK_END）で倒されたら死なずに商人へ戻る。
+     *
+     * <p>元の死亡処理（{@code super.die}）は呼ばない＝レベルや通常ドロップは出さないが、
+     * 各段階を割ったときの符卡/素材は既に {@code dropLootForPattern} で出ている。
+     * 代わりに 5 分間の五折を解放し、倒したプレイヤーにだけ通知する。</p>
+     */
+    @Override
+    public void die(net.minecraft.world.damagesource.DamageSource source)
+    {
+        if(!this.level().isClientSide && getDanmakuPattern() == ATTACK_END)
+        {
+            this.reviveAsMerchant(DISCOUNT_DURATION);
+            if(source.getEntity() instanceof Player player)
+            {
+                player.displayClientMessage(Component.translatable("message.thkaguya.merchant_discount",
+                        this.getTradeTitle(), DISCOUNT_DURATION / 1200), false);
+            }
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP,
+                    net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
+            return;
+        }
+        super.die(source);
+    }
+
     @Override
     protected MerchantOffers createOffers()
     {
@@ -263,14 +296,14 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
         // 原版：new MerchantRecipe(new ItemStack(THKaguyaItems.shot_material, 64, 0),
         //                         new ItemStack(THKaguyaItems.illness_recovery_charm, 1, 0))
         offers.add(new MerchantOffer(
-                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 64),
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), discounted(64)),
                 new ItemStack(THKaguyaItems.ILLNESS_RECOVERY_CHARM.get()),
                 7, 0, 0.0F));
         // 実験的機能：弾幕之素 32 個で「空中落物の奇跡」1 枚（＝抽選券）
         ItemStack fafrotskies = new ItemStack(THKaguyaItems.SPELL_CARD.get());
         fafrotskies.setDamageValue(EntitySpellCard.SC_SANAE_Fafrotskies_no_Kiseki);
         offers.add(new MerchantOffer(
-                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 32),
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), discounted(32)),
                 fafrotskies,
                 999, 0, 0.0F));
         return offers;

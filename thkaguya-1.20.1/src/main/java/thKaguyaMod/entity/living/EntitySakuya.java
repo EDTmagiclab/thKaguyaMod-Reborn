@@ -142,6 +142,39 @@ public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
     }
 
     /** 原版 EntitySakuya.entityInit() 的 buyingList（2 条交易）。 */
+    /** 戦闘に負けたときに戻す最大 HP（原版コンストラクタの 44） */
+    @Override
+    protected float merchantMaxHealth()
+    {
+        return 44.0F;
+    }
+
+    /**
+     * 実験的機能：最後の段階（ATTACK_END）で倒されたら死なずに商人へ戻る。
+     *
+     * <p>元の死亡処理（{@code super.die}）は呼ばない＝レベルや通常ドロップは出さないが、
+     * 各段階を割ったときの符卡/素材は既に {@code dropLootForPattern} で出ている。
+     * 代わりに 5 分間の五折を解放し、倒したプレイヤーにだけ通知する。</p>
+     */
+    @Override
+    public void die(net.minecraft.world.damagesource.DamageSource source)
+    {
+        if(!this.level().isClientSide && getDanmakuPattern() == ATTACK_END)
+        {
+            this.reviveAsMerchant(DISCOUNT_DURATION);
+            if(source.getEntity() instanceof Player player)
+            {
+                player.displayClientMessage(Component.translatable("message.thkaguya.merchant_discount",
+                        this.getTradeTitle(), DISCOUNT_DURATION / 1200), false);
+            }
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP,
+                    net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
+            return;
+        }
+        super.die(source);
+    }
+
     @Override
     protected MerchantOffers createOffers()
     {
@@ -149,13 +182,13 @@ public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
         // 原版：new MerchantRecipe(new ItemStack(THKaguyaItems.shot_material, 16, 0),
         //                         new ItemStack(THKaguyaItems.silver_knife, 1, 0))
         offers.add(new MerchantOffer(
-                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 16),
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), discounted(16)),
                 new ItemStack(THKaguyaItems.SILVER_KNIFE_BLUE.get()),
                 7, 0, 0.0F));
         // 原版：new MerchantRecipe(new ItemStack(THKaguyaItems.shot_material, 64, 0),
         //                         new ItemStack(THKaguyaItems.sakuya_stopwatch, 1, 0))
         offers.add(new MerchantOffer(
-                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), 64),
+                new ItemStack(THKaguyaItems.SHOT_MATERIAL.get(), discounted(64)),
                 new ItemStack(THKaguyaItems.SAKUYA_STOPWATCH.get()),
                 7, 0, 0.0F));
         return offers;

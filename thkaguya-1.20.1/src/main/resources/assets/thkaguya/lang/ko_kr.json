@@ -239,5 +239,6 @@
   "gui.thkaguya.miracle_mallet.title": "요기화",
   "config.thkaguya.sanae_boss_fight": "사나에 탄막전 활성화: %s",
   "config.thkaguya.sakuya_boss_fight": "사쿠야 탄막전 활성화: %s",
-  "message.thkaguya.boss_battle_reward": "사나에가 도전을 받아들였다! 스펠 카드 획득: %s"
+  "message.thkaguya.boss_battle_reward": "사나에가 도전을 받아들였다! 스펠 카드 획득: %s",
+  "message.thkaguya.merchant_discount": "\"%s\"(이)가 항복했다! 앞으로 %s분 동안 모든 거래가 반값."
 }
