@@ -1047,10 +1047,8 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
 
         poseStack.pushPose();
         poseStack.scale(size, size, size);
-        // 姿勢は「従来版で正南（yaw = 0, pitch = 0）へ撃ったとき」で固定する。
-        // 発射方向に応じて yaw / pitch を回すと、見る角度によって環が真横になって見えなくなるため、
-        // どの方向へ撃っても正南発射と同じ見た目になるよう yaw / pitch の回転は行わない。
-        // （自転成分 slope だけは残す）
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(slope));
 
         // ---- 白い刀身（原版は色指定なし＝白・無混合・表面描画）----
