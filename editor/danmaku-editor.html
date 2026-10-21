@@ -115,8 +115,9 @@ footer{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 12px;
 .tab.on{background:var(--accent-soft);color:var(--accent);border-color:#d5d5f5;font-weight:600}
 .sheet .mb{flex:1;min-height:0;position:relative}
 #export{width:100%;height:100%;border:0;padding:12px;resize:none;font:12px/1.55 var(--mono);background:#fbfcff;color:#22283a;white-space:pre}
-.import{position:absolute;inset:0;display:none;flex-direction:column;padding:10px;gap:8px}
+.import{position:absolute;inset:0;display:none;flex-direction:column;padding:10px;gap:8px;background:var(--panel)}
 .import.on{display:flex}
+.import .irow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .import textarea{flex:1;border:1px solid var(--line);border-radius:8px;padding:9px;font:12px/1.5 var(--mono);resize:none}
 .sheet .mf{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--line)}
 
@@ -238,9 +239,10 @@ footer{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 12px;
       <textarea id="export" spellcheck="false"></textarea>
       <div class="import" id="importBox">
         <textarea id="importText" spellcheck="false" placeholder="把 Schema 1.0 的符卡 JSON 粘到这里，然后点「读取」"></textarea>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div class="irow">
           <button id="btnDoImport" class="btn pri">读取并存为当前卡</button>
-          <span class="hint" style="margin:0">读取会替换当前编辑的内容（可用 Ctrl+Z 撤销）。</span>
+          <label class="btn" style="cursor:pointer">选文件…<input id="importFile" type="file" accept=".json,application/json" style="display:none"></label>
+          <span class="hint" style="margin:0">会替换当前卡（可 Ctrl+Z 撤销）</span>
         </div>
       </div>
     </div>

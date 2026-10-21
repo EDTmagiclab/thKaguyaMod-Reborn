@@ -1154,13 +1154,20 @@
     const ex = $('#export');
     const isImport = kind === 'import';
     imp.classList.toggle('on', isImport);
+    // 导入面板是绝对定位盖在文本框上的，透明时会把 Java 文本透出来 —— 直接隐藏更干净
+    ex.style.display = isImport ? 'none' : 'block';
+    // 导入页签没有可复制的产物，留着按钮会复制上一个页签的旧文本
+    ['#btnCopy', '#btnDownload'].forEach(sel => {
+      const b = $(sel);
+      if (b) b.style.display = isImport ? 'none' : '';
+    });
     if (!isImport) {
       let txt = '';
       try { txt = exportText(kind); } catch (e) { txt = '导出出错：' + e.message; }
       ex.value = txt;
       $('#exportInfo').textContent = txt.length + ' 字符';
     } else {
-      $('#exportInfo').textContent = '粘贴 JSON 后点「读取」';
+      $('#exportInfo').textContent = '';
     }
   }
 
@@ -1228,6 +1235,24 @@
     save();
     $('#modal').classList.remove('on');
     toast('已导入 ' + (S.card.name || '符卡') + '（' + S.card.events.length + ' 个事件）');
+  }
+
+  /** 「选文件…」：把 .json 读进文本框，再由 doImport 走同一条路径。 */
+  function bindImportFile() {
+    const input = $('#importFile');
+    if (!input) return;
+    input.onchange = () => {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      try {
+        const rd = new FileReader();
+        rd.onload = () => { $('#importText').value = String(rd.result || ''); };
+        rd.onerror = () => toast('读文件失败');
+        rd.readAsText(f);
+      } catch (e) {
+        toast('读文件失败：' + e.message);
+      }
+    };
   }
 
   /* ============================ 预设 ============================ */
@@ -1325,6 +1350,7 @@
       $('#importText').focus();
     };
     $('#btnDoImport').onclick = doImport;
+    bindImportFile();
     $('#btnExport').onclick = () => openExport(S.curTab === 'import' ? 'java' : S.curTab);
     $('#btnClose').onclick = () => $('#modal').classList.remove('on');
     $('#btnCopy').onclick = copyOut;

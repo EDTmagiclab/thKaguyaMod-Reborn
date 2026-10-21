@@ -361,5 +361,34 @@ console.log('\n[16] 预设自检：8 张预设都能仿真 / 校验 / 导出');
   });
 }
 
+console.log('\n[17] 导入容错：BOM / 真实 json-spellcards 全量往返');
+{
+  const fs = require('fs');
+  const path = require('path');
+  const one = D.cardToJson(JSON.parse(JSON.stringify(require('./presets.js').moon.card)));
+  ok('带 BOM 的字符串也能解析', D.cardFromJson('\uFEFF' + one).slug === 'MoonlightRayDemo');
+
+  const dir = path.join(__dirname, '..', 'json-spellcards');
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => /\.json$/.test(f)) : [];
+  ok('仓库里有 json-spellcards 样例', files.length >= 3, files.length);
+  files.forEach(f => {
+    const orig = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    const card = D.cardFromJson(orig);
+    const sim = D.simulate(card);
+    ok('[' + f + '] 能仿真且无错', sim.errors.length === 0, JSON.stringify(sim.errors.slice(0, 2)));
+    const issues = D.validateCard(card, sim).filter(i => i.level === 'error');
+    ok('[' + f + '] 校验无 error', issues.length === 0, issues.map(i => i.msg).join(' / '));
+    // 语义等价：再导入一次导出的 JSON，关键字段必须一致
+    const back = D.cardFromJson(D.cardToJson(card));
+    const keys = ['id', 'slug', 'name', 'needLevel', 'endTime', 'removeTime', 'originalUser'];
+    const same = keys.every(k => JSON.stringify(back[k]) === JSON.stringify(card[k]));
+    ok('[' + f + '] 二次导入元数据不变', same);
+    ok('[' + f + '] 事件数不变', back.events.length === card.events.length, back.events.length + ' vs ' + card.events.length);
+    ok('[' + f + '] 二次导入后仍能仿真', D.simulate(back).shots.length === sim.shots.length);
+    if (orig.vars) ok('[' + f + '] vars 全部保留', JSON.stringify(back.vars) === JSON.stringify(orig.vars));
+    if (orig.specials) ok('[' + f + '] specials 原样保留', JSON.stringify(back.specials) === JSON.stringify(orig.specials));
+  });
+}
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败\n');
 process.exit(fail ? 1 : 0);

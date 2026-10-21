@@ -1541,7 +1541,7 @@
 
   function cardFromJson(input) {
     let o = input;
-    if (typeof o === 'string') o = JSON.parse(o);
+    if (typeof o === 'string') o = JSON.parse(o.replace(/^\uFEFF/, ''));  // 记事本/PowerShell 存的文件带 BOM
     if (!o || typeof o !== 'object') throw new Error('不是合法的符卡对象');
     const name = o.name && typeof o.name === 'object' ? o.name : { zh_cn: o.name || '导入的符卡', en_us: '' };
     const card = {
