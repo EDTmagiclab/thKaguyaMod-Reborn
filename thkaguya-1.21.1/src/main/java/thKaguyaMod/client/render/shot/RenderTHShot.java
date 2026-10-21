@@ -1036,12 +1036,6 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
     }
 
     /**
-     * クナイ / 矢 の共通形状（原版 renderKunaiShot / renderArrowShot は柄の長さと柄 UV だけが違う）。
-     *
-     * @param root      柄の先端 Z
-     * @param handleV0  柄 UV の v 開始（クナイ 0.375 / 矢 0.0）
-     */
-    /**
      * ステッカー平面のロール角度（度）。
      *
      * <p>カメラ空間（billboard 平面）での弾の速度ベクトルを求め、平面の +Y（刃先方向）を
@@ -1095,6 +1089,12 @@ public class RenderTHShot extends EntityRenderer<EntityTHShot>
                 halfWidth, backY, 0.0F, 0.50F, 1.0F);
     }
 
+    /**
+     * クナイ / 矢 の共通形状（原版 renderKunaiShot / renderArrowShot は柄の長さと柄 UV だけが違う）。
+     *
+     * @param root      柄の先端 Z
+     * @param handleV0  柄 UV の v 開始（クナイ 0.375 / 矢 0.0）
+     */
     private void renderBladeAndHandle(EntityTHShot entity, ResourceLocation texture, float root,
                                       float handleV0, float yaw, float pitch, float slope,
                                       PoseStack poseStack, MultiBufferSource buffer)
