@@ -24,6 +24,8 @@ public class ExperimentalConfigScreen extends Screen
     private final Screen parent;
     private Button malletButton;
     private Button warningButton;
+    private Button sanaeButton;
+    private Button sakuyaButton;
 
     /** クライアント側でのみ呼ぶこと（mod 構築フェーズ） */
     public static void register(ModContainer modContainer)
@@ -42,7 +44,7 @@ public class ExperimentalConfigScreen extends Screen
     protected void init()
     {
         int centerX = this.width / 2;
-        int top = this.height / 2 - 40;
+        int top = this.height / 2 - 70;
 
         this.malletButton = this.addRenderableWidget(Button
                 .builder(malletLabel(), button -> this.toggleMalletGui())
@@ -55,6 +57,23 @@ public class ExperimentalConfigScreen extends Screen
                     button.setMessage(warningLabel());
                 })
                 .bounds(centerX - 110, top + 26, 220, 20)
+                .build());
+
+        // 実験的機能：二つの弾幕戦の独立スイッチ
+        this.sanaeButton = this.addRenderableWidget(Button
+                .builder(sanaeLabel(), button -> {
+                    THKaguyaConfig.setEnableSanaeBossFight(!THKaguyaConfig.enableSanaeBossFight);
+                    button.setMessage(sanaeLabel());
+                })
+                .bounds(centerX - 110, top + 52, 220, 20)
+                .build());
+
+        this.sakuyaButton = this.addRenderableWidget(Button
+                .builder(sakuyaLabel(), button -> {
+                    THKaguyaConfig.setEnableSakuyaBossFight(!THKaguyaConfig.enableSakuyaBossFight);
+                    button.setMessage(sakuyaLabel());
+                })
+                .bounds(centerX - 110, top + 78, 220, 20)
                 .build());
 
         this.addRenderableWidget(Button
@@ -73,6 +92,18 @@ public class ExperimentalConfigScreen extends Screen
     {
         return Component.translatable("config.thkaguya.suppress_warning",
                 Component.translatable(THKaguyaConfig.suppressMalletGuiWarning ? "options.on" : "options.off"));
+    }
+
+    private Component sanaeLabel()
+    {
+        return Component.translatable("config.thkaguya.sanae_boss_fight",
+                Component.translatable(THKaguyaConfig.enableSanaeBossFight ? "options.on" : "options.off"));
+    }
+
+    private Component sakuyaLabel()
+    {
+        return Component.translatable("config.thkaguya.sakuya_boss_fight",
+                Component.translatable(THKaguyaConfig.enableSakuyaBossFight ? "options.on" : "options.off"));
     }
 
     private void toggleMalletGui()

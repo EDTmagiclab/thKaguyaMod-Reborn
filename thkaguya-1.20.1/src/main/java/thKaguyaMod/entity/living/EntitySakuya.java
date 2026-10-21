@@ -1,6 +1,9 @@
 package thKaguyaMod.entity.living;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.ItemStack;
@@ -8,6 +11,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
+import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
 
@@ -52,6 +56,26 @@ public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
         return EntityDanmakuMob.createAttributes();
     }
 
+    /**
+     * 実験的機能：岡格尼爾（Gungnir）を手に持って右クリックすると弾幕戦が始まる。
+     * 条件を満たさない右クリックは従来どおり取引画面。
+     */
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand)
+    {
+        if(THKaguyaConfig.enableSakuyaBossFight
+                && getDanmakuPattern() == NOT_ATTACK
+                && player.getItemInHand(hand).is(THKaguyaItems.GUNGNIR.get()))
+        {
+            if(!this.level().isClientSide)
+            {
+                this.beginDanmakuBattle(player);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        return super.mobInteract(player, hand);
+    }
+
     @Override
     public int getUsingSpellCardNo()
     {
@@ -59,6 +83,8 @@ public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
         {
         case SPELLCARD_ATTACK01:
             return EntitySpellCard.SC_SAKUYA_SatuzinDoll;
+        case SPELLCARD_ATTACK02:
+            return EntitySpellCard.SC_SAKUYA_EternalMeek;
         default:
             return -1;
         }
@@ -74,7 +100,11 @@ public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
             moveDanmakuAttack(SPELLCARD_ATTACK01, 40, 60.0F, 160);
             return true;
         case SPELLCARD_ATTACK01:
-            // 原版 EntitySakuya.java:100：スペルカードを破壊されると ATTACK_END へ移行（死亡演出）
+            // 実験的機能：二枚目「エターナルミーク」へ繋ぐ（原版はここで ATTACK_END だった）
+            moveDanmakuAttack(SPELLCARD_ATTACK02, 40, 60.0F, 160);
+            return true;
+        case SPELLCARD_ATTACK02:
+            // 原版 EntitySakuya.java:100：最後の符卡を破壊されると ATTACK_END へ移行（死亡演出）
             moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
             return true;
         default:
@@ -90,6 +120,7 @@ public class EntitySakuya extends EntityTradingDanmakuMob implements IDanmakuMob
         case NORMAL_ATTACK01:
             break;
         case SPELLCARD_ATTACK01:
+        case SPELLCARD_ATTACK02:
             if(attackCounter == 1)
             {
                 this.useSpellCard(getUsingSpellCardNo());

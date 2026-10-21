@@ -2,7 +2,12 @@ package thKaguyaMod.entity.living;
 
 import static thKaguyaMod.DanmakuConstants.*;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
+import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
 
@@ -22,6 +28,9 @@ import thKaguyaMod.init.THKaguyaItems;
  */
 public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
 {
+    /** 符卡戦の進行位置（0=01 枚目 … 3=04 枚目）。非符を挟むたびに +1 する。 */
+    private int spellCardIndex;
+
     /** RenderTHBoss 系のボスなので、バニラのボスバーを出す */
     @Override
     public boolean hasBossBar()
@@ -57,6 +66,70 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
         return EntityDanmakuMob.createAttributes();
     }
 
+    /**
+     * 実験的機能：諏訪子の帽子を被り、御柱を手に持って右クリックすると弾幕戦が始まる。
+     *
+     * <p>原版の早苗は商人のままで、戦闘遷移コードは書かれていたが入口が無かった。
+     * 商人機能はそのまま残る（条件を満たさない右クリックは従来どおり取引画面）。</p>
+     */
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand)
+    {
+        if(THKaguyaConfig.enableSanaeBossFight
+                && getDanmakuPattern() == NOT_ATTACK
+                && player.getItemInHand(hand).is(THKaguyaItems.ONBASHIRA.get())
+                && player.getItemBySlot(EquipmentSlot.HEAD).is(THKaguyaItems.SUWAKO_HAT.get()))
+        {
+            if(!this.level().isClientSide)
+            {
+                this.spellCardIndex = 0;
+                if(this.beginDanmakuBattle(player))
+                {
+                    this.giveBattleReward(player);
+                }
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    /**
+     * 開戦祝い：諏訪子系の符卡を 1 枚ランダムで渡す。
+     * （大奇跡「八坂の神風」／崇符「洩矢大人」／土着神「ケロちゃん風雨に負けず」）
+     */
+    private void giveBattleReward(Player player)
+    {
+        int[] pool = {
+                EntitySpellCard.SC_SANAE_Yasaka_no_Kamikaze,
+                EntitySpellCard.SC_SUWAKO_MishagujiSama,
+                EntitySpellCard.SC_SUWAKO_Kerochan_Fuu_ni_Makezu
+        };
+        int no = pool[this.getRandom().nextInt(pool.length)];
+        ItemStack card = new ItemStack(THKaguyaItems.SPELL_CARD.get());
+        card.setDamageValue(no);
+        if(!player.getInventory().add(card))
+        {
+            player.drop(card, false);
+        }
+        player.displayClientMessage(Component.translatable("message.thkaguya.boss_battle_reward",
+                Component.translatable("item.thkaguya.spell_card." + no)), false);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag)
+    {
+        super.addAdditionalSaveData(tag);
+        tag.putInt("SanaeSpellCardIndex", this.spellCardIndex);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag)
+    {
+        super.readAdditionalSaveData(tag);
+        int index = tag.getInt("SanaeSpellCardIndex");
+        this.spellCardIndex = index < 0 ? 0 : (index > 3 ? 3 : index);
+    }
+
     @Override
     public int getUsingSpellCardNo()
     {
@@ -82,14 +155,24 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
         {
         case NORMAL_ATTACK01:
             setFlyingHeight(2);
-            moveDanmakuAttack(SPELLCARD_ATTACK01, 40, 60.0F, 160);
+            // 実験的機能：非符 → 符卡01 → 非符 → 02 → 非符 → 03 → 非符 → 04 → 終了
+            moveDanmakuAttack(SPELLCARD_ATTACK01 + this.spellCardIndex, 40, 60.0F, 160);
             return true;
         case SPELLCARD_ATTACK01:
         case SPELLCARD_ATTACK02:
         case SPELLCARD_ATTACK03:
         case SPELLCARD_ATTACK04:
-            // 原版 EntitySanae.java:113-122：スペルカードを破壊されると ATTACK_END へ移行（死亡演出）
-            moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
+            // 一枚破られるごとに、次の符卡が残っていれば非符（NORMAL）へ戻して繋ぐ
+            if(this.spellCardIndex < 3)
+            {
+                this.spellCardIndex++;
+                moveDanmakuAttack(NORMAL_ATTACK01, 40, 60.0F, 160);
+            }
+            else
+            {
+                // 原版 EntitySanae.java:113-122：最後の符卡を破壊されたら ATTACK_END へ（死亡演出）
+                moveDanmakuAttack(ATTACK_END, 90, 40.0F, 160);
+            }
             return true;
         default:
             return false;
@@ -183,6 +266,13 @@ public class EntitySanae extends EntityTradingDanmakuMob implements IDanmakuMob
                 new net.minecraft.world.item.trading.ItemCost(THKaguyaItems.SHOT_MATERIAL.get(), 64),
                 new ItemStack(THKaguyaItems.ILLNESS_RECOVERY_CHARM.get()),
                 7, 0, 0.0F));
+        // 実験的機能：弾幕之素 32 個で「空中落物の奇跡」1 枚（＝抽選券）
+        ItemStack fafrotskies = new ItemStack(THKaguyaItems.SPELL_CARD.get());
+        fafrotskies.setDamageValue(EntitySpellCard.SC_SANAE_Fafrotskies_no_Kiseki);
+        offers.add(new MerchantOffer(
+                new net.minecraft.world.item.trading.ItemCost(THKaguyaItems.SHOT_MATERIAL.get(), 32),
+                fafrotskies,
+                999, 0, 0.0F));
         return offers;
     }
 

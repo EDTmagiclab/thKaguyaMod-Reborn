@@ -236,5 +236,8 @@
   "tooltip.thkaguya.miracle_mallet.use": "右クリック：自分が撃った弾幕を巨大化させる",
   "tooltip.thkaguya.miracle_mallet.gui_on": "しゃがみ＋右クリック：妖器化の界面を開く（実験的機能）",
   "tooltip.thkaguya.miracle_mallet.gui_off": "妖器化の界面は設定で有効にすると使える（実験的機能）",
-  "gui.thkaguya.miracle_mallet.title": "妖器化"
+  "gui.thkaguya.miracle_mallet.title": "妖器化",
+  "config.thkaguya.sanae_boss_fight": "早苗の弾幕戦を有効にする：%s",
+  "config.thkaguya.sakuya_boss_fight": "咲夜の弾幕戦を有効にする：%s",
+  "message.thkaguya.boss_battle_reward": "早苗は挑戦を受けた！スペルカードを入手：%s"
 }

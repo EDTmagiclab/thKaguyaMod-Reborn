@@ -1184,6 +1184,33 @@ public abstract class EntityDanmakuMob extends Mob
         }
     }
 
+    /**
+     * 実験的機能：商人ボス（早苗／咲夜）の弾幕戦を開始する。
+     *
+     * <p>原版は三人とも {@code NOT_ATTACK} のまま放置され、戦闘へ移る入口が存在しなかった
+     * （{@code EntitySakuya} の {@code setDanmakuPattern(SPELLCARD_ATTACK01)} は作者がコメントアウト）。
+     * ここでは {@code NORMAL_ATTACK01} に切り替えて既存の段階遷移に乗せるだけで、
+     * HP・符卡・無敵時間は各サブクラスの {@code onDeathUpdate} にそのまま任せる。</p>
+     *
+     * @return 実際に戦闘を開始したら true（既に戦闘中／クライアント側は false）
+     */
+    public boolean beginDanmakuBattle(Player player)
+    {
+        if(this.level().isClientSide || getDanmakuPattern() != NOT_ATTACK)
+        {
+            return false;
+        }
+        this.setTarget(player);
+        this.attackCounter = 0;
+        this.deathTime = 0;
+        this.isSpellCardMode = false;
+        this.setDanmakuPattern(NORMAL_ATTACK01);
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                thKaguyaMod.init.THKaguyaSounds.SPELL_CARD.get(),
+                net.minecraft.sounds.SoundSource.HOSTILE, THKaguyaConfig.SpellCardVol, 1.0F);
+        return true;
+    }
+
     /** 飞行怪不掉落伤害（1.20.1 无 checkFallDamage，重写 causeFallDamage） */
     @Override
     public boolean causeFallDamage(float distance, float multiplier, DamageSource source)

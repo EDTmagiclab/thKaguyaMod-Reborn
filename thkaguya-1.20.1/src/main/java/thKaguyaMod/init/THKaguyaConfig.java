@@ -43,6 +43,12 @@ public class THKaguyaConfig
     /** 実験的機能の警告ダイアログを再度表示しない */
     public static boolean suppressMalletGuiWarning;
 
+    /** 実験的機能：早苗の弾幕戦を有効にする（設定画面の名称：启用早苗弹幕战） */
+    public static boolean enableSanaeBossFight;
+
+    /** 実験的機能：咲夜の弾幕戦を有効にする（設定画面の名称：启用咲夜弹幕战） */
+    public static boolean enableSakuyaBossFight;
+
     public static final ForgeConfigSpec SPEC;
 
     private static final ForgeConfigSpec.BooleanValue USING_MASTER_SPARK;
@@ -67,6 +73,8 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.IntValue DANMAKU_ACCURACY;
     private static final ForgeConfigSpec.BooleanValue ENABLE_MALLET_GUI;
     private static final ForgeConfigSpec.BooleanValue SUPPRESS_MALLET_GUI_WARNING;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_SANAE_BOSS_FIGHT;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_SAKUYA_BOSS_FIGHT;
 
     static
     {
@@ -118,6 +126,17 @@ public class THKaguyaConfig
         SUPPRESS_MALLET_GUI_WARNING = builder
                 .comment("Do not show the experimental feature warning dialog again.")
                 .define("Suppress Miracle Mallet GUI Warning", false);
+        ENABLE_SANAE_BOSS_FIGHT = builder
+                .comment("启用早苗弹幕战（实验性玩法）",
+                        "原版的早苗只是商人，战斗流程被作者注释掉了。",
+                        "开启后：头戴诹访子的帽子、手持御柱右键早苗即可开战，并按 非符→奇迹果→非符→摩西奇迹→非符→八坂神风→非符→妖力掠夺→结束 推进。",
+                        "Default: false")
+                .define("Enable Sanae Danmaku Battle", false);
+        ENABLE_SAKUYA_BOSS_FIGHT = builder
+                .comment("启用咲夜弹幕战（实验性玩法）",
+                        "开启后：手持冈格尼尔（Gungnir）右键咲夜即可开战，两张符卡：杀人玩偶 → 永恒之月。",
+                        "Default: false")
+                .define("Enable Sakuya Danmaku Battle", false);
         builder.pop();
 
         SPEC = builder.build();
@@ -195,6 +214,8 @@ public class THKaguyaConfig
 
         enableMalletGui = ENABLE_MALLET_GUI.get();
         suppressMalletGuiWarning = SUPPRESS_MALLET_GUI_WARNING.get();
+        enableSanaeBossFight = ENABLE_SANAE_BOSS_FIGHT.get();
+        enableSakuyaBossFight = ENABLE_SAKUYA_BOSS_FIGHT.get();
     }
 
     /**
@@ -222,5 +243,27 @@ public class THKaguyaConfig
             SPEC.save();
         }
         suppressMalletGuiWarning = value;
+    }
+
+    /** 実験的機能：早苗の弾幕戦の有効／無効を書き換える（設定画面から呼ぶ）。 */
+    public static void setEnableSanaeBossFight(boolean value)
+    {
+        ENABLE_SANAE_BOSS_FIGHT.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        enableSanaeBossFight = value;
+    }
+
+    /** 実験的機能：咲夜の弾幕戦の有効／無効を書き換える（設定画面から呼ぶ）。 */
+    public static void setEnableSakuyaBossFight(boolean value)
+    {
+        ENABLE_SAKUYA_BOSS_FIGHT.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        enableSakuyaBossFight = value;
     }
 }

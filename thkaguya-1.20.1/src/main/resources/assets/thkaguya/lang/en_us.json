@@ -236,5 +236,8 @@
   "tooltip.thkaguya.miracle_mallet.use": "Right-click: enlarge the danmaku you fired",
   "tooltip.thkaguya.miracle_mallet.gui_on": "Sneak + right-click: open the demon tool conversion GUI (experimental)",
   "tooltip.thkaguya.miracle_mallet.gui_off": "The demon tool conversion GUI can be enabled in the mod config (experimental)",
-  "gui.thkaguya.miracle_mallet.title": "Demon Tool Conversion"
+  "gui.thkaguya.miracle_mallet.title": "Demon Tool Conversion",
+  "config.thkaguya.sanae_boss_fight": "Enable Sanae Danmaku Battle: %s",
+  "config.thkaguya.sakuya_boss_fight": "Enable Sakuya Danmaku Battle: %s",
+  "message.thkaguya.boss_battle_reward": "Sanae accepts your challenge! Spell card obtained: %s"
 }
