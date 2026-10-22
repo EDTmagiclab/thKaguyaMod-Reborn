@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +15,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.item.EntitySakuyaWatch;
 import thKaguyaMod.init.THKaguyaConfig;
 
@@ -117,15 +115,9 @@ public class ItemSakuyaWatch extends Item
 				// 時間停止の実体は TimeStopManager（tick 門控）。ここで開始を宣言し、
 				// 成功したときだけクライアントへ「凍らせてよい」フラグを配る。
 				// コンフィグ enableTimeStop=false なら、時計は出るが何も凍らない（原版の「殻だけ」）。
-				if(THKaguyaConfig.enableTimeStop
-						&& TimeStopManager.start((ServerLevel)level, player, entityPrivateSquare, mode))
+				if(!entityPrivateSquare.startTimeStop(false) && !THKaguyaConfig.enableTimeStop)
 				{
-					entityPrivateSquare.markTimeStopActive(
-							THKaguyaConfig.timeStopRadius, !THKaguyaConfig.timeStopHostileOnly);
-				}
-				else if(!THKaguyaConfig.enableTimeStop)
-				{
-					// 何も起きないと「壊れている」と誤解されるので、1 度だけ理由を出す
+					// 何も起きないと「壊れている」と誤解されるので理由を出す
 					player.displayClientMessage(
 							Component.translatable("thkaguya.timestop.disabled"), true);
 				}

@@ -68,6 +68,13 @@ public class THKaguyaConfig
     /** true = 半径内の敵だけ凍らせる（推奨）。false = 敵味方問わず凍らせる */
     public static boolean timeStopHostileOnly;
 
+    /**
+     * 実験的機能：符卡「殺人玩偶」で、術者以外のプレイヤーの位置も固定する。
+     *
+     * <p>アイテム（懐中時計）駆動のときは常に false（他人を止めない）。</p>
+     */
+    public static boolean timeStopFreezePlayers;
+
     public static final ForgeConfigSpec SPEC;
 
     private static final ForgeConfigSpec.BooleanValue USING_MASTER_SPARK;
@@ -99,6 +106,7 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.IntValue TIME_STOP_RADIUS;
     private static final ForgeConfigSpec.IntValue TIME_STOP_HARD_LIMIT;
     private static final ForgeConfigSpec.BooleanValue TIME_STOP_HOSTILE_ONLY;
+    private static final ForgeConfigSpec.BooleanValue TIME_STOP_FREEZE_PLAYERS;
 
     static
     {
@@ -189,6 +197,13 @@ public class THKaguyaConfig
                         "false：半径内除玩家和怀表外全部冻结（只建议单人或创造模式使用）。",
                         "Default: true")
                 .define("Time Stop Affects Hostile Only", true);
+        TIME_STOP_FREEZE_PLAYERS = builder
+                .comment("杀人玩偶（符卡）发动时，冻结施术者以外的其他玩家",
+                        "true：只有施术者能动，其他玩家被按在原地（原版 1.7.10 想这么做但实际没生效）。",
+                        "false：其他玩家不受影响（服务器对 PvP 冻结敏感时可关掉）。",
+                        "只影响符卡「杀人玩偶」；怀表物品永远不会冻结其他玩家。",
+                        "Default: true")
+                .define("Time Stop Freezes Other Players", true);
         builder.pop();
 
         SPEC = builder.build();
@@ -274,6 +289,7 @@ public class THKaguyaConfig
         timeStopRadius = TIME_STOP_RADIUS.get();
         timeStopHardLimitTicks = TIME_STOP_HARD_LIMIT.get();
         timeStopHostileOnly = TIME_STOP_HOSTILE_ONLY.get();
+        timeStopFreezePlayers = TIME_STOP_FREEZE_PLAYERS.get();
     }
 
     /**
@@ -345,6 +361,17 @@ public class THKaguyaConfig
             SPEC.save();
         }
         enableTimeStop = value;
+    }
+
+    /** 実験的機能：符卡「殺人玩偶」で他人も止めるかどうかを書き換える（設定画面から呼ぶ）。 */
+    public static void setTimeStopFreezePlayers(boolean value)
+    {
+        TIME_STOP_FREEZE_PLAYERS.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        timeStopFreezePlayers = value;
     }
 
     /** 実験的機能：時間停止で敵だけ凍らせるかどうかを書き換える（設定画面から呼ぶ）。 */

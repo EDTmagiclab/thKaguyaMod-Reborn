@@ -3,6 +3,7 @@ package thKaguyaMod.event;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -50,6 +51,13 @@ public final class THKaguyaTimeStopHandler
         LivingEntity entity = event.getEntity();
         if(entity == null)
         {
+            return;
+        }
+        if(entity instanceof Player)
+        {
+            // プレイヤーの tick は絶対に止めない。止めるとクライアントの入力・カメラ・
+            // メニュー同期（containerMenu）まで止まり、復帰時に操作不能になりかねない。
+            // プレイヤーの「動けない」は TimeStopManager#serverTick が座標を引き戻して作る。
             return;
         }
         if(TimeStopManager.blockTick(entity))

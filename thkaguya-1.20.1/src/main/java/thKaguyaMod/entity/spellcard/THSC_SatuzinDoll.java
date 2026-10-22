@@ -70,6 +70,10 @@ public class THSC_SatuzinDoll extends THSpellCard
 				if(!world.isClientSide)
        			{
          			world.addFreshEntity(entityPrivateSquare);//時間停止空間を生み出す
+         			// 符卡駆動の時間停止をここで実際に開始する（実体は TimeStopManager）。
+         			// force=true：符卡はゲーム本体の一部なので、アイテム用のコンフィグでは止めない。
+         			// このモードだけ「術者以外のプレイヤーもその場に固定」になる。
+         			entityPrivateSquare.startTimeStop(true);
        			}
 			}
 		}

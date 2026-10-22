@@ -244,6 +244,7 @@
   "config.thkaguya.spell_card_cutin": "스펠카드 연출: %s",
   "config.thkaguya.time_stop": "시간 정지 활성화: %s",
   "config.thkaguya.time_stop_hostile_only": "시간 정지는 적만 정지: %s",
+  "config.thkaguya.time_stop_freeze_players": "살인 인형은 다른 플레이어도 정지: %s",
   "thkaguya.timestop.force_end": "시간 정지가 한계에 도달해 강제 해제되었습니다",
   "thkaguya.timestop.disabled": "시간 정지는 설정에서 꺼져 있습니다 (실험적 기능)"
 }

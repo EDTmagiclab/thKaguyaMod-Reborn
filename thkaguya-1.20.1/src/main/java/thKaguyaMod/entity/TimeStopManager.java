@@ -1,6 +1,7 @@
 package thKaguyaMod.entity;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -80,6 +81,15 @@ public final class TimeStopManager
     private static final State SERVER = new State();
     private static final State CLIENT = new State();
 
+    /**
+     * 凍結したプレイヤーのアンカー（サーバ専用）。
+     *
+     * <p>プレイヤーの移動はパケット由来なので、{@code tick} を止めても歩けてしまう。
+     * そこで「凍結が始まった瞬間の座標」を覚えておき、毎 tick {@code connection.teleport} で
+     * そこへ引き戻す（Bukkit 系プラグインの "freeze" と同じ手法）。</p>
+     */
+    private static final java.util.Map<java.util.UUID, Vec3> PLAYER_ANCHORS = new java.util.HashMap<>();
+
     private TimeStopManager()
     {
     }
@@ -99,6 +109,8 @@ public final class TimeStopManager
         int ownerId = -1;
         int maxRadius = 32;
         boolean freezeAll;
+        /** true = 術者以外のプレイヤーの位置も固定する（符卡駆動のときだけ） */
+        boolean freezePlayers;
 
         /* --- サーバ専用 --- */
         ServerLevel serverLevel;
@@ -121,6 +133,14 @@ public final class TimeStopManager
      */
     public static boolean start(ServerLevel level, LivingEntity caster, Entity watch, int mode)
     {
+        return start(level, caster, watch, mode, false);
+    }
+
+    /**
+     * @param freezePlayers true = 術者以外のプレイヤーの位置も固定する（符卡駆動専用）
+     */
+    public static boolean start(ServerLevel level, LivingEntity caster, Entity watch, int mode, boolean freezePlayers)
+    {
         if(level == null || watch == null || watch.isRemoved())
         {
             return false;
@@ -142,8 +162,10 @@ public final class TimeStopManager
         SERVER.maxRadius = clampRadius(THKaguyaConfig.timeStopRadius);
         SERVER.radius = radiusForAge(0, SERVER.maxRadius);
         SERVER.freezeAll = !THKaguyaConfig.timeStopHostileOnly;
+        SERVER.freezePlayers = freezePlayers;
         SERVER.startGameTime = level.getGameTime();
         SERVER.hardLimit = Math.max(20, THKaguyaConfig.timeStopHardLimitTicks);
+        PLAYER_ANCHORS.clear();
 
         // 時間停止のあいだは作物・炎・葉の自然崩壊も止める（1.20.1 にはイベントが無いので GameRule を退避して 0 にする）
         if(isTimeStopMode(mode))
@@ -193,6 +215,50 @@ public final class TimeStopManager
 
         SERVER.center = watch.position();
         SERVER.radius = radiusForAge((int)age, SERVER.maxRadius);
+
+        if(SERVER.freezePlayers)
+        {
+            lockPlayers(level);
+        }
+    }
+
+    /**
+     * 術者以外のプレイヤーをアンカーへ引き戻す（サーバ専用）。
+     *
+     * <p>プレイヤーの位置はクライアントの移動パケットで決まるので、{@code tick()} を止めても
+     * 歩けてしまう。よって「最初に凍った瞬間の座標」を覚えておき、毎 tick teleport で戻す。
+     * {@code awaitingPositionFromClient} はクライアントの位置確認で自然に解除されるため、
+     * 連続 teleport でも「moved too quickly」判定には掛からない。</p>
+     */
+    private static void lockPlayers(ServerLevel level)
+    {
+        for(ServerPlayer player : level.players())
+        {
+            // FakePlayer（ディスペンサー等が作る偽プレイヤー）は connection を持たないことがある
+            if(player.connection == null)
+            {
+                continue;
+            }
+            java.util.UUID id = player.getUUID();
+            if(!isAffected(SERVER, player))
+            {
+                // 範囲外へ出た／乗り物に乗った等：アンカーを捨てて自由にする
+                PLAYER_ANCHORS.remove(id);
+                continue;
+            }
+            Vec3 anchor = PLAYER_ANCHORS.get(id);
+            if(anchor == null)
+            {
+                anchor = player.position();
+                PLAYER_ANCHORS.put(id, anchor);
+            }
+            if(player.position().distanceToSqr(anchor) > 1.0E-6D)
+            {
+                player.setDeltaMovement(Vec3.ZERO);
+                player.connection.teleport(anchor.x, anchor.y, anchor.z, player.getYRot(), player.getXRot());
+                player.hurtMarked = true;
+            }
+        }
     }
 
     /** 時間操作を終了する。サーバ・クライアントどちらの状態でも安全に呼べる */
@@ -378,24 +444,7 @@ public final class TimeStopManager
         {
             return false;
         }
-
-        /* ---- 絶対に凍らせない（設定でも変えられない）---- */
-        // プレイヤーは常に動ける（原版は動きを奪っていたが、マルチでは成立しない）
-        if(entity instanceof Player)
-        {
-            return false;
-        }
-        // 時計自身。凍らせると tickCount が伸びず、制限時間が永遠に来なくなる
-        if(entity instanceof EntitySakuyaWatch || entity instanceof EntitySakuyaStopWatch)
-        {
-            return false;
-        }
-        // 騎乗チェーン（載っている側・載せている側）は丸ごと除外。馬や船ごと固めると降りられなくなる
-        if(entity.isPassenger() || !entity.getPassengers().isEmpty())
-        {
-            return false;
-        }
-        // 術者本人
+        // 術者本人（プレイヤー判定より先に置く。術者は他のプレイヤー凍結モードでも動ける）
         if(entity.getId() == state.ownerId)
         {
             return false;
@@ -404,10 +453,38 @@ public final class TimeStopManager
         {
             return false;
         }
+        // 時計自身。凍らせると tickCount が伸びず、制限時間が永遠に来なくなる
+        if(entity instanceof EntitySakuyaWatch || entity instanceof EntitySakuyaStopWatch)
+        {
+            return false;
+        }
 
         /* ---- 距離（球殻。原版・演出と同じ式）---- */
         double radius = state.radius;
         if(entity.distanceToSqr(state.center.x, state.center.y, state.center.z) > radius * radius)
+        {
+            return false;
+        }
+
+        /* ---- プレイヤー ----
+         * 既定（アイテム駆動）では凍らせない。原版 1.7.10 は他人の座標を毎 tick
+         * 巻き戻していたが、実際には xo が既に更新済みで効いておらず、効かせようとすると
+         * teleport 連打でしか実現できない。よって「符卡駆動のときだけ、明示的に有効化する」。
+         * サーバ側だけ true（クライアントでプレイヤーの tick を止めると入力とカメラが壊れる）。
+         * 位置の固定は {@link #lockPlayers} が teleport で行う。
+         */
+        if(entity instanceof Player)
+        {
+            if(!state.freezePlayers || entity.level().isClientSide)
+            {
+                return false;
+            }
+            // 載り物の中にいる人は固定できない（乗り物側ごと固めることになり、降りられなくなる）
+            return !entity.isPassenger() && entity.getPassengers().isEmpty();
+        }
+
+        // 騎乗チェーン（載っている側・載せている側）は丸ごと除外。馬や船ごと固めると降りられなくなる
+        if(entity.isPassenger() || !entity.getPassengers().isEmpty())
         {
             return false;
         }
@@ -514,11 +591,16 @@ public final class TimeStopManager
         state.mode = DEFAULT_MODE;
         state.ownerId = -1;
         state.freezeAll = false;
+        state.freezePlayers = false;
         state.serverLevel = null;
         state.owner = null;
         state.watch = null;
         state.startGameTime = 0L;
         state.savedRandomTick = -1;
+        if(isServer)
+        {
+            PLAYER_ANCHORS.clear();
+        }
     }
 
     private static void freezeRandomTicks(ServerLevel level)

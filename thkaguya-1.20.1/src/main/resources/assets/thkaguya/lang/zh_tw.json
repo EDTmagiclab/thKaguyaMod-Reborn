@@ -244,6 +244,7 @@
   "config.thkaguya.spell_card_cutin": "符卡宣言演出：%s",
   "config.thkaguya.time_stop": "啟用時間停止：%s",
   "config.thkaguya.time_stop_hostile_only": "時間停止只凍結敵人：%s",
+  "config.thkaguya.time_stop_freeze_players": "殺人玩偶凍結其他玩家：%s",
   "thkaguya.timestop.force_end": "時間停止已達上限，已強制解除",
   "thkaguya.timestop.disabled": "時間停止已在設定中關閉（實驗性玩法）"
 }

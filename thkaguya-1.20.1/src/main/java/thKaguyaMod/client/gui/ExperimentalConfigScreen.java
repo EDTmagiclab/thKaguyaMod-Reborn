@@ -29,6 +29,7 @@ public class ExperimentalConfigScreen extends Screen
     private Button cutInButton;
     private Button timeStopButton;
     private Button freezeAllButton;
+    private Button freezePlayersButton;
 
     /** クライアント側でのみ呼ぶこと（mod 構築フェーズ） */
     public static void register()
@@ -110,6 +111,15 @@ public class ExperimentalConfigScreen extends Screen
                 .bounds(rightX, top + 48, colWidth, 20)
                 .build());
 
+        // 符卡「殺人玩偶」で術者以外のプレイヤーも止めるか
+        this.freezePlayersButton = this.addRenderableWidget(Button
+                .builder(freezePlayersLabel(), button -> {
+                    THKaguyaConfig.setTimeStopFreezePlayers(!THKaguyaConfig.timeStopFreezePlayers);
+                    button.setMessage(freezePlayersLabel());
+                })
+                .bounds(rightX, top + 72, colWidth, 20)
+                .build());
+
         this.addRenderableWidget(Button
                 .builder(CommonComponents.GUI_DONE, button -> this.onClose())
                 .bounds(centerX - 100, this.height - 30, 200, 20)
@@ -157,6 +167,13 @@ public class ExperimentalConfigScreen extends Screen
     {
         return Component.translatable("config.thkaguya.time_stop_hostile_only",
                 Component.translatable(THKaguyaConfig.timeStopHostileOnly ? "options.on" : "options.off"));
+    }
+
+    /** 符卡「殺人玩偶」で他のプレイヤーも止めるか */
+    private Component freezePlayersLabel()
+    {
+        return Component.translatable("config.thkaguya.time_stop_freeze_players",
+                Component.translatable(THKaguyaConfig.timeStopFreezePlayers ? "options.on" : "options.off"));
     }
 
     private void toggleMalletGui()

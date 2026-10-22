@@ -3,6 +3,7 @@ package thKaguyaMod.entity.item;
 import java.util.List;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +20,7 @@ import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.entity.ITimeStopSource;
 import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
+import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
 
@@ -118,6 +120,29 @@ public class EntitySakuyaStopWatch extends Entity implements ITimeStopSource
 		}
 		this.entityData.set(DATA_FLAGS, flags);
 		this.entityData.set(DATA_RADIUS, radius);
+	}
+
+	/**
+	 * サーバ側で時間操作を開始する（{@link EntitySakuyaWatch#startTimeStop} と同じ入口）。
+	 * ストップウォッチは常に時間停止なので、プレイヤー凍結は行わない。
+	 */
+	public boolean startTimeStop(boolean force)
+	{
+		if(level().isClientSide || !(level() instanceof ServerLevel serverLevel))
+		{
+			return false;
+		}
+		if(!force && !THKaguyaConfig.enableTimeStop)
+		{
+			return false;
+		}
+		if(!TimeStopManager.start(serverLevel, user, this, EntitySakuyaWatch.TIME_STOP, false))
+		{
+			return false;
+		}
+		markTimeStopActive(THKaguyaConfig.timeStopRadius,
+				!THKaguyaConfig.timeStopHostileOnly);
+		return true;
 	}
 
 	/**

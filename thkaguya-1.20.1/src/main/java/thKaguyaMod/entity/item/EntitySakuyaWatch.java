@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -19,6 +20,7 @@ import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.entity.ITimeStopSource;
 import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
+import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
 
@@ -154,6 +156,34 @@ public class EntitySakuyaWatch extends Entity implements ITimeStopSource
     	}
     	this.entityData.set(DATA_FLAGS, flags);
     	this.entityData.set(DATA_RADIUS, radius);
+    }
+
+    /**
+     * サーバ側で時間操作を開始する。懐中時計（アイテム）からも、符卡「殺人玩偶」からも
+     * 同じこの経路を通す（＝効果の実体は {@link TimeStopManager} ひとつ）。
+     *
+     * @param force true = コンフィグ {@code enableTimeStop} を無視して必ず開始する。
+     *              符卡駆動のときに使う（符卡は元からゲームの一部で、アイテムのように
+     *              「誰でもいつでも 240 格」ではないため、既定オフの対象外にしている）。
+     */
+    public boolean startTimeStop(boolean force)
+    {
+    	if(level().isClientSide || !(level() instanceof ServerLevel serverLevel))
+    	{
+    		return false;
+    	}
+    	if(!force && !THKaguyaConfig.enableTimeStop)
+    	{
+    		return false;
+    	}
+    	// 符卡「殺人玩偶」のときだけ、術者以外のプレイヤーも止める（要望による仕様）
+    	boolean freezePlayers = getMode() == TIME_STOP_IN_SPELLCARD && THKaguyaConfig.timeStopFreezePlayers;
+    	if(!TimeStopManager.start(serverLevel, userEntity, this, getMode(), freezePlayers))
+    	{
+    		return false;
+    	}
+    	markTimeStopActive(THKaguyaConfig.timeStopRadius, !THKaguyaConfig.timeStopHostileOnly);
+    	return true;
     }
 
     /* ================= モード ================= */
