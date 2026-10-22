@@ -14,6 +14,7 @@ import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.LaserData;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
+import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.item.EntityShotMaterial;
 import thKaguyaMod.init.THKaguyaEntities;
 
@@ -118,6 +119,13 @@ public class EntityTHLaser extends EntityTHShot
     @Override
     public void tick()
     {
+        // 時間停止中は伸びない（EntityTHShot 側でも止めているが、レーザーは長さ更新が
+        // 独立しているので二重に置く）
+        if(TimeStopManager.isFrozen(this))
+        {
+            return;
+        }
+
         super.tick();
 
         if(!level().isClientSide)

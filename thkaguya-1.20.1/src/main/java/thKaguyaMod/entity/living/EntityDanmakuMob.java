@@ -36,6 +36,7 @@ import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
+import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.entity.item.EntityTHItem;
 import thKaguyaMod.init.THKaguyaEntities;
@@ -899,6 +900,15 @@ public abstract class EntityDanmakuMob extends Mob
     @Override
     public void tick()
     {
+        // 時間停止中は丸ごと止める。
+        // LivingTickEvent は super.tick() の位置でしか発火しないので、この覆写では
+        // イベントをキャンセルしてもその下の tickBossBar / danmakuPattern が走り続けてしまう。
+        // だから tick の先頭で自分で抜ける（これが「弾幕が止まらない」の唯一の対策）。
+        if(TimeStopManager.isFrozen(this))
+        {
+            return;
+        }
+
         // ピースフルなら消滅させる
         if(!this.level().isClientSide && this.level().getDifficulty().getId() == 0)
         {
@@ -912,9 +922,6 @@ public abstract class EntityDanmakuMob extends Mob
             this.setTarget(null);
         }
 
-        // 时停检查：原版 1.7.10 依赖「外部框架先 ticksExisted++，再进 onUpdate」，
-        // 而 1.20.1 的 tickCount 在 super.tick() 内递增，若沿用 <= 判断会第一次 tick 就永久冻结。
-        // 时停系统（Sakuya 技能）尚未移植，lastTime 恒为 0，故此处直接正常 tick。
         super.tick();
 
         tickBossBar();

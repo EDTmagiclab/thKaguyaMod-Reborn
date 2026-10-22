@@ -241,5 +241,9 @@
   "config.thkaguya.sakuya_boss_fight": "咲夜の弾幕戦を有効にする：%s",
   "message.thkaguya.boss_battle_reward": "早苗は挑戦を受けた！スペルカードを入手：%s",
   "message.thkaguya.merchant_discount": "「%s」は降参した！%s 分間、取引はすべて半額。",
-  "config.thkaguya.spell_card_cutin": "スペルカード演出：%s"
+  "config.thkaguya.spell_card_cutin": "スペルカード演出：%s",
+  "config.thkaguya.time_stop": "時間停止を有効にする：%s",
+  "config.thkaguya.time_stop_hostile_only": "時間停止は敵だけを止める：%s",
+  "thkaguya.timestop.force_end": "時間停止が上限に達したため強制解除しました",
+  "thkaguya.timestop.disabled": "時間停止は設定で無効になっています（実験的機能）"
 }

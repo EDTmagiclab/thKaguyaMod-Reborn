@@ -3,20 +3,21 @@ package thKaguyaMod.entity.item;
 import java.util.List;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.Painting;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THKaguyaLib;
+import thKaguyaMod.entity.ITimeStopSource;
+import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.spellcard.EntitySpellCard;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.init.THKaguyaItems;
@@ -29,18 +30,35 @@ import thKaguyaMod.init.THKaguyaItems;
  *   MovingObjectPosition(entity) 仅作实体包装 -> 直接遍历实体
  *   EntityItemFrame/EntityPainting -> ItemFrame/Painting
  *   EntityCreeper.setCreeperState(-1) -> Creeper.setSwellDir(-1)
- *   EntityGhast.attackCounter -> 1.20.1 无公开字段，裁剪
  *   EntityPlayerMP.playerNetServerHandler.setPlayerLocation -> ServerPlayer.connection.teleport
  *   "random.orb"/"random.click" -> EXPERIENCE_ORB_PICKUP / UI_BUTTON_CLICK
+ *
+ * <p><b>2026-10-22 变更（时停系统落地）</b>：原版的 {@code inPrivateSquare} 是「每 tick 把周围
+ * Entity 的坐标卷回 1 tick 前」，1.20.1 里改用 {@link TimeStopManager} 的 tick 门控
+ * （见该类注释）。理由：坐标卷回会连玩家一起拽住，在多人服上不可接受；
+ * 而且它每 tick 都要遍历 40 格内所有实体并写坐标，比自己早退昂贵得多。
+ * 本类现在只负责「什么时候开始／结束」，以及把判定所需的参数同步给客户端。</p>
  */
-public class EntitySakuyaWatch extends Entity
+public class EntitySakuyaWatch extends Entity implements ITimeStopSource
 {
 	/** 使用者 */
 	public LivingEntity userEntity;
 	private int count;
-	private int mode;
 	private float watchRotation;
 	private boolean isSpellCard;
+
+	/** モード（サーバ専用だった private int mode を同期データへ移した。両端で同じ値を見る） */
+	private static final EntityDataAccessor<Integer> DATA_MODE =
+			SynchedEntityData.defineId(EntitySakuyaWatch.class, EntityDataSerializers.INT);
+	/** 術者の entity id（LivingEntity は同期できないので id で持つ。-1 = 不明） */
+	private static final EntityDataAccessor<Integer> DATA_USER_ID =
+			SynchedEntityData.defineId(EntitySakuyaWatch.class, EntityDataSerializers.INT);
+	/** {@link TimeStopManager} の FLAG_* ビット */
+	private static final EntityDataAccessor<Integer> DATA_FLAGS =
+			SynchedEntityData.defineId(EntitySakuyaWatch.class, EntityDataSerializers.INT);
+	/** 停止空間の最大半径（サーバのコンフィグ値をクライアントへ配る） */
+	private static final EntityDataAccessor<Integer> DATA_RADIUS =
+			SynchedEntityData.defineId(EntitySakuyaWatch.class, EntityDataSerializers.INT);
 
 	/**時間停止*/
 	public static final int TIME_STOP = 0;
@@ -60,7 +78,7 @@ public class EntitySakuyaWatch extends Entity
         // 1.20.1 では Entity#noCulling が EntityRenderDispatcher の視錐台カリングを無効化する。
         this.noCulling = true;
         // 原版：preventEntitySpawning / setSize(1.0F,1.0F) / yOffset（注册设定）
-    	mode = 2;
+    	setMode(TIME_HALF);
     	// 原版：shouldRenderInPass(-2)（Forge 1.7 渲染通道，已废除）
     }
 
@@ -75,15 +93,84 @@ public class EntitySakuyaWatch extends Entity
 
     	userEntity = living;//使用者をshootingEntityに保存
     	THKaguyaLib.itemEffectFollowUser(this, userEntity, 1.2D, -30F);
-		mode = pmode;
+		setMode(pmode);
+		setOwnerId(living == null ? -1 : living.getId());
 
-		isSpellCard = mode == TIME_STOP_IN_SPELLCARD;
+		isSpellCard = pmode == TIME_STOP_IN_SPELLCARD;
     }
 
     /** 生成時に一度だけ呼ばれる処理 */
     @Override
 	protected void defineSynchedData()
     {
+    	this.entityData.define(DATA_MODE, TIME_HALF);
+    	this.entityData.define(DATA_USER_ID, -1);
+    	this.entityData.define(DATA_FLAGS, 0);
+    	this.entityData.define(DATA_RADIUS, 32);
+    }
+
+    /* ================= ITimeStopSource ================= */
+
+    @Override
+    public boolean isTimeStopActive()
+    {
+    	return (this.entityData.get(DATA_FLAGS) & TimeStopManager.FLAG_ACTIVE) != 0;
+    }
+
+    @Override
+    public int getTimeStopMode()
+    {
+    	return getMode();
+    }
+
+    @Override
+    public int getTimeStopOwnerId()
+    {
+    	return this.entityData.get(DATA_USER_ID);
+    }
+
+    @Override
+    public int getTimeStopRadius()
+    {
+    	return this.entityData.get(DATA_RADIUS);
+    }
+
+    @Override
+    public boolean isTimeStopFreezeAll()
+    {
+    	return (this.entityData.get(DATA_FLAGS) & TimeStopManager.FLAG_FREEZE_ALL) != 0;
+    }
+
+    /**
+     * 実際に時間操作を開始できたときに呼ぶ（サーバ専用）。
+     * ここで初めてクライアントに「凍らせてよい」ことが伝わる。
+     */
+    public void markTimeStopActive(int radius, boolean freezeAll)
+    {
+    	int flags = TimeStopManager.FLAG_ACTIVE;
+    	if(freezeAll)
+    	{
+    		flags |= TimeStopManager.FLAG_FREEZE_ALL;
+    	}
+    	this.entityData.set(DATA_FLAGS, flags);
+    	this.entityData.set(DATA_RADIUS, radius);
+    }
+
+    /* ================= モード ================= */
+
+    public int getMode()
+    {
+    	return this.entityData.get(DATA_MODE);
+    }
+
+    public void setMode(int mode)
+    {
+    	this.entityData.set(DATA_MODE, mode);
+    }
+
+    public void setOwnerId(int id)
+    {
+    	this.entityData.set(DATA_USER_ID, id);
     }
 
 	/** 押すことができるか */
@@ -116,28 +203,25 @@ public class EntitySakuyaWatch extends Entity
     		}
     		else
     		{
-    			if(!level().isClientSide)
-    			{
-    				discard();
-    			}
+    			discard();
     		}
     		return;
     	}
 
     	//スペルカード内の時間停止で、60ticksを超えているなら
-    	if(mode == this.TIME_STOP_IN_SPELLCARD && tickCount > 60)
+    	if(getMode() == this.TIME_STOP_IN_SPELLCARD && tickCount > 60)
     	{
     		if(!level().isClientSide)
     		{
     			discard();
     		}
     	}
-    	else if(mode == this.TIME_STOP_WITH_LIMIT && tickCount > 100)
+    	else if(getMode() == this.TIME_STOP_WITH_LIMIT && tickCount > 100)
     	{
      		//アイテム化させる
     		THKaguyaLib.itemEffectFinish(this, userEntity, THKaguyaItems.SAKUYA_WATCH.get());
     	}
-    	else if(mode == this.TIME_HALF_WITH_LIMIT && tickCount > 160)
+    	else if(getMode() == this.TIME_HALF_WITH_LIMIT && tickCount > 160)
     	{
     		//アイテム化させる
     		THKaguyaLib.itemEffectFinish(this, userEntity, THKaguyaItems.SAKUYA_WATCH.get());
@@ -150,11 +234,11 @@ public class EntitySakuyaWatch extends Entity
     		{
 	    		if(!userEntity_p.isCreative())//クリエイティブモードでないなら
 	    		{
-	    			if(mode == this.TIME_STOP)//時間停止モードなら
+	    			if(getMode() == this.TIME_STOP)//時間停止モードなら
 	    			{
 	    				userEntity_p.getFoodData().addExhaustion(0.25F);//満腹度を大きく減らす
 	    			}
-	    			else if(mode == this.TIME_HALF)//時間減速モードなら
+	    			else if(getMode() == this.TIME_HALF)//時間減速モードなら
 	    			{
 	    				userEntity_p.getFoodData().addExhaustion(0.10F);//満腹度を少し減らす
 	    			}
@@ -168,10 +252,7 @@ public class EntitySakuyaWatch extends Entity
     			}
     			else
     			{
-    				if(!level().isClientSide)
-    				{
-    					discard();
-    				}
+    				discard();
     			}
     		}
     		if(userEntity.hurtTime > 0)//使用者がダメージを受けたら終了
@@ -182,10 +263,7 @@ public class EntitySakuyaWatch extends Entity
     			}
     			else
     			{
-    				if(!level().isClientSide)
-    				{
-    					discard();
-    				}
+    				discard();
     			}
     		}
     	}
@@ -193,80 +271,64 @@ public class EntitySakuyaWatch extends Entity
     	//懐中時計を使用者に追尾させる
     	THKaguyaLib.itemEffectFollowUser(this, userEntity, 1.2D, -30F);
 
-    	if(mode == 3 && tickCount == 45)
+    	if(getMode() == 3 && tickCount == 45)
     	{
-    		mode = this.TIME_STOP;
+    		setMode(this.TIME_STOP);
     	}
-    	if(mode == 4 && tickCount == 45)
+    	if(getMode() == 4 && tickCount == 45)
     	{
-    		mode = this.TIME_HALF;
+    		setMode(this.TIME_HALF);
     	}
 
-    	int playerCount = 0;//停止空間内のプレイヤーの数を数える　誰もいなければ消滅させる
-
-    	//***********停止空間とEntityの当たり判定を取る****************//
-    	boolean dubbleWatch = false;
-    	boolean pass = false;
-    	double effectiveBoundary = 40.0D;//停止空間の有効範囲
-    	//停止空間内のEntityを全て取得
-    	List<Entity> list = level().getEntities(this, getBoundingBox().inflate(effectiveBoundary, effectiveBoundary, effectiveBoundary));
-
-        if (list != null && list.size() > 0)//取得したリストにEntityがいるなら
-        {
-            for (int j1 = 0; j1 < list.size(); j1++)//取得したEntityリストの最初から最後まで見る
-            {
-                Entity entity = list.get(j1);
-            	if(entity instanceof Player)//プレイヤーなら
-            	{
-            		playerCount++;//範囲内のプレイヤー数カウントを増加
-            	}
-            	//使用者でなく、使用者が乗っているEntityでもなく、額縁・絵画でもないなら
-        		if (entity != userEntity && !entity.hasPassenger(userEntity)
-        				&& !(entity instanceof ItemFrame)
-        				&& !(entity instanceof Painting))
-        		{
-        			pass = false;
-        			//時計が同時に２つ出現しているときの処理。全ての時計を無効化しアイテムに戻す。
-        			if(entity instanceof EntitySakuyaWatch watch)
-        			{
-        				//アイテム化させる
-        	    		THKaguyaLib.itemEffectFinish(watch, watch.userEntity, THKaguyaItems.SAKUYA_WATCH.get());
-        	    		dubbleWatch = true;
-        			}
-        			if(entity instanceof EntitySpellCard spellCard)
-        			{
-        				if(spellCard.canMoveInTimeStop && spellCard.user.equals(this.userEntity))
-        				{
-        					pass = true;
-        					spellCard.specialProcessInTimeStop();
-        				}
-        			}
-        			if(!pass)
-        			{
-        				inPrivateSquare(entity);//時間操作空間の処理
-        			}
-        		}
-            }
-        }
-
-    	if(playerCount == 0)//範囲内にプレイヤーが一人もいなかったなら
+    	//***********停止空間内の後始末（サーバ専用）****************//
+    	if(!level().isClientSide)
     	{
-    		if(!level().isClientSide)
+    		int playerCount = 0;//停止空間内のプレイヤーの数を数える　誰もいなければ消滅させる
+    		boolean dubbleWatch = false;
+    		//停止空間内のEntityを全て取得
+    		List<Entity> list = level().getEntities(this, getBoundingBox().inflate(40.0D, 40.0D, 40.0D));
+
+    		for(Entity entity : list)
+    		{
+    			if(entity instanceof Player)//プレイヤーなら
+    			{
+    				playerCount++;//範囲内のプレイヤー数カウントを増加
+    			}
+    			//使用者でなく、使用者が乗っているEntityでもなく、額縁・絵画でもないなら
+    			if(entity != userEntity && !entity.hasPassenger(userEntity)
+    					&& !(entity instanceof ItemFrame)
+    					&& !(entity instanceof Painting))
+    			{
+    				//時計が同時に２つ出現しているときの処理。全ての時計を無効化しアイテムに戻す。
+    				if(entity instanceof EntitySakuyaWatch watch)
+    				{
+    					THKaguyaLib.itemEffectFinish(watch, watch.userEntity, THKaguyaItems.SAKUYA_WATCH.get());
+    					dubbleWatch = true;
+    				}
+    				//時間停止中でも動ける符卡（原版 1.7.10 が残した例外）だけは動かし続ける
+    				else if(entity instanceof EntitySpellCard spellCard
+    						&& spellCard.isTimeStopExempt()
+    						&& userEntity != null && userEntity.equals(spellCard.user))
+    				{
+    					spellCard.specialProcessInTimeStop();
+    				}
+    			}
+    		}
+
+    		if(playerCount == 0)//範囲内にプレイヤーが一人もいなかったなら
     		{
     			THKaguyaLib.itemEffectFinish(this, userEntity, THKaguyaItems.SAKUYA_WATCH.get());//終了処理に移る
     		}
-    	}
 
-    	if(dubbleWatch)
-    	{
-    		//アイテム化させる
-    		THKaguyaLib.itemEffectFinish(this, userEntity, THKaguyaItems.SAKUYA_WATCH.get());
+    		if(dubbleWatch)
+    		{
+    			THKaguyaLib.itemEffectFinish(this, userEntity, THKaguyaItems.SAKUYA_WATCH.get());
+    		}
     	}
-
         //************************************************************************************//
 
 		count ++;
-		if(mode > 2)
+		if(getMode() > 2)
 		{
 			if(count % 20 == 19)
 			{
@@ -298,117 +360,4 @@ public class EntitySakuyaWatch extends Entity
     }
 
     // 原版 getShadowSize() -> 1.20.1 阴影半径由渲染器负责，裁剪
-
-	//時間操作空間に入っていた時の処理
-	protected void inPrivateSquare(Entity hitEntity)
-    {
-    	//Entityが誕生してから２フレーム経過したもののみ判定
-    	if(hitEntity.tickCount >= 2)
-    	{
-    		//====時間停止空間の場合====//
-    		if(mode == this.TIME_STOP || mode == this.TIME_STOP_IN_SPELLCARD || mode == this.TIME_STOP_WITH_LIMIT)
-    		{
-    		//Entityを１フレーム前の状態に、できる限りもっていく処理
-	    		hitEntity.setPos(hitEntity.xo, hitEntity.yo, hitEntity.zo);
-
-	    		hitEntity.setYRot(hitEntity.yRotO);
-	    		hitEntity.setXRot(hitEntity.xRotO);
-	    		if(!hitEntity.onGround())
-	    		{
-	    			hitEntity.setDeltaMovement(0.0D, -0.0D, 0.0D);
-	    		}
-	    		else
-	    		{
-	    			hitEntity.setDeltaMovement(0.0D, hitEntity.getDeltaMovement().y, 0.0D);
-	    		}
-	    		hitEntity.setAirSupply(0);
-
-	    		hitEntity.tickCount--;//誕生してからのカウントを増やさない
-	    		hitEntity.fallDistance -= 0.076865F;//落下距離を変動しないように　この値はフレームに比例する
-    			if(hitEntity instanceof LivingEntity living)//範囲内のEntityがLivingEntityに属しているなら
-    			{
-    				living.yHeadRot = living.yHeadRotO;
-
-    				// living.attackTime++; // TODO(阶段4): 1.20 无 attackTime 字段，时停冻结动画语义不同
-
-    				if(living instanceof Creeper entityCreeper)//Creeperに属しているなら
-    				{
-    					entityCreeper.setSwellDir(-1);//爆発のカウントを戻す
-    				}
-    				// 原版 EntityGhast.attackCounter-- -> 1.20.1 の Ghast に公開カウンタはないため裁剪
-
-    				if(living instanceof TamableAnimal)//テイム可能なら
-    				{
-    					//座っている動物は重力がなくなると立つみたい　わからない程度に重力をかける処理
-    					living.setDeltaMovement(living.getDeltaMovement().x, living.getDeltaMovement().y - 0.000001D, living.getDeltaMovement().z);
-    				}
-
-    				//プレイヤーの動きを止める
-    				if(living instanceof ServerPlayer player)
-    				{
-    					player.connection.teleport(player.xo, player.yo, player.zo, player.getYRot(), player.getXRot());
-    				}
-    			}
-
-	    		//加速だけは全Entityが処理していないため無理そう　　だから重力の影響を受けるものは扱いにくい
-    		}
-    		//====時間減速空間の場合====//
-    		else if(mode == this.TIME_HALF || mode == this.TIME_HALF_WITH_LIMIT)//時間を1/2の進みにする
-    		{
-    			slowDownSpeed(hitEntity, 1, 2);
-    		}
-    		else if(mode == 3)
-    		{
-    			slowDownSpeed(hitEntity, 5 - (tickCount / 9), 5);
-    		}
-    		else if(mode == 4)
-    		{
-    			slowDownSpeed(hitEntity, 10 - (tickCount / 9), 10);
-    		}
-        }
-    }
-
-	/*時間を操る
-	 * hitEntity : 操る対象
-	 * timeRate  : 進む時間の倍率。減速しか扱えず、整数分の１の速度にしかできない。ex 1/2, 1/3, 1/4, 1/5...
-	 */
-	private void slowDownSpeed(Entity hitEntity, int timeRateNum, int timeRateDen)
-	{
-		float timeRate = (float)timeRateNum / (float)timeRateDen;
-
-
-		if(timeRate < 1.0)
-		{
-			Vec3 slowMotion = hitEntity.getDeltaMovement();
-			hitEntity.setDeltaMovement(
-					slowMotion.x - (hitEntity.getX() - hitEntity.xo) * timeRate,
-					slowMotion.y - (hitEntity.getY() - hitEntity.yo) * timeRate,
-					slowMotion.z - (hitEntity.getZ() - hitEntity.zo) * timeRate);
-			hitEntity.fallDistance -= 0.076865F * timeRate;//落下距離を半減（空中待機時間で変動してしまう）
-			if( count % timeRateDen < timeRateNum)//偶数フレームのみ処理
-			{
-				hitEntity.tickCount--;//誕生してからのカウントを増やさない
-				if(hitEntity instanceof LivingEntity living)
-				{
-					living.yHeadRot = living.yHeadRotO;
-
-					if(living instanceof Creeper entityCreeper)
-					{
-						entityCreeper.setSwellDir(-1);
-					}
-					// 原版 EntityGhast.attackCounter-- -> 1.20.1 の Ghast に公開カウンタはないため裁剪
-				}
-			}
-		}
-		else
-		{
-			int timeRate2 = (int)timeRate;
-			for(int i = 2; i <= timeRate2; i++)
-			{
-				hitEntity.tickCount++;
-				hitEntity.tick();
-			}
-		}
-	}
-
 }

@@ -24,6 +24,7 @@ import thKaguyaMod.DanmakuConstants;
 import thKaguyaMod.ShotData;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.living.EntityDanmakuMob;
+import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.item.EntityShotMaterial;
 import thKaguyaMod.init.THKaguyaConfig;
 import thKaguyaMod.init.THKaguyaEntities;
@@ -281,6 +282,14 @@ public class EntityTHShot extends Entity
     @Override
     public void tick()
     {
+        // 時間停止中は丸ごと止める（位置・向き・寿命・命中判定のすべてを進めない）。
+        // ここは LivingTickEvent では止められない（Entity 直系なのでイベントが飛ばない）ため、
+        // tick の先頭で自分で早期 return する。TimeStopManager.isFrozen は未起動時 1 行で抜ける。
+        if(TimeStopManager.isFrozen(this))
+        {
+            return;
+        }
+
         // 先递增弹体年龄（tickCount），并执行 Entity 基础逻辑（原版依赖 ticksExisted 递增）
         super.tick();
 

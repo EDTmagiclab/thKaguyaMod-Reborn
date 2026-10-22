@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THShotLib;
 import thKaguyaMod.entity.effect.EntitySpellCardCircle;
+import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.entity.living.EntityDanmakuMob;
 import thKaguyaMod.init.THKaguyaEntities;
 import thKaguyaMod.registry.SpellCardRegistry;
@@ -86,7 +87,15 @@ public class EntitySpellCard extends Entity
 
     public EntitySpellCardCircle circle;
 
-    public boolean canMoveInTimeStop;
+    /**
+     * 時間停止中でも動ける符卡か（原版 1.7.10 の {@code canMoveInTimeStop} フィールド）。
+     *
+     * <p>原版は普通の public フィールドだったが、宣言側のコンストラクタ（user/target を要る方）は
+     * サーバでしか走らないため、クライアントでは常に false になっていた。
+     * 時間停止は両端で同じ判定をしなければならないので、同期データに載せ替えた。</p>
+     */
+    private static final EntityDataAccessor<Boolean> CAN_MOVE_IN_TIME_STOP =
+            SynchedEntityData.defineId(EntitySpellCard.class, EntityDataSerializers.BOOLEAN);
 
     Class<?> spellcard;
     THSpellCard useSpellCard;
@@ -130,7 +139,7 @@ public class EntitySpellCard extends Entity
             if(useSpellCard != null)
             {
                 useSpellCard.init(world, this, user, tgEntity, level);
-                canMoveInTimeStop = useSpellCard.canMoveInTimeStop();
+                setTimeStopExempt(useSpellCard.canMoveInTimeStop());
                 if(spUser instanceof Player)
                 {
                     circle = new EntitySpellCardCircle(world, spUser, useSpellCard.getSpellCardCircleColor(), useSpellCard.getEndTime());
@@ -158,6 +167,18 @@ public class EntitySpellCard extends Entity
         // 0 番のカードは実際に一度も送られてこないため）。
         this.entityData.define(SPELL_CARD_NUMBER, -1);
         this.entityData.define(CASTER_ID, -1);
+        this.entityData.define(CAN_MOVE_IN_TIME_STOP, false);
+    }
+
+    /** 時間停止中でも動ける符卡か（両端で同じ値を見る） */
+    public boolean isTimeStopExempt()
+    {
+        return this.entityData.get(CAN_MOVE_IN_TIME_STOP);
+    }
+
+    private void setTimeStopExempt(boolean exempt)
+    {
+        this.entityData.set(CAN_MOVE_IN_TIME_STOP, exempt);
     }
 
     /**
@@ -243,6 +264,13 @@ public class EntitySpellCard extends Entity
     @Override
     public void tick()
     {
+        // 時間停止中は符卡も止める（例外は canMoveInTimeStop の符卡だけで、
+        // TimeStopManager 側が除外してくれるのでここは素直に早期 return でよい）
+        if(TimeStopManager.isFrozen(this))
+        {
+            return;
+        }
+
         super.tick();
 
         // 使用者がいないか、死んでいるなら消す

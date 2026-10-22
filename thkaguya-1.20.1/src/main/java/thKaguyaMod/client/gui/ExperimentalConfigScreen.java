@@ -27,6 +27,8 @@ public class ExperimentalConfigScreen extends Screen
     private Button sanaeButton;
     private Button sakuyaButton;
     private Button cutInButton;
+    private Button timeStopButton;
+    private Button freezeAllButton;
 
     /** クライアント側でのみ呼ぶこと（mod 構築フェーズ） */
     public static void register()
@@ -46,12 +48,15 @@ public class ExperimentalConfigScreen extends Screen
     protected void init()
     {
         int centerX = this.width / 2;
-        // 項目が 5 つになったので、縦位置を上へ寄せて「完了」ボタンとの重なりを避ける
-        int top = this.height / 2 - 96;
+        // 項目が 7 つになったので 2 列に分ける（1 列だと「完了」ボタンと重なる）
+        int top = this.height / 2 - 48;
+        int colWidth = Math.min(210, centerX - 20);
+        int leftX = centerX - 10 - colWidth;
+        int rightX = centerX + 10;
 
         this.malletButton = this.addRenderableWidget(Button
                 .builder(malletLabel(), button -> this.toggleMalletGui())
-                .bounds(centerX - 110, top, 220, 20)
+                .bounds(leftX, top, colWidth, 20)
                 .build());
 
         this.warningButton = this.addRenderableWidget(Button
@@ -59,7 +64,7 @@ public class ExperimentalConfigScreen extends Screen
                     THKaguyaConfig.setSuppressMalletGuiWarning(!THKaguyaConfig.suppressMalletGuiWarning);
                     button.setMessage(warningLabel());
                 })
-                .bounds(centerX - 110, top + 26, 220, 20)
+                .bounds(leftX, top + 24, colWidth, 20)
                 .build());
 
         // 実験的機能：二つの弾幕戦の独立スイッチ
@@ -68,7 +73,7 @@ public class ExperimentalConfigScreen extends Screen
                     THKaguyaConfig.setEnableSanaeBossFight(!THKaguyaConfig.enableSanaeBossFight);
                     button.setMessage(sanaeLabel());
                 })
-                .bounds(centerX - 110, top + 52, 220, 20)
+                .bounds(leftX, top + 48, colWidth, 20)
                 .build());
 
         this.sakuyaButton = this.addRenderableWidget(Button
@@ -76,7 +81,7 @@ public class ExperimentalConfigScreen extends Screen
                     THKaguyaConfig.setEnableSakuyaBossFight(!THKaguyaConfig.enableSakuyaBossFight);
                     button.setMessage(sakuyaLabel());
                 })
-                .bounds(centerX - 110, top + 78, 220, 20)
+                .bounds(leftX, top + 72, colWidth, 20)
                 .build());
 
         // 実験的機能：符卡宣言演出（オフにすると原版同等の「チャットに名前を出すだけ」に戻る）
@@ -85,7 +90,24 @@ public class ExperimentalConfigScreen extends Screen
                     THKaguyaConfig.setEnableSpellCardCutIn(!THKaguyaConfig.enableSpellCardCutIn);
                     button.setMessage(cutInLabel());
                 })
-                .bounds(centerX - 110, top + 104, 220, 20)
+                .bounds(rightX, top, colWidth, 20)
+                .build());
+
+        // 実験的機能：時間停止（原版で唯一まともに動いていなかったシステム）
+        this.timeStopButton = this.addRenderableWidget(Button
+                .builder(timeStopLabel(), button -> {
+                    THKaguyaConfig.setEnableTimeStop(!THKaguyaConfig.enableTimeStop);
+                    button.setMessage(timeStopLabel());
+                })
+                .bounds(rightX, top + 24, colWidth, 20)
+                .build());
+
+        this.freezeAllButton = this.addRenderableWidget(Button
+                .builder(freezeAllLabel(), button -> {
+                    THKaguyaConfig.setTimeStopHostileOnly(!THKaguyaConfig.timeStopHostileOnly);
+                    button.setMessage(freezeAllLabel());
+                })
+                .bounds(rightX, top + 48, colWidth, 20)
                 .build());
 
         this.addRenderableWidget(Button
@@ -124,6 +146,19 @@ public class ExperimentalConfigScreen extends Screen
                 Component.translatable(THKaguyaConfig.enableSpellCardCutIn ? "options.on" : "options.off"));
     }
 
+    private Component timeStopLabel()
+    {
+        return Component.translatable("config.thkaguya.time_stop",
+                Component.translatable(THKaguyaConfig.enableTimeStop ? "options.on" : "options.off"));
+    }
+
+    /** 表示は「敌人 only」の on/off（設定値はその逆なので反転して出す） */
+    private Component freezeAllLabel()
+    {
+        return Component.translatable("config.thkaguya.time_stop_hostile_only",
+                Component.translatable(THKaguyaConfig.timeStopHostileOnly ? "options.on" : "options.off"));
+    }
+
     private void toggleMalletGui()
     {
         // 有効 → 無効：そのまま切り替え
@@ -154,7 +189,7 @@ public class ExperimentalConfigScreen extends Screen
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
         guiGraphics.drawCenteredString(this.font,
                 Component.translatable("config.thkaguya.experimental.hint"),
-                this.width / 2, this.height / 2 + 42, 0xA0A0A0);
+                this.width / 2, this.height - 48, 0xA0A0A0);
     }
 
     @Override

@@ -55,6 +55,19 @@ public class THKaguyaConfig
      */
     public static boolean enableSpellCardCutIn;
 
+    /**
+     * 実験的機能：時間停止／時間減速を有効にする（{@code EntitySakuyaWatch} の本来の効果）。
+     *
+     * <p>既定 false。無効のとき懐中時計は今まで通り「出るだけ」で、周囲の Entity は止まらない。</p>
+     */
+    public static boolean enableTimeStop;
+    /** 停止空間の最大半径（原版は 240 格 = 実質サーバ全域。既定は 32 格に絞る） */
+    public static int timeStopRadius;
+    /** 看門狗の上限 tick。これを超えたら無条件で解除する */
+    public static int timeStopHardLimitTicks;
+    /** true = 半径内の敵だけ凍らせる（推奨）。false = 敵味方問わず凍らせる */
+    public static boolean timeStopHostileOnly;
+
     public static final ForgeConfigSpec SPEC;
 
     private static final ForgeConfigSpec.BooleanValue USING_MASTER_SPARK;
@@ -82,6 +95,10 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.BooleanValue ENABLE_SANAE_BOSS_FIGHT;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SAKUYA_BOSS_FIGHT;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SPELL_CARD_CUT_IN;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_TIME_STOP;
+    private static final ForgeConfigSpec.IntValue TIME_STOP_RADIUS;
+    private static final ForgeConfigSpec.IntValue TIME_STOP_HARD_LIMIT;
+    private static final ForgeConfigSpec.BooleanValue TIME_STOP_HOSTILE_ONLY;
 
     static
     {
@@ -150,6 +167,28 @@ public class THKaguyaConfig
                         "关闭后恢复原版表现（只在聊天栏输出符卡名）。纯客户端表现，不影响任何玩法数值。",
                         "Default: true")
                 .define("Enable Spell Card Cut-In", true);
+        ENABLE_TIME_STOP = builder
+                .comment("启用时间停止（实验性玩法）",
+                        "原版 1.7.10 的咲夜怀表会把周围 Entity 的坐标每 tick 卷回 1 tick 前，1.20.1 改成了 tick 门控。",
+                        "关闭时：怀表照常生成、照常计时，但不会冻结任何东西（等同原版「只有壳」的状态）。",
+                        "Default: false")
+                .define("Enable Time Stop", false);
+        TIME_STOP_RADIUS = builder
+                .comment("时间停止的冻结半径（格）。原版是 240（几乎等于整个服务器），这里默认收到 32。",
+                        "服务器建议 16-48；单人娱乐可放宽到 96 以上。",
+                        "Default: 32")
+                .defineInRange("Time Stop Radius", 32, 8, 240);
+        TIME_STOP_HARD_LIMIT = builder
+                .comment("看门狗上限（tick）。超过就无条件解除，不管怀表还在不在。",
+                        "这是防「冻结永不恢复」的最后一道保险，默认 600 tick = 30 秒。",
+                        "Default: 600")
+                .defineInRange("Time Stop Hard Limit Ticks", 600, 20, 1200);
+        TIME_STOP_HOSTILE_ONLY = builder
+                .comment("时间停止只冻结敌人（推荐）",
+                        "true：只冻结弹幕、敌对生物、符卡；玩家、宠物、命名生物、村民、铁傀儡、载具一律不动。",
+                        "false：半径内除玩家和怀表外全部冻结（只建议单人或创造模式使用）。",
+                        "Default: true")
+                .define("Time Stop Affects Hostile Only", true);
         builder.pop();
 
         SPEC = builder.build();
@@ -230,6 +269,11 @@ public class THKaguyaConfig
         enableSanaeBossFight = ENABLE_SANAE_BOSS_FIGHT.get();
         enableSakuyaBossFight = ENABLE_SAKUYA_BOSS_FIGHT.get();
         enableSpellCardCutIn = ENABLE_SPELL_CARD_CUT_IN.get();
+
+        enableTimeStop = ENABLE_TIME_STOP.get();
+        timeStopRadius = TIME_STOP_RADIUS.get();
+        timeStopHardLimitTicks = TIME_STOP_HARD_LIMIT.get();
+        timeStopHostileOnly = TIME_STOP_HOSTILE_ONLY.get();
     }
 
     /**
@@ -290,5 +334,27 @@ public class THKaguyaConfig
             SPEC.save();
         }
         enableSpellCardCutIn = value;
+    }
+
+    /** 実験的機能：時間停止の有効／無効を書き換える（設定画面から呼ぶ）。 */
+    public static void setEnableTimeStop(boolean value)
+    {
+        ENABLE_TIME_STOP.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        enableTimeStop = value;
+    }
+
+    /** 実験的機能：時間停止で敵だけ凍らせるかどうかを書き換える（設定画面から呼ぶ）。 */
+    public static void setTimeStopHostileOnly(boolean value)
+    {
+        TIME_STOP_HOSTILE_ONLY.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        timeStopHostileOnly = value;
     }
 }

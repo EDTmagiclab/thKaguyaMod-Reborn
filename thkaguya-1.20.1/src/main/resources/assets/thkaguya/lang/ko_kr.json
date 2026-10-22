@@ -241,5 +241,9 @@
   "config.thkaguya.sakuya_boss_fight": "사쿠야 탄막전 활성화: %s",
   "message.thkaguya.boss_battle_reward": "사나에가 도전을 받아들였다! 스펠 카드 획득: %s",
   "message.thkaguya.merchant_discount": "\"%s\"(이)가 항복했다! 앞으로 %s분 동안 모든 거래가 반값.",
-  "config.thkaguya.spell_card_cutin": "스펠카드 연출: %s"
+  "config.thkaguya.spell_card_cutin": "스펠카드 연출: %s",
+  "config.thkaguya.time_stop": "시간 정지 활성화: %s",
+  "config.thkaguya.time_stop_hostile_only": "시간 정지는 적만 정지: %s",
+  "thkaguya.timestop.force_end": "시간 정지가 한계에 도달해 강제 해제되었습니다",
+  "thkaguya.timestop.disabled": "시간 정지는 설정에서 꺼져 있습니다 (실험적 기능)"
 }

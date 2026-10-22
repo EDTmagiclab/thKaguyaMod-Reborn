@@ -241,5 +241,9 @@
   "config.thkaguya.sakuya_boss_fight": "Enable Sakuya Danmaku Battle: %s",
   "message.thkaguya.boss_battle_reward": "Sanae accepts your challenge! Spell card obtained: %s",
   "message.thkaguya.merchant_discount": "\"%s\" concedes! All trades are half price for the next %s minutes.",
-  "config.thkaguya.spell_card_cutin": "Spell Card Cut-In: %s"
+  "config.thkaguya.spell_card_cutin": "Spell Card Cut-In: %s",
+  "config.thkaguya.time_stop": "Enable Time Stop: %s",
+  "config.thkaguya.time_stop_hostile_only": "Time Stop freezes hostiles only: %s",
+  "thkaguya.timestop.force_end": "Time stop reached its limit and was released",
+  "thkaguya.timestop.disabled": "Time stop is disabled in the config (experimental)"
 }

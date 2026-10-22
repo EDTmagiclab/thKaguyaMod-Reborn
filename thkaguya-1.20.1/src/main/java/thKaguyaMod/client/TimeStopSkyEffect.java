@@ -22,8 +22,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import thKaguyaMod.THKaguyaCore;
-import thKaguyaMod.entity.item.EntitySakuyaStopWatch;
-import thKaguyaMod.entity.item.EntitySakuyaWatch;
+import thKaguyaMod.entity.ITimeStopSource;
+import thKaguyaMod.entity.TimeStopManager;
 import thKaguyaMod.init.THKaguyaConfig;
 
 /**
@@ -54,9 +54,6 @@ import thKaguyaMod.init.THKaguyaConfig;
 @Mod.EventBusSubscriber(modid = THKaguyaCore.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class TimeStopSkyEffect
 {
-    /** 原版の球殻半径の上限 */
-    private static final double MAX_RADIUS = 240.0D;
-
     /** 負片にかける色。青空の負（橙褐色）を青紫へ寄せるための乗算色 */
     private static final float TINT_R = 0.38F;
     private static final float TINT_G = 0.30F;
@@ -75,8 +72,18 @@ public final class TimeStopSkyEffect
     }
 
     /**
-     * クライアント側のエンティティ一覧から懐中時計を探し、カメラが停止空間の内側にいれば発動状態にする。
-     * 原版はエンティティの描画時に球殻を出すので、範囲判定は「カメラが球殻の内側か」と同じ意味になる。
+     * クライアント側の毎tick処理。2つの役目がある。
+     *
+     * <ol>
+     *   <li><b>ミラー更新</b>：同期データ（モード／術者 id／半径／フラグ）から
+     *       {@link TimeStopManager} のクライアント状態を組み立てる。
+     *       ここが無いとクライアント側の弾幕が止まらず、サーバと見た目が食い違う。</li>
+     *   <li><b>演出判定</b>：カメラが停止空間の内側にいれば空を反転させる。</li>
+     * </ol>
+     *
+     * <p>半径は原版の {@code min(ticksExisted*12, 240)} をそのまま使うが、上限はサーバの
+     * コンフィグ値（同期されてくる {@code getTimeStopRadius()}）で頭打ちになる。
+     * 以前はここで 240 を直に使っていたため「画面だけ変わって何も凍らない」ことがあった。</p>
      */
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
@@ -86,32 +93,39 @@ public final class TimeStopSkyEffect
             return;
         }
 
-        // 毎tick必ず false から始める（懐中時計が消えたら次のtickで即座に切れる＝硬切）
-        active = false;
-
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null || mc.isPaused())
+        if (mc.level == null || mc.player == null)
         {
+            TimeStopManager.clientClear();
+            active = false;
             return;
         }
-        if (!THKaguyaConfig.useTimeStopEffect)
+        // 一時停止中は世界が進まないので状態を保つ
+        if (mc.isPaused())
         {
             return;
         }
 
+        boolean found = false;
         for (Entity entity : mc.level.entitiesForRendering())
         {
-            if (entity instanceof EntitySakuyaWatch || entity instanceof EntitySakuyaStopWatch)
+            if (entity instanceof ITimeStopSource source && source.isTimeStopActive())
             {
-                // 原版：爆発的に広がる停止空間。半径は ticksExisted*12（上限 240）。tick 0 では半径 0
-                double radius = Math.min(entity.tickCount * 12.0D, MAX_RADIUS);
-                if (mc.player.distanceToSqr(entity) <= radius * radius)
-                {
-                    active = true;
-                    return;
-                }
+                TimeStopManager.clientUpdate(mc.level, source.getTimeStopMode(), source.getTimeStopOwnerId(),
+                        entity.position(), entity.tickCount, source.getTimeStopRadius(), source.isTimeStopFreezeAll());
+                found = true;
+                break;
             }
         }
+        if (!found)
+        {
+            TimeStopManager.clientClear();
+        }
+
+        // 毎tick必ず評価し直す（懐中時計が消えたら次のtickで即座に切れる＝硬切）
+        active = THKaguyaConfig.useTimeStopEffect
+                && TimeStopManager.isClientActive()
+                && TimeStopManager.isClientInside(mc.player.position());
     }
 
     @SubscribeEvent
