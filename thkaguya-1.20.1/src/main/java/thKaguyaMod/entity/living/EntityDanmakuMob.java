@@ -904,7 +904,7 @@ public abstract class EntityDanmakuMob extends Mob
         // LivingTickEvent は super.tick() の位置でしか発火しないので、この覆写では
         // イベントをキャンセルしてもその下の tickBossBar / danmakuPattern が走り続けてしまう。
         // だから tick の先頭で自分で抜ける（これが「弾幕が止まらない」の唯一の対策）。
-        if(TimeStopManager.isFrozen(this))
+        if(TimeStopManager.blockTick(this))
         {
             return;
         }

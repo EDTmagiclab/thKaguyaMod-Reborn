@@ -266,7 +266,7 @@ public class EntitySpellCard extends Entity
     {
         // 時間停止中は符卡も止める（例外は canMoveInTimeStop の符卡だけで、
         // TimeStopManager 側が除外してくれるのでここは素直に早期 return でよい）
-        if(TimeStopManager.isFrozen(this))
+        if(TimeStopManager.blockTick(this))
         {
             return;
         }

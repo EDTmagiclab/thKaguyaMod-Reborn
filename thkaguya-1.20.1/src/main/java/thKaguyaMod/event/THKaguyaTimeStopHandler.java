@@ -52,7 +52,7 @@ public final class THKaguyaTimeStopHandler
         {
             return;
         }
-        if(TimeStopManager.isFrozen(entity))
+        if(TimeStopManager.blockTick(entity))
         {
             // 座標も向きも変わらないので補間用の旧値はそのままでよい（復帰時の瞬間移動が起きない）
             event.setCanceled(true);

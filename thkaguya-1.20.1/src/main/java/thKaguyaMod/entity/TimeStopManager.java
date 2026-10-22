@@ -334,6 +334,38 @@ public final class TimeStopManager
         return ((entity.level().getGameTime() + entity.getId()) & 1L) != 0L;
     }
 
+    /**
+     * tick の入口で呼ぶ。true = この tick を丸ごと止める。
+     *
+     * <p>{@link #isFrozen} と違い<b>副作用がある</b>：凍結中でも受傷関係のタイマーだけは 1 進める。</p>
+     *
+     * <p>理由：{@code hurtTime} と {@code invulnerableTime} の減算は {@code LivingEntity#aiStep()}
+     * （＝{@code tick()} の中）にある。tick を丸ごと止めるとこれらの値が固定され、
+     * 一度殴った個体は {@code invulnerableTime = 20} のまま固まって
+     * <b>二発目以降が全部「まだ無敵」で弾かれる</b>（時停中に敵が実質無敵になる）。
+     * 原版 1.7.10 は位置だけ巻き戻していたのでこの問題は無かった。
+     * ここで手動で 1 ずつ減らすことで「止まっているのに殴れば減る」という原作の手触りを保つ。</p>
+     */
+    public static boolean blockTick(Entity entity)
+    {
+        if(!isFrozen(entity))
+        {
+            return false;
+        }
+        if(entity instanceof LivingEntity living)
+        {
+            if(living.hurtTime > 0)
+            {
+                --living.hurtTime;
+            }
+            if(living.invulnerableTime > 0)
+            {
+                --living.invulnerableTime;
+            }
+        }
+        return true;
+    }
+
     /** 半径・除外・敵味方の判定（モード非依存） */
     private static boolean isAffected(State state, Entity entity)
     {

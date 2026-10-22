@@ -121,7 +121,7 @@ public class EntityTHLaser extends EntityTHShot
     {
         // 時間停止中は伸びない（EntityTHShot 側でも止めているが、レーザーは長さ更新が
         // 独立しているので二重に置く）
-        if(TimeStopManager.isFrozen(this))
+        if(TimeStopManager.blockTick(this))
         {
             return;
         }

@@ -285,7 +285,7 @@ public class EntityTHShot extends Entity
         // 時間停止中は丸ごと止める（位置・向き・寿命・命中判定のすべてを進めない）。
         // ここは LivingTickEvent では止められない（Entity 直系なのでイベントが飛ばない）ため、
         // tick の先頭で自分で早期 return する。TimeStopManager.isFrozen は未起動時 1 行で抜ける。
-        if(TimeStopManager.isFrozen(this))
+        if(TimeStopManager.blockTick(this))
         {
             return;
         }
