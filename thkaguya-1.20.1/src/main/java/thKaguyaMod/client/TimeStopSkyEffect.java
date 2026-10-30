@@ -112,7 +112,8 @@ public final class TimeStopSkyEffect
             if (entity instanceof ITimeStopSource source && source.isTimeStopActive())
             {
                 TimeStopManager.clientUpdate(mc.level, source.getTimeStopMode(), source.getTimeStopOwnerId(),
-                        entity.position(), entity.tickCount, source.getTimeStopRadius(), source.isTimeStopFreezeAll());
+                        entity.position(), entity.tickCount, source.getTimeStopRadius(),
+                        source.isTimeStopFreezeAll(), source.isTimeStopClassic());
                 found = true;
                 break;
             }
@@ -120,6 +121,11 @@ public final class TimeStopSkyEffect
         if (!found)
         {
             TimeStopManager.clientClear();
+        }
+        else
+        {
+            // クラシック時停：生物でない Entity（落ちている物・矢・TNT 等）をクライアントでも巻き戻す
+            TimeStopManager.clientClassicRollback(mc.level.entitiesForRendering());
         }
 
         // 毎tick必ず評価し直す（懐中時計が消えたら次のtickで即座に切れる＝硬切）

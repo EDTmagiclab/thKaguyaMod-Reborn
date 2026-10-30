@@ -245,6 +245,13 @@
   "config.thkaguya.time_stop": "启用时间停止：%s",
   "config.thkaguya.time_stop_hostile_only": "时间停止只冻结敌人：%s",
   "config.thkaguya.time_stop_freeze_players": "杀人玩偶冻结其他玩家：%s",
+  "config.thkaguya.time_stop_classic": "使用经典时停：%s",
+  "config.thkaguya.time_stop_classic.active_warning": "警告：经典时停已启用——范围内的一切都会被冻结（含村民、掉落物、他人农场）",
+  "config.thkaguya.time_stop_classic.warning.title": "启用经典时停？",
+  "config.thkaguya.time_stop_classic.warning.line1": "经典时停会冻结 40 格内除施术者以外的一切。",
+  "config.thkaguya.time_stop_classic.warning.line2": "包括：其他玩家、宠物、村民、铁傀儡、掉落物、箭、TNT、矿车。",
+  "config.thkaguya.time_stop_classic.warning.line3": "在公共服务器上开启，别人的农场和村民交易会整片停摆，",
+  "config.thkaguya.time_stop_classic.warning.line4": "玩家会误以为服务器卡了。建议只用于单人、创造或录制演出。",
   "thkaguya.timestop.force_end": "时间停止已达上限，已强制解除",
   "thkaguya.timestop.disabled": "时间停止已在配置中关闭（实验性玩法）"
 }

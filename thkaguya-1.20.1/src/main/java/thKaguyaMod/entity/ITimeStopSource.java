@@ -27,4 +27,7 @@ public interface ITimeStopSource
 
     /** true = 半径内の敵味方問わず凍らせる（コンフィグ {@code timeStopHostileOnly=false}） */
     boolean isTimeStopFreezeAll();
+
+    /** true = クラシック時停（原版の対象範囲：40 格の箱、術者以外すべて） */
+    boolean isTimeStopClassic();
 }

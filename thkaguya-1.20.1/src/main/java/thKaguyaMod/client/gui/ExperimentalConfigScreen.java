@@ -30,6 +30,7 @@ public class ExperimentalConfigScreen extends Screen
     private Button timeStopButton;
     private Button freezeAllButton;
     private Button freezePlayersButton;
+    private Button classicButton;
 
     /** クライアント側でのみ呼ぶこと（mod 構築フェーズ） */
     public static void register()
@@ -101,6 +102,12 @@ public class ExperimentalConfigScreen extends Screen
                     button.setMessage(timeStopLabel());
                 })
                 .bounds(rightX, top + 24, colWidth, 20)
+                .build());
+
+        // 実験的機能：クラシック時停（原版と同じ対象範囲。有効化は必ず警告画面を経由）
+        this.classicButton = this.addRenderableWidget(Button
+                .builder(classicLabel(), button -> this.toggleClassicTimeStop())
+                .bounds(leftX, top + 96, colWidth, 20)
                 .build());
 
         this.freezeAllButton = this.addRenderableWidget(Button
@@ -176,6 +183,24 @@ public class ExperimentalConfigScreen extends Screen
                 Component.translatable(THKaguyaConfig.timeStopFreezePlayers ? "options.on" : "options.off"));
     }
 
+    private Component classicLabel()
+    {
+        return Component.translatable("config.thkaguya.time_stop_classic",
+                Component.translatable(THKaguyaConfig.useClassicTimeStop ? "options.on" : "options.off"));
+    }
+
+    /** 有効化は必ず警告画面を挟む（設定ファイルを直接いじる人向けの注意は TOML 側のコメント） */
+    private void toggleClassicTimeStop()
+    {
+        if (THKaguyaConfig.useClassicTimeStop)
+        {
+            THKaguyaConfig.setUseClassicTimeStop(false);
+            this.classicButton.setMessage(classicLabel());
+            return;
+        }
+        this.minecraft.setScreen(new ClassicTimeStopWarningScreen(this));
+    }
+
     private void toggleMalletGui()
     {
         // 有効 → 無効：そのまま切り替え
@@ -204,6 +229,13 @@ public class ExperimentalConfigScreen extends Screen
         this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
+        // クラシック時停が入っている間は常時警告を出す（設定ファイルを直接いじった人にも見えるように）
+        if (THKaguyaConfig.useClassicTimeStop)
+        {
+            guiGraphics.drawCenteredString(this.font,
+                    Component.translatable("config.thkaguya.time_stop_classic.active_warning"),
+                    this.width / 2, this.height - 64, 0xFF5555);
+        }
         guiGraphics.drawCenteredString(this.font,
                 Component.translatable("config.thkaguya.experimental.hint"),
                 this.width / 2, this.height - 48, 0xA0A0A0);

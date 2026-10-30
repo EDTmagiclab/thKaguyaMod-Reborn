@@ -245,6 +245,13 @@
   "config.thkaguya.time_stop": "時間停止を有効にする：%s",
   "config.thkaguya.time_stop_hostile_only": "時間停止は敵だけを止める：%s",
   "config.thkaguya.time_stop_freeze_players": "殺人玩偶は他のプレイヤーも止める：%s",
+  "config.thkaguya.time_stop_classic": "クラシック時停を使う：%s",
+  "config.thkaguya.time_stop_classic.active_warning": "警告：クラシック時停が有効です——範囲内のすべてが凍結します（村人・ドロップ品・他人の農場を含む）",
+  "config.thkaguya.time_stop_classic.warning.title": "クラシック時停を有効にしますか？",
+  "config.thkaguya.time_stop_classic.warning.line1": "クラシック時停は 40 格以内の術者以外すべてを凍結します。",
+  "config.thkaguya.time_stop_classic.warning.line2": "他のプレイヤー、ペット、村人、アイアンゴーレム、ドロップ品、矢、TNT、トロッコを含みます。",
+  "config.thkaguya.time_stop_classic.warning.line3": "公共サーバーで有効にすると、他人の農場や村人取引が止まり、",
+  "config.thkaguya.time_stop_classic.warning.line4": "サーバーが重いと誤解されます。シングル・クリエイティブ・録画向けです。",
   "thkaguya.timestop.force_end": "時間停止が上限に達したため強制解除しました",
   "thkaguya.timestop.disabled": "時間停止は設定で無効になっています（実験的機能）"
 }

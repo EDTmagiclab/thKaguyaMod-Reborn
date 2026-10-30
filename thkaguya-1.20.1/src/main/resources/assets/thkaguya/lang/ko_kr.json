@@ -245,6 +245,13 @@
   "config.thkaguya.time_stop": "시간 정지 활성화: %s",
   "config.thkaguya.time_stop_hostile_only": "시간 정지는 적만 정지: %s",
   "config.thkaguya.time_stop_freeze_players": "살인 인형은 다른 플레이어도 정지: %s",
+  "config.thkaguya.time_stop_classic": "클래식 시간 정지 사용: %s",
+  "config.thkaguya.time_stop_classic.active_warning": "경고: 클래식 시간 정지가 켜져 있습니다 - 범위 내 모든 것이 정지합니다 (주민, 드롭 아이템, 타인 농장 포함)",
+  "config.thkaguya.time_stop_classic.warning.title": "클래식 시간 정지를 사용할까요?",
+  "config.thkaguya.time_stop_classic.warning.line1": "클래식 시간 정지는 40블록 내 시전자 외 모든 것을 정지시킵니다.",
+  "config.thkaguya.time_stop_classic.warning.line2": "다른 플레이어, 펫, 주민, 아이언 골렘, 드롭 아이템, 화살, TNT, 광산 수레가 포함됩니다.",
+  "config.thkaguya.time_stop_classic.warning.line3": "공용 서버에서 켜면 다른 사람의 농장과 주민 거래가 멈추고,",
+  "config.thkaguya.time_stop_classic.warning.line4": "서버가 렉이라고 오해받습니다. 싱글, 크리에이티브, 촬영용으로만 권장합니다.",
   "thkaguya.timestop.force_end": "시간 정지가 한계에 도달해 강제 해제되었습니다",
   "thkaguya.timestop.disabled": "시간 정지는 설정에서 꺼져 있습니다 (실험적 기능)"
 }

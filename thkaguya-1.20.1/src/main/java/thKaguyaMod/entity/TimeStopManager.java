@@ -9,11 +9,14 @@ import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.SnowGolem;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import thKaguyaMod.THKaguyaLib;
 import thKaguyaMod.entity.item.EntitySakuyaStopWatch;
@@ -77,6 +80,11 @@ public final class TimeStopManager
     public static final int FLAG_ACTIVE = 1;
     /** {@link State#flags} bit1：半径内を敵味方問わず凍らせる */
     public static final int FLAG_FREEZE_ALL = 1 << 1;
+    /** {@link State#flags} bit2：クラシック時停（原版の対象範囲） */
+    public static final int FLAG_CLASSIC = 1 << 2;
+
+    /** クラシック時停の凍結範囲（原版 {@code effectiveBoundary}。アイテムでも符卡でも共通の固定値） */
+    public static final double CLASSIC_BOUNDARY = 40.0D;
 
     private static final State SERVER = new State();
     private static final State CLIENT = new State();
@@ -111,6 +119,8 @@ public final class TimeStopManager
         boolean freezeAll;
         /** true = 術者以外のプレイヤーの位置も固定する（符卡駆動のときだけ） */
         boolean freezePlayers;
+        /** true = 原版 1.7.10 と同じ対象範囲（40 格の箱、術者と騎乗チェーン以外は全部） */
+        boolean classic;
 
         /* --- サーバ専用 --- */
         ServerLevel serverLevel;
@@ -159,10 +169,13 @@ public final class TimeStopManager
         SERVER.watch = watch;
         SERVER.mode = mode;
         SERVER.center = watch.position();
-        SERVER.maxRadius = clampRadius(THKaguyaConfig.timeStopRadius);
+        // クラシックは原版どおり「演出半径 = min(age*12, 240)」で、コンフィグの半径を無視する
+        SERVER.classic = THKaguyaConfig.useClassicTimeStop;
+        SERVER.maxRadius = SERVER.classic ? 240 : clampRadius(THKaguyaConfig.timeStopRadius);
         SERVER.radius = radiusForAge(0, SERVER.maxRadius);
-        SERVER.freezeAll = !THKaguyaConfig.timeStopHostileOnly;
-        SERVER.freezePlayers = freezePlayers;
+        // クラシックでは hostileOnly / freezePlayers は無効（対象は「術者以外すべて」で固定）
+        SERVER.freezeAll = !SERVER.classic && !THKaguyaConfig.timeStopHostileOnly;
+        SERVER.freezePlayers = !SERVER.classic && freezePlayers;
         SERVER.startGameTime = level.getGameTime();
         SERVER.hardLimit = Math.max(20, THKaguyaConfig.timeStopHardLimitTicks);
         PLAYER_ANCHORS.clear();
@@ -216,10 +229,57 @@ public final class TimeStopManager
         SERVER.center = watch.position();
         SERVER.radius = radiusForAge((int)age, SERVER.maxRadius);
 
-        if(SERVER.freezePlayers)
+        if(SERVER.classic)
+        {
+            // 門控では止められない「生物でない Entity」（落ちている物・矢・TNT・トロッコ等）を
+            // 原版どおり座標の巻き戻しで止める
+            classicRollback(level);
+        }
+        if(SERVER.freezePlayers || SERVER.classic)
         {
             lockPlayers(level);
         }
+    }
+
+    /**
+     * クラシック時停：生物でない Entity を 1 tick 前の位置へ戻す（サーバ専用）。
+     *
+     * <p>LivingEntity は {@code LivingTickEvent} のキャンセルで丸ごと止まっているので触らない
+     * （触ると {@code tickCount} を余計に減らしてしまう）。自前 Entity（弾・符卡）も同じ理由で除外。</p>
+     */
+    private static void classicRollback(Level level)
+    {
+        Vec3 c = SERVER.center;
+        AABB box = new AABB(c.x - CLASSIC_BOUNDARY, c.y - CLASSIC_BOUNDARY, c.z - CLASSIC_BOUNDARY,
+                c.x + CLASSIC_BOUNDARY, c.y + CLASSIC_BOUNDARY, c.z + CLASSIC_BOUNDARY);
+        for(Entity entity : level.getEntitiesOfClass(Entity.class, box))
+        {
+            if(entity instanceof Player || entity instanceof LivingEntity)
+            {
+                continue;
+            }
+            if(entity instanceof EntityTHShot || entity instanceof EntitySpellCard)
+            {
+                continue;
+            }
+            if(!isAffected(SERVER, entity))
+            {
+                continue;
+            }
+            rollback(entity);
+        }
+    }
+
+    /** 原版 {@code inPrivateSquare} の位置・向き・モーメント部分（1.20.1 で使える範囲すべて） */
+    private static void rollback(Entity entity)
+    {
+        entity.setPos(entity.xo, entity.yo, entity.zo);
+        entity.setYRot(entity.yRotO);
+        entity.setXRot(entity.xRotO);
+        Vec3 motion = entity.getDeltaMovement();
+        entity.setDeltaMovement(0.0D, entity.onGround() ? motion.y : 0.0D, 0.0D);
+        entity.setAirSupply(0);
+        entity.fallDistance -= 0.076865F;
     }
 
     /**
@@ -249,8 +309,18 @@ public final class TimeStopManager
             Vec3 anchor = PLAYER_ANCHORS.get(id);
             if(anchor == null)
             {
+                // 「木桩」化：乗り物に乗ったままだとアンカーと載り物が喧嘩するので先に降ろす
+                if(player.isPassenger())
+                {
+                    player.stopRiding();
+                }
                 anchor = player.position();
                 PLAYER_ANCHORS.put(id, anchor);
+            }
+            // 凍結前に使い始めた物（食料・弓・盾・符卡のチャージ）を止める
+            if(player.isUsingItem())
+            {
+                player.stopUsingItem();
             }
             if(player.position().distanceToSqr(anchor) > 1.0E-6D)
             {
@@ -327,16 +397,47 @@ public final class TimeStopManager
      * サーバが送ってきた値しか使わないので、両端の判定が食い違わない。
      */
     public static void clientUpdate(Level level, int mode, int ownerId, Vec3 center, int ageTicks,
-                                    int maxRadius, boolean freezeAll)
+                                    int maxRadius, boolean freezeAll, boolean classic)
     {
         CLIENT.active = true;
         CLIENT.level = level;
         CLIENT.mode = mode;
         CLIENT.ownerId = ownerId;
         CLIENT.center = center;
-        CLIENT.maxRadius = clampRadius(maxRadius);
+        CLIENT.maxRadius = classic ? 240 : clampRadius(maxRadius);
         CLIENT.radius = radiusForAge(ageTicks, CLIENT.maxRadius);
-        CLIENT.freezeAll = freezeAll;
+        CLIENT.freezeAll = !classic && freezeAll;
+        CLIENT.classic = classic;
+    }
+
+    /**
+     * クライアント側のクラシック時停：生物でない Entity（落ちている物・矢・TNT 等）を巻き戻す。
+     *
+     * <p>原版も懐中時計の {@code onUpdate} がクライアントでも走っていたので、
+     * 同じ処理をこちら側でも回して見た目を合わせる。</p>
+     */
+    public static void clientClassicRollback(Iterable<Entity> entities)
+    {
+        if(!CLIENT.active || !CLIENT.classic)
+        {
+            return;
+        }
+        for(Entity entity : entities)
+        {
+            if(entity instanceof Player || entity instanceof LivingEntity)
+            {
+                continue;
+            }
+            if(entity instanceof EntityTHShot || entity instanceof EntitySpellCard)
+            {
+                continue;
+            }
+            if(!isAffected(CLIENT, entity))
+            {
+                continue;
+            }
+            rollback(entity);
+        }
     }
 
     /** クライアント側に時間操作の発生源が無くなった */
@@ -432,6 +533,84 @@ public final class TimeStopManager
         return true;
     }
 
+    /**
+     * クラシック時停の対象判定（原版 `EntitySakuyaWatch#onUpdate` の除外条件をそのまま）。
+     *
+     * <p>原版は {@code boundingBox.expand(40,40,40)} の<b>箱</b>で拾っていたので、
+     * 互換モードの球殻ではなく箱で判定する。額縁と絵画は原版でも除外。</p>
+     */
+    private static boolean isClassicTarget(State state, Entity entity)
+    {
+        if(entity instanceof ItemFrame || entity instanceof Painting)
+        {
+            return false;
+        }
+        // 術者が乗っている載り物とその同乗者は除外（原版の riddenByEntity 判定に相当）
+        if(isCasterVehicleChain(state, entity))
+        {
+            return false;
+        }
+        // 時間停止中でも動ける符卡（原版が残した例外）
+        if(entity instanceof EntitySpellCard card && card.isTimeStopExempt())
+        {
+            return false;
+        }
+        double dx = Math.abs(entity.getX() - state.center.x);
+        double dy = Math.abs(entity.getY() - state.center.y);
+        double dz = Math.abs(entity.getZ() - state.center.z);
+        return dx <= CLASSIC_BOUNDARY && dy <= CLASSIC_BOUNDARY && dz <= CLASSIC_BOUNDARY;
+    }
+
+    /** 術者が騎乗中なら、その載り物チェーン（載っている側・載せている側）に属するか */
+    private static boolean isCasterVehicleChain(State state, Entity entity)
+    {
+        LivingEntity owner = state.owner;
+        if(owner != null)
+        {
+            Entity root = owner.getRootVehicle();
+            if(root == owner)
+            {
+                return false;
+            }
+            return entity == root || entity.getRootVehicle() == root;
+        }
+        // クライアント側は owner が null なので、同乗関係（同期されている）から術者を探す。
+        // これが無いと「術者が騎乗しているのにクライアントだけ載り物を凍らせる」ことになり、
+        // 騎手だけ動いて馬が置いていかれる。
+        if(state.ownerId < 0)
+        {
+            return false;
+        }
+        return carriesPassenger(entity, state.ownerId, 0);
+    }
+
+    /** entity 自身またはその乗員の中に id の Entity がいるか（深さ 4 まで） */
+    private static boolean carriesPassenger(Entity entity, int id, int depth)
+    {
+        if(depth > 4)
+        {
+            return false;
+        }
+        if(entity.getId() == id)
+        {
+            return true;
+        }
+        for(Entity passenger : entity.getPassengers())
+        {
+            if(carriesPassenger(passenger, id, depth + 1))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** このプレイヤーは「木桩」状態か（イベント側から問い合わせる用。サーバ専用） */
+    public static boolean isPlayerLocked(Player player)
+    {
+        return SERVER.active && isAffected(SERVER, player);
+    }
+
     /** 半径・除外・敵味方の判定（モード非依存） */
     private static boolean isAffected(State state, Entity entity)
     {
@@ -459,6 +638,12 @@ public final class TimeStopManager
             return false;
         }
 
+        /* ---- クラシック時停：原版の対象範囲をそのまま使う ---- */
+        if(state.classic)
+        {
+            return isClassicTarget(state, entity);
+        }
+
         /* ---- 距離（球殻。原版・演出と同じ式）---- */
         double radius = state.radius;
         if(entity.distanceToSqr(state.center.x, state.center.y, state.center.z) > radius * radius)
@@ -475,12 +660,7 @@ public final class TimeStopManager
          */
         if(entity instanceof Player)
         {
-            if(!state.freezePlayers || entity.level().isClientSide)
-            {
-                return false;
-            }
-            // 載り物の中にいる人は固定できない（乗り物側ごと固めることになり、降りられなくなる）
-            return !entity.isPassenger() && entity.getPassengers().isEmpty();
+            return state.freezePlayers && !entity.level().isClientSide;
         }
 
         // 騎乗チェーン（載っている側・載せている側）は丸ごと除外。馬や船ごと固めると降りられなくなる
@@ -592,6 +772,7 @@ public final class TimeStopManager
         state.ownerId = -1;
         state.freezeAll = false;
         state.freezePlayers = false;
+        state.classic = false;
         state.serverLevel = null;
         state.owner = null;
         state.watch = null;

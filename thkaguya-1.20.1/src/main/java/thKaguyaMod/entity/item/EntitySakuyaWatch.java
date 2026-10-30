@@ -143,6 +143,12 @@ public class EntitySakuyaWatch extends Entity implements ITimeStopSource
     	return (this.entityData.get(DATA_FLAGS) & TimeStopManager.FLAG_FREEZE_ALL) != 0;
     }
 
+    @Override
+    public boolean isTimeStopClassic()
+    {
+    	return (this.entityData.get(DATA_FLAGS) & TimeStopManager.FLAG_CLASSIC) != 0;
+    }
+
     /**
      * 実際に時間操作を開始できたときに呼ぶ（サーバ専用）。
      * ここで初めてクライアントに「凍らせてよい」ことが伝わる。
@@ -153,6 +159,10 @@ public class EntitySakuyaWatch extends Entity implements ITimeStopSource
     	if(freezeAll)
     	{
     		flags |= TimeStopManager.FLAG_FREEZE_ALL;
+    	}
+    	if(THKaguyaConfig.useClassicTimeStop)
+    	{
+    		flags |= TimeStopManager.FLAG_CLASSIC;
     	}
     	this.entityData.set(DATA_FLAGS, flags);
     	this.entityData.set(DATA_RADIUS, radius);
@@ -182,7 +192,9 @@ public class EntitySakuyaWatch extends Entity implements ITimeStopSource
     	{
     		return false;
     	}
-    	markTimeStopActive(THKaguyaConfig.timeStopRadius, !THKaguyaConfig.timeStopHostileOnly);
+    	// クラシックは原版どおり演出半径 240（コンフィグの半径は使わない）
+    	int visualRadius = THKaguyaConfig.useClassicTimeStop ? 240 : THKaguyaConfig.timeStopRadius;
+    	markTimeStopActive(visualRadius, !THKaguyaConfig.timeStopHostileOnly);
     	return true;
     }
 

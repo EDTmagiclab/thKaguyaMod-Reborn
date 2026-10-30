@@ -71,9 +71,22 @@ public class THKaguyaConfig
     /**
      * 実験的機能：符卡「殺人玩偶」で、術者以外のプレイヤーの位置も固定する。
      *
-     * <p>アイテム（懐中時計）駆動のときは常に false（他人を止めない）。</p>
+     * <p>アイテム（懐中時計）駆動のときは常に false（他人を止めない）。
+     * クラシック時停では無視される（原版どおり常に全員止まる）。</p>
      */
     public static boolean timeStopFreezePlayers;
+
+    /**
+     * 実験的機能：時停を「原版 1.7.10 と同じ対象範囲」で止める（クラシックモード）。
+     *
+     * <p>互換モードとの違いは<b>凍らせる相手の集合と半径だけ</b>：
+     * クラシックは「半径 40 格の箱の中、術者とその騎乗チェーン・額縁・絵画以外は全部」
+     * （プレイヤー・ペット・村人・落ちている物・矢・TNT・トロッコを含む）。
+     * 互換モードは「球殻内の敵だけ」。</p>
+     *
+     * <p>クラシックでは {@code timeStopHostileOnly} と {@code timeStopFreezePlayers} は無視される。</p>
+     */
+    public static boolean useClassicTimeStop;
 
     public static final ForgeConfigSpec SPEC;
 
@@ -107,6 +120,7 @@ public class THKaguyaConfig
     private static final ForgeConfigSpec.IntValue TIME_STOP_HARD_LIMIT;
     private static final ForgeConfigSpec.BooleanValue TIME_STOP_HOSTILE_ONLY;
     private static final ForgeConfigSpec.BooleanValue TIME_STOP_FREEZE_PLAYERS;
+    private static final ForgeConfigSpec.BooleanValue USE_CLASSIC_TIME_STOP;
 
     static
     {
@@ -204,6 +218,19 @@ public class THKaguyaConfig
                         "只影响符卡「杀人玩偶」；怀表物品永远不会冻结其他玩家。",
                         "Default: true")
                 .define("Time Stop Freezes Other Players", true);
+        USE_CLASSIC_TIME_STOP = builder
+                .comment("========== 警告：经典时停会冻结半径内的一切 ==========",
+                        "开启后，时间停止的【冻结对象】回到原版 1.7.10 的规则：",
+                        "  半径 40 格的方盒内，除了施术者、施术者所骑的载具、物品展示框、画，其余全部冻结。",
+                        "  也就是说：其他玩家、宠物、村民、铁傀儡、掉落物、箭、TNT、矿车 都会被定住。",
+                        "【不要在公共服务器上随手开】别人的刷怪塔、农场、村民交易会整片停摆，玩家会当成卡服。",
+                        "适合：单人、创造模式、录制演出、还原原版手感。",
+                        "与兼容模式的区别只有冻结对象与半径；被冻的生物 AI 一律停止（原版是让它继续跑再拽回坐标）。",
+                        "经典模式下 `Time Stop Radius` / `Time Stop Affects Hostile Only` /",
+                        "`Time Stop Freezes Other Players` 三项均不生效（半径固定 40，对象固定全体）。",
+                        "看门狗上限仍然生效。",
+                        "Default: false")
+                .define("Use Classic Time Stop", false);
         builder.pop();
 
         SPEC = builder.build();
@@ -290,6 +317,7 @@ public class THKaguyaConfig
         timeStopHardLimitTicks = TIME_STOP_HARD_LIMIT.get();
         timeStopHostileOnly = TIME_STOP_HOSTILE_ONLY.get();
         timeStopFreezePlayers = TIME_STOP_FREEZE_PLAYERS.get();
+        useClassicTimeStop = USE_CLASSIC_TIME_STOP.get();
     }
 
     /**
@@ -383,5 +411,16 @@ public class THKaguyaConfig
             SPEC.save();
         }
         timeStopHostileOnly = value;
+    }
+
+    /** 実験的機能：クラシック時停（原版の対象範囲）の有効／無効を書き換える（設定画面から呼ぶ）。 */
+    public static void setUseClassicTimeStop(boolean value)
+    {
+        USE_CLASSIC_TIME_STOP.set(value);
+        if (SPEC.isLoaded())
+        {
+            SPEC.save();
+        }
+        useClassicTimeStop = value;
     }
 }

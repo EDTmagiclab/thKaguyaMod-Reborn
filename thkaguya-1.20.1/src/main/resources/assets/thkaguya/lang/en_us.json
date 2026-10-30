@@ -245,6 +245,13 @@
   "config.thkaguya.time_stop": "Enable Time Stop: %s",
   "config.thkaguya.time_stop_hostile_only": "Time Stop freezes hostiles only: %s",
   "config.thkaguya.time_stop_freeze_players": "Murder Doll freezes other players: %s",
+  "config.thkaguya.time_stop_classic": "Use Classic Time Stop: %s",
+  "config.thkaguya.time_stop_classic.active_warning": "WARNING: classic time stop is ON - everything in range freezes (villagers, drops, other players' farms)",
+  "config.thkaguya.time_stop_classic.warning.title": "Enable classic time stop?",
+  "config.thkaguya.time_stop_classic.warning.line1": "Classic time stop freezes everything within 40 blocks except the caster.",
+  "config.thkaguya.time_stop_classic.warning.line2": "That includes other players, pets, villagers, iron golems, dropped items, arrows, TNT and minecarts.",
+  "config.thkaguya.time_stop_classic.warning.line3": "On a public server other players' farms and villager trades will stall,",
+  "config.thkaguya.time_stop_classic.warning.line4": "and players will think the server is lagging. Best for singleplayer, creative or recording.",
   "thkaguya.timestop.force_end": "Time stop reached its limit and was released",
   "thkaguya.timestop.disabled": "Time stop is disabled in the config (experimental)"
 }
