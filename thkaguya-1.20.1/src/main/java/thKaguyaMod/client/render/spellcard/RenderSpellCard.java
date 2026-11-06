@@ -84,13 +84,20 @@ public class RenderSpellCard extends EntityRenderer<EntitySpellCard>
     /** 符卡卡面贴图；未注册的符卡返回 null（跳过渲染） */
     private ResourceLocation cardTexture(EntitySpellCard entity)
     {
-        String name = SpellCardRegistry.getSpellCardName(entity.getSpellCardNumber());
+        int number = entity.getSpellCardNumber();
+        String name = SpellCardRegistry.getSpellCardName(number);
         if(name == null)
         {
             return null;
         }
+        // domain = 该符卡贴图所在的资源命名空间（即注册方的真实 modid）。未声明时回退本体。
+        String domain = SpellCardRegistry.getSpellCardModDomain(number);
+        if(domain == null || domain.isEmpty())
+        {
+            domain = THKaguyaCore.MODID;
+        }
         // 贴图文件名 = 注册名全小写 + 去单引号（Kappa'sPororoca -> kappaspororoca）
-        return new ResourceLocation(THKaguyaCore.MODID,
+        return new ResourceLocation(domain,
                 "textures/item/spellcard/" + name.toLowerCase().replace("'", "") + ".png");
     }
 

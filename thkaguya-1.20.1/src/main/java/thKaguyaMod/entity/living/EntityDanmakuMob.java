@@ -486,6 +486,15 @@ public abstract class EntityDanmakuMob extends Mob
         this.entityData.set(DATA_SPELLCARD_MOTION, motion);
     }
 
+    /**
+     * スペルカード宣言モーションを開始する（1.7.10 原版の setSpellCardAttack 相当）。
+     * 移植時に漏れていたメソッドで、附属 SpellCardPlus の EntityRumia が参照する。
+     */
+    protected void setSpellCardAttack()
+    {
+        setSpellCardMotion((byte)-30);
+    }
+
     protected void setSpecies(int species1, int species2)
     {
         species_1 = species1;
@@ -617,7 +626,7 @@ public abstract class EntityDanmakuMob extends Mob
         {
             isSpellCardMode = true;
             // 原版：符卡宣言モーション開始（dataWatcher 18 を -30 にして毎 tick +2 で 0 まで戻す）
-            setSpellCardMotion((byte)-30);
+            setSpellCardAttack();
             // スペルカードの魔法陣を出現させる
             circle = new EntitySpellCardCircle(this.level(), this, 16 + getSpellCardCircleColor(), -100);
             if(!this.level().isClientSide)
