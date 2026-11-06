@@ -17,6 +17,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import thKaguyaMod.init.THKaguyaConfig;
+import thKaguyaMod.registry.SpellCardRegistry;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 符卡宣言演出の描画（クライアント専用）。
@@ -108,8 +112,16 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
     private static final ResourceLocation FALLBACK_TEXTURE =
             cardTexture("textures/item/spellcard/spellcard_frame.png");
 
-    /** 番号 → 実際の ResourceLocation（遅延生成してキャッシュ）。 */
-    private static final ResourceLocation[] TEXTURE_CACHE = new ResourceLocation[CARD_TEXTURES.length];
+    /**
+     * カード画像の解決。
+     *
+     * <p>以前は「符卡番号 → ファイル名」の配列（{@link #CARD_TEXTURES}）を添字引きしていたが、
+     * これは本体の 0〜41 しか覆えず、<b>アドオンが追加した符卡（300 番台など）は必ず範囲外</b>に
+     * なって空のカード枠に落ちていた。そこで {@link SpellCardRegistry} から
+     * 「登録名 + 名前空間」を引いて組み立てる方式に変更する（本体の符卡も登録名は
+     * ファイル名と一致するため、{@link #CARD_TEXTURES} はフォールバックとしてのみ残す）。</p>
+     */
+    private static final Map<Integer, ResourceLocation> TEXTURE_CACHE = new HashMap<>();
 
     private SpellCardCutInRenderer()
     {
@@ -291,17 +303,36 @@ public final class SpellCardCutInRenderer implements IGuiOverlay
 
     private static ResourceLocation textureOf(int cardNo)
     {
-        if (cardNo < 0 || cardNo >= CARD_TEXTURES.length || CARD_TEXTURES[cardNo] == null)
-        {
-            return FALLBACK_TEXTURE;
-        }
-        ResourceLocation cached = TEXTURE_CACHE[cardNo];
+        ResourceLocation cached = TEXTURE_CACHE.get(cardNo);
         if (cached == null)
         {
-            cached = cardTexture("textures/item/spellcard/" + CARD_TEXTURES[cardNo] + ".png");
-            TEXTURE_CACHE[cardNo] = cached;
+            cached = resolveTexture(cardNo);
+            TEXTURE_CACHE.put(cardNo, cached);
         }
         return cached;
+    }
+
+    private static ResourceLocation resolveTexture(int cardNo)
+    {
+        // 1) 登録表から引く（本体もアドオンも同じ経路）
+        String domain = SpellCardRegistry.getSpellCardModDomain(cardNo);
+        String name = SpellCardRegistry.getSpellCardName(cardNo);
+        if (domain != null && name != null)
+        {
+            // ファイル名 = 登録名を小文字化し、シングルクォートだけ落としたもの
+            // （Kappa'sPororoca -> kappaspororoca.png、Spear_the_Gungnir -> spear_the_gungnir.png）
+            return new ResourceLocation(domain,
+                    "textures/item/spellcard/" + name.toLowerCase().replace("'", "") + ".png");
+        }
+
+        // 2) 登録表に無い番号：従来の配列に救済を求める（登録前など）
+        if (cardNo >= 0 && cardNo < CARD_TEXTURES.length && CARD_TEXTURES[cardNo] != null)
+        {
+            return cardTexture("textures/item/spellcard/" + CARD_TEXTURES[cardNo] + ".png");
+        }
+
+        // 3) 未実装番号：空のカード枠
+        return FALLBACK_TEXTURE;
     }
 
     private static Component cardNameOf(int cardNo)

@@ -225,6 +225,24 @@ public class EntityTHShot extends Entity
         return Math.sqrt(m.x * m.x + m.y * m.y + m.z * m.z);
     }
 
+    /**
+     * 速度を設定（1.7.10 原版 EntityTHShot:388 の setSpeed、移植時に漏れていた）。
+     *
+     * <p>1.7.10 は motionX/Y/Z を直接書いていたが、1.20.1 は setDeltaMovement 経由。
+     * 弾の向き（angle）× 速度 で運動量を作る点は原版と同じ。
+     * shotSpeed だけ書き換えても次 tick の {@code shotSpeed = getSpeed()} で上書きされるため、
+     * 運動量まで一緒に更新する必要がある。
+     */
+    public void setSpeed(double speed)
+    {
+        shotSpeed = speed;
+        Vec3 motion = angle.scale(speed);
+        this.setDeltaMovement(motion);
+        lastShotMotionX = motion.x;
+        lastShotMotionY = motion.y;
+        lastShotMotionZ = motion.z;
+    }
+
     /** 向いている方向ベクトルを返す */
     public Vec3 getShotVector()
     {
