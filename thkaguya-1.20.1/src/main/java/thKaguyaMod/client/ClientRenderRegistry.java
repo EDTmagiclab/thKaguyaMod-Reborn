@@ -227,8 +227,7 @@ public class ClientRenderRegistry
         event.registerEntityRenderer(THKaguyaEntities.MUSOU_FUUIN.get(),
                 thKaguyaMod.client.render.shot.RenderMusouFuuin::new);
         event.registerEntityRenderer(THKaguyaEntities.NUCLEAR_SHOT.get(),
-                thKaguyaMod.client.render.shot.RenderNuclearShot::new);
-        event.registerEntityRenderer(THKaguyaEntities.ONMYOUDAMA.get(), RenderOnmyoudama::new);
+                thKaguyaMod.client.render.shot.RenderNuclearShot::new);        event.registerEntityRenderer(THKaguyaEntities.ONMYOUDAMA.get(), RenderOnmyoudama::new);
         event.registerEntityRenderer(THKaguyaEntities.SANAE_WIND.get(), RenderSanaeWind::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_HENYORI_LASER.get(), RenderTHLaser::new);
         event.registerEntityRenderer(THKaguyaEntities.TH_SET_LASER.get(), RenderTHLaser::new);

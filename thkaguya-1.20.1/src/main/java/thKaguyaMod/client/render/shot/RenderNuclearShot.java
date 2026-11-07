@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import thKaguyaMod.THKaguyaCore;
 import thKaguyaMod.client.render.THRenderTypes;
-import thKaguyaMod.entity.shot.EntityNuclearShot;
+import thKaguyaMod.entity.shot.EntityTHShot;
 
 /**
  * 核熱「ニュークリアフュージョン」等の核弾の描画（1.20.1 移植版）。
@@ -28,7 +28,7 @@ import thKaguyaMod.entity.shot.EntityNuclearShot;
  * </ul>
  * 移植版は汎用 {@code RenderTHShot} で代用していたため、この 2 段球体と遅延発光が失われていた。
  */
-public class RenderNuclearShot extends EntityRenderer<EntityNuclearShot>
+public class RenderNuclearShot extends EntityRenderer<EntityTHShot>
 {
     private static final ResourceLocation LASER_TEXTURE =
             new ResourceLocation(THKaguyaCore.MODID, "textures/shot/laser.png");
@@ -45,13 +45,13 @@ public class RenderNuclearShot extends EntityRenderer<EntityNuclearShot>
     }
 
     @Override
-    public ResourceLocation getTextureLocation(EntityNuclearShot entity)
+    public ResourceLocation getTextureLocation(EntityTHShot entity)
     {
         return entity.getAnimationCount() < 0 ? LIGHT_TEXTURE : LASER_TEXTURE;
     }
 
     @Override
-    public void render(EntityNuclearShot entity, float entityYaw, float partialTick, PoseStack poseStack,
+    public void render(EntityTHShot entity, float entityYaw, float partialTick, PoseStack poseStack,
             MultiBufferSource buffer, int packedLight)
     {
         int anim = entity.getAnimationCount();
