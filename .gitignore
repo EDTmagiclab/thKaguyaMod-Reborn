@@ -57,6 +57,9 @@ index.html
 # ===== editor/ 工具的说明文档要进版本库 =====
 !editor/README.md
 
+# ===== 本地演示产物：移植档案动画（与 mod 代码无关，仅本地观看/导出）=====
+dist/port-documentary/
+
 # ===== 本地启动器产物（PCL2 / 原版启动器 profile），不进仓库 =====
 PCL.ini
 launcher_profiles.json
